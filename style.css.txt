@@ -1,0 +1,80 @@
+:root {
+    --bg-dark: #121212;
+    --bg-panel: #1e1e1e;
+    --neon-cyan: #00FFFF;
+    --neon-green: #39FF14;
+    --neon-magenta: #FF00FF;
+    --text-main: #FFFFFF;
+    --text-muted: #A0A0A0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+
+body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
+
+.screen { display: none; padding: 20px; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* Tipografia e Logos */
+.logo { font-size: 3rem; font-weight: 800; text-align: center; margin-top: 10vh; letter-spacing: 2px; }
+.neon-dot { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); }
+.subtitle { text-align: center; color: var(--text-muted); margin-bottom: 40px; }
+
+/* Efeito Glassmorphism */
+.glass {
+    background: rgba(30, 30, 30, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+/* Inputs e Selects */
+input[type="text"], select, textarea {
+    width: 100%; padding: 15px; margin-bottom: 15px;
+    background: rgba(0, 0, 0, 0.5); border: 1px solid #333;
+    color: var(--text-main); border-radius: 8px; outline: none; font-size: 16px;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--neon-cyan); box-shadow: 0 0 8px rgba(0, 255, 255, 0.2); }
+
+/* Range Slider Customizado */
+input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--neon-cyan); cursor: pointer; box-shadow: 0 0 10px var(--neon-cyan); margin-top: -6px;}
+input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #333; border-radius: 2px; }
+
+/* Botões */
+button { border: none; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; font-size: 16px; }
+.btn-neon-cyan {
+    background: transparent; color: var(--neon-cyan); border: 2px solid var(--neon-cyan);
+    padding: 15px; text-transform: uppercase; box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+}
+.btn-neon-cyan:hover, .btn-neon-cyan:active { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); }
+
+.btn-large { width: 100%; font-size: 1.2rem; padding: 20px; margin: 20px 0; }
+.btn-icon { background: transparent; color: var(--text-muted); font-size: 1.5rem; padding: 5px; }
+
+/* Status do Profissional */
+.btn-status { padding: 10px 20px; color: #000; }
+.btn-status.offline { background: #555; }
+.btn-status.online { background: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); }
+.neon-green-text { color: var(--neon-green); text-shadow: 0 0 8px var(--neon-green); }
+
+/* Modais */
+.modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
+.modal.active { display: flex; }
+.modal-content { width: 90%; max-width: 400px; position: relative; }
+.close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+.close:hover { color: #fff; }
+
+/* Animações */
+.pulse { animation: pulse 2s infinite; }
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.4); }
+    70% { transform: scale(1.02); box-shadow: 0 0 0 15px rgba(0, 255, 255, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 255, 0); }
+}
+
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.control-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.chart-container { margin-top: 20px; padding: 15px; }

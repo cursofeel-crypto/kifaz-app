@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KIFAZ</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Ícones -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen" class="screen active">
+        <div class="logo">KIFAZ<span class="neon-dot">.</span></div>
+        <p class="subtitle">Quem faz, está aqui.</p>
+        
+        <div class="login-box glass">
+            <input type="text" id="nome-login" placeholder="Seu Nome">
+            <select id="tipo-login">
+                <option value="Cliente">Sou Cliente</option>
+                <option value="Profissional">Sou Profissional</option>
+            </select>
+            <!-- Aparece apenas se for profissional -->
+            <select id="profissao-login" style="display: none;">
+                <option value="Pladur">Pladur</option>
+                <option value="Eletricista">Eletricista</option>
+                <option value="Pintor">Pintor</option>
+                <option value="Canalizador">Canalizador</option>
+            </select>
+            <button onclick="fazerLogin()" class="btn-neon-cyan">Entrar</button>
+        </div>
+    </div>
+
+    <!-- TELA DO CLIENTE -->
+    <div id="cliente-screen" class="screen">
+        <header>
+            <h2>Olá, <span id="nome-cliente-display"></span></h2>
+            <button onclick="logout()" class="btn-icon"><i class="fas fa-sign-out-alt"></i></button>
+        </header>
+        
+        <div class="status-box glass">
+            <i class="fas fa-map-marker-alt"></i> <span id="loc-cliente">Buscando sua localização...</span>
+        </div>
+
+        <button onclick="abrirModalPedido()" class="btn-neon-cyan btn-large pulse">
+            <i class="fas fa-bolt"></i> Solicitar Serviço
+        </button>
+
+        <div class="pedidos-ativos">
+            <h3>Meus Pedidos</h3>
+            <div id="lista-pedidos-cliente" class="lista-glass">Nenhum pedido ativo.</div>
+        </div>
+    </div>
+
+    <!-- TELA DO PROFISSIONAL -->
+    <div id="pro-screen" class="screen">
+        <header>
+            <h2>Modo Pro <span class="neon-green-text">•</span></h2>
+            <button onclick="logout()" class="btn-icon"><i class="fas fa-sign-out-alt"></i></button>
+        </header>
+
+        <div class="pro-controls glass">
+            <div class="control-row">
+                <label>Status:</label>
+                <button id="btn-status" class="btn-status offline" onclick="toggleStatus()">Ficar Online</button>
+            </div>
+            <div class="control-row">
+                <label>Raio de Atuação: <span id="raio-display">15</span> km</label>
+                <input type="range" id="raio-pro" min="1" max="50" value="15" oninput="atualizarRaio(this.value)">
+            </div>
+        </div>
+
+        <div class="chart-container glass">
+            <canvas id="lucrosChart"></canvas>
+        </div>
+
+        <div class="pedidos-ativos">
+            <h3>Novos Pedidos na Região <span id="alerta-pedidos" class="badge">0</span></h3>
+            <div id="lista-pedidos-pro" class="lista-glass">Fique online para receber pedidos.</div>
+        </div>
+    </div>
+
+    <!-- MODAL DE PEDIDO (CLIENTE) -->
+    <div id="modal-pedido" class="modal">
+        <div class="modal-content glass">
+            <span class="close" onclick="fecharModal()">&times;</span>
+            <h3>O que você precisa?</h3>
+            <select id="categoria-pedido">
+                <option value="Pladur">Pladur</option>
+                <option value="Eletricista">Eletricista</option>
+                <option value="Pintor">Pintor</option>
+                <option value="Canalizador">Canalizador</option>
+            </select>
+            <textarea id="desc-pedido" placeholder="Descreva o serviço (Ex: Teto falso com sanca em sala de 20m2)..." rows="4"></textarea>
+            <button onclick="enviarPedido()" class="btn-neon-cyan" style="width: 100%; margin-top: 15px;">Pedir Orçamento</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

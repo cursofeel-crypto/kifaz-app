@@ -1,0 +1,255 @@
+// ==========================================
+// CONFIGURAÇÕES
+// ==========================================
+// COLE AQUI O URL QUE VOCÊ GEROU NO GOOGLE APPS SCRIPT:
+const API_URL = https://script.google.com/macros/s/AKfycbwECa674WOxJLt_vT8vR7SlRsup45jMBAxVl8PLMn1oLAxwxD9tm8gYng8ZTpfTKfYH/exec; 
+
+let usuarioAtual = null;
+let coordsAtuais = { lat: 0, lng: 0 };
+let proIsOnline = false;
+let graficoLucros = null;
+
+// ==========================================
+// INICIALIZAÇÃO E SERVICE WORKER (PWA)
+// ==========================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+            console.log('Service Worker Registrado!', reg);
+        });
+    });
+}
+
+// Lógica de UI do Login
+document.getElementById('tipo-login').addEventListener('change', function() {
+    const profissaoSelect = document.getElementById('profissao-login');
+    if (this.value === 'Profissional') {
+        profissaoSelect.style.display = 'block';
+    } else {
+        profissaoSelect.style.display = 'none';
+    }
+});
+
+// ==========================================
+// GEOLOCALIZAÇÃO
+// ==========================================
+function obterLocalizacao(callback) {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                coordsAtuais.lat = pos.coords.latitude;
+                coordsAtuais.lng = pos.coords.longitude;
+                if(callback) callback();
+            },
+            (err) => {
+                alert("Para usar o KIFAZ, precisamos da sua localização!");
+            }
+        );
+    } else {
+        alert("Geolocalização não suportada no seu navegador.");
+    }
+}
+
+// ==========================================
+// FLUXO DE LOGIN
+// ==========================================
+async function fazerLogin() {
+    const nome = document.getElementById('nome-login').value;
+    const tipo = document.getElementById('tipo-login').value;
+    const profissao = document.getElementById('profissao-login').value;
+
+    if (!nome) return alert('Preencha seu nome.');
+
+    // Prepara o utilizador
+    usuarioAtual = { nome, tipo, profissao, raio: 15 };
+
+    // Tenta pegar a localização antes de continuar
+    obterLocalizacao(async () => {
+        // Envia para o GAS
+        const payload = {
+            nome: usuarioAtual.nome,
+            tipo: usuarioAtual.tipo,
+            profissao: usuarioAtual.tipo === 'Profissional' ? usuarioAtual.profissao : '',
+            lat: coordsAtuais.lat,
+            lng: coordsAtuais.lng
+        };
+
+        try {
+            const btn = document.querySelector('.login-box button');
+            btn.innerText = 'A carregar...';
+            
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'registrar_usuario', payload: payload })
+            });
+            const data = await res.json();
+            
+            usuarioAtual.id = data.id; // Salva o ID gerado pelo GAS
+            
+            navegarParaTela(tipo === 'Cliente' ? 'cliente-screen' : 'pro-screen');
+            inicializarTela(tipo);
+        } catch (error) {
+            alert("Erro ao conectar à API: " + error);
+        }
+    });
+}
+
+// ==========================================
+// FUNÇÕES DO CLIENTE
+// ==========================================
+function inicializarTela(tipo) {
+    if (tipo === 'Cliente') {
+        document.getElementById('nome-cliente-display').innerText = usuarioAtual.nome;
+        document.getElementById('loc-cliente').innerText = `Lat: ${coordsAtuais.lat.toFixed(4)}, Lng: ${coordsAtuais.lng.toFixed(4)}`;
+    } else {
+        renderizarGrafico();
+    }
+}
+
+function abrirModalPedido() { document.getElementById('modal-pedido').classList.add('active'); }
+function fecharModal() { document.getElementById('modal-pedido').classList.remove('active'); }
+
+async function enviarPedido() {
+    const categoria = document.getElementById('categoria-pedido').value;
+    const descricao = document.getElementById('desc-pedido').value;
+
+    if (!descricao) return alert('Descreva o que precisa.');
+
+    const payload = {
+        idCliente: usuarioAtual.id,
+        categoria: categoria,
+        descricao: descricao,
+        lat: coordsAtuais.lat,
+        lng: coordsAtuais.lng
+    };
+
+    const btn = document.querySelector('#modal-pedido button');
+    btn.innerText = 'Enviando...';
+
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'criar_pedido', payload: payload })
+        });
+        
+        alert("Serviço solicitado! Notificando profissionais na região...");
+        fecharModal();
+        btn.innerText = 'Pedir Orçamento';
+    } catch (error) {
+        alert("Erro ao enviar pedido.");
+    }
+}
+
+// ==========================================
+// FUNÇÕES DO PROFISSIONAL
+// ==========================================
+function atualizarRaio(val) {
+    document.getElementById('raio-display').innerText = val;
+    usuarioAtual.raio = val;
+}
+
+function toggleStatus() {
+    const btn = document.getElementById('btn-status');
+    proIsOnline = !proIsOnline;
+    
+    if (proIsOnline) {
+        btn.innerText = 'ONLINE - Buscando...';
+        btn.classList.remove('offline');
+        btn.classList.add('online');
+        // Começa a buscar pedidos a cada 10 segundos
+        window.proSearchInterval = setInterval(buscarPedidosParaPro, 10000);
+        buscarPedidosParaPro(); // Busca imediatamente
+    } else {
+        btn.innerText = 'Ficar Online';
+        btn.classList.remove('online');
+        btn.classList.add('offline');
+        clearInterval(window.proSearchInterval);
+    }
+}
+
+async function buscarPedidosParaPro() {
+    if(!proIsOnline) return;
+
+    const payload = {
+        latPro: coordsAtuais.lat,
+        lngPro: coordsAtuais.lng,
+        raioPro: usuarioAtual.raio,
+        profissao: usuarioAtual.profissao
+    };
+
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'buscar_pedidos_pro', payload: payload })
+        });
+        const data = await res.json();
+        
+        const lista = document.getElementById('lista-pedidos-pro');
+        const badge = document.getElementById('alerta-pedidos');
+        
+        if (data.pedidos && data.pedidos.length > 0) {
+            badge.innerText = data.pedidos.length;
+            lista.innerHTML = data.pedidos.map(p => `
+                <div style="border-bottom: 1px solid #333; padding: 10px 0;">
+                    <strong><i class="fas fa-map-marker-alt" style="color:var(--neon-magenta);"></i> A ${p.distancia_km}km daqui!</strong><br>
+                    <span style="color:#A0A0A0; font-size:0.9em;">${p.descricao}</span><br>
+                    <button class="btn-neon-cyan" style="padding:5px 10px; font-size:12px; margin-top:5px;">Orçamentar</button>
+                </div>
+            `).join('');
+            
+            // Aqui seria a API Vibrar o Telemóvel se o PWA estiver aberto!
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+            
+        } else {
+            badge.innerText = "0";
+            lista.innerHTML = "Nenhum pedido novo na sua área neste momento.";
+        }
+    } catch (e) {
+        console.error("Falha ao buscar pedidos", e);
+    }
+}
+
+// Chart.js - Gráfico Fictício do Profissional
+function renderizarGrafico() {
+    const ctx = document.getElementById('lucrosChart').getContext('2d');
+    
+    // Configurando tema dark para o Chart
+    Chart.defaults.color = '#A0A0A0';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.1)';
+
+    if (graficoLucros) graficoLucros.destroy();
+
+    graficoLucros = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+            datasets: [{
+                label: 'Ganhos (€)',
+                data: [150, 400, 250, 600],
+                borderColor: '#39FF14',
+                backgroundColor: 'rgba(57, 255, 20, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+// ==========================================
+// UTILITÁRIOS
+// ==========================================
+function navegarParaTela(idTela) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(idTela).classList.add('active');
+}
+
+function logout() {
+    usuarioAtual = null;
+    if (window.proSearchInterval) clearInterval(window.proSearchInterval);
+    navegarParaTela('login-screen');
+}
