@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KIFAZ - Quem faz, está aqui.</title>
+    
+    <!-- Ícone na Aba do Navegador (Favicon) -->
+    <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500">
+    <!-- Ícone para instalação no iPhone (iOS) -->
+    <link rel="apple-touch-icon" href="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500">
+    <!-- Ligação ao Ficheiro de Instalação (PWA) -->
+    <link rel="manifest" href="manifest.json">
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <!-- ========================================== -->
@@ -59,7 +67,6 @@
     <!-- ========================================== -->
     <div id="login-screen" class="screen active">
         <div class="logo-container">
-            <!-- AQUI ESTÁ O NOVO LINK MÁGICO DO GOOGLE DRIVE -->
             <img src="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500" alt="Logo KIFAZ">
             <div class="logo-text">KIFAZ<span class="neon-dot">.</span></div>
             <p style="color: var(--text-muted); margin-top: 5px;">Quem faz, está aqui.</p>
@@ -186,6 +193,13 @@
         let usuarioAtual = null;
         let coordsAtuais = { lat: 0, lng: 0 };
         let proIsOnline = false;
+
+        // Ativar PWA (Service Worker) para instalar o App
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW falhou', err));
+            });
+        }
 
         // UI Login
         document.getElementById('login-tipo').addEventListener('change', function() {
