@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KIFAZ - Quem faz, está aqui.</title>
     
+    <!-- ========================================== -->
+    <!-- BLOQUEIO DE CACHE (Força a atualização instantânea) -->
+    <!-- ========================================== -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500">
     <link rel="manifest" href="manifest.json">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -54,7 +61,7 @@
         /* Modais */
         .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; padding: 15px; }
         .modal.active { display: flex; }
-        .modal-content { width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; position: relative; }
+        .modal-content { width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; position: relative; margin: auto; }
         .close { color: #aaa; float: right; font-size: 28px; cursor: pointer; position: absolute; right: 15px; top: 10px; z-index: 10; }
 
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #222; padding-bottom: 15px; }
@@ -63,7 +70,7 @@
         /* Sidebar */
         .sidebar { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: #151515; z-index: 2000; transition: left 0.3s; padding: 30px 20px; border-right: 1px solid rgba(255,193,7,0.2); }
         .sidebar.active { left: 0; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; backdrop-filter: blur(4px); }
         .overlay.active { display: block; }
         .menu-item { padding: 15px 0; border-bottom: 1px solid #222; font-size: 16px; cursor: pointer; color: #ddd; }
         .menu-item:hover { color: var(--neon-yellow); }
@@ -253,7 +260,26 @@
     </div></div>
 
     <script>
-        // O SEU LINK EXATO:
+        // ==========================================
+        // SCRIPT DE LIMPEZA DE CACHE FORÇADA
+        // ==========================================
+        if ('caches' in window) {
+            caches.keys().then((names) => {
+                names.forEach(name => { caches.delete(name); });
+            });
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    reg.update(); // Força a atualização do PWA em cada load
+                }).catch(err => console.log('SW falhou'));
+            });
+        }
+
+        // ==========================================
+        // URL DA API
+        // ==========================================
         const API_URL = 'https://script.google.com/macros/s/AKfycbwECa674WOxJLt_vT8vR7SlRsup45jMBAxVl8PLMn1oLAxwxD9tm8gYng8ZTpfTKfYH/exec'; 
         
         let user = null; let proOnline = false; let radarInt, chatInt; 
@@ -306,7 +332,7 @@
             }
         }
 
-        function logout() { user = null; document.getElementById('login-senha').value = ''; if(radarInt) clearInterval(radarInt); navegarPara('login-screen'); }
+        function logout() { user = null; document.getElementById('login-senha').value = ''; if(radarInt) clearInterval(radarInt); window.location.reload(true); }
 
         // --- AUTENTICAÇÃO E REGISTO ---
         async function enviarRegisto() {
@@ -387,18 +413,14 @@
             });
         }
 
-        // --- PEDIDOS (CLIENTE) ---
+        // --- PEDIDOS E ORÇAMENTOS ---
         async function enviarPedido() {
             const cat = document.getElementById('categoria-pedido').value; const desc = document.getElementById('desc-pedido').value;
             fecharModal('modal-pedido');
             const res = await chamadoraAPI('criar_pedido', { idCliente: user.id, categoria: cat, descricao: desc, lat: 0, lng: 0 });
             if(res) { 
                 tempIdPedido = res.id_pedido; 
-                document.getElementById('cli-pedidos').innerHTML = `
-                    <div style="border-left:3px solid var(--neon-yellow); padding:10px; background:rgba(0,0,0,0.3); border-radius:4px;">
-                        <b>${cat}</b><br><small>${desc}</small><br>
-                        <button onclick="verMeusOrcamentos()" class="btn-neon" style="margin-top:10px; padding:10px;">Ver Orçamentos</button>
-                    </div>`;
+                document.getElementById('cli-pedidos').innerHTML = `<div style="border-left:3px solid var(--neon-yellow); padding:10px; background:rgba(0,0,0,0.3); border-radius:4px;"><b>${cat}</b><br><small>${desc}</small><br><button onclick="verMeusOrcamentos()" class="btn-neon" style="margin-top:10px; padding:10px;">Ver Orçamentos</button></div>`;
                 alert("Pedido enviado para os profissionais da região!");
             }
         }
@@ -410,26 +432,20 @@
             const res = await chamadoraAPI('listar_orcamentos_cliente', { idPedido: tempIdPedido });
             const box = document.getElementById('lista-orcamentos-recebidos');
             if(res && res.orcamentos.length > 0) {
-                box.innerHTML = res.orcamentos.map(o=>`
-                    <div class="glass card-blue">
-                        <b>${o.nome}</b> - <span style="color:var(--neon-green); font-size:1.2em;">${o.valor}€</span><br><small>${o.msg}</small><br>
-                        <button onclick="aceitarOrcamento('${o.id_orc}','${o.id_pro}')" class="btn-neon green" style="margin-top:10px; padding:10px;">Aceitar e Abrir Chat</button>
-                    </div>`).join('');
+                box.innerHTML = res.orcamentos.map(o=>`<div class="glass card-blue"><b>${o.nome}</b> - <span style="color:var(--neon-green); font-size:1.2em;">${o.valor}€</span><br><small>${o.msg}</small><br><button onclick="aceitarOrcamento('${o.id_orc}','${o.id_pro}')" class="btn-neon green" style="margin-top:10px; padding:10px;">Aceitar e Abrir Chat</button></div>`).join('');
             } else { box.innerHTML = "<span class='loading-text'>Nenhum orçamento ainda.</span>"; }
         }
 
         async function aceitarOrcamento(idOrc, idPro) {
             const res = await chamadoraAPI('responder_orcamento', { idOrcamento: idOrc, resposta: 'Aceite' });
-            if(res) { fecharModal('modal-ver-orc'); alert("Orçamento Aceite! O Chat será aberto para combinarem tudo."); abrirChatView(idPro); }
+            if(res) { fecharModal('modal-ver-orc'); alert("Orçamento Aceite! O Chat será aberto."); abrirChatView(idPro); }
         }
 
-        // --- MODO ONLINE (PROFISSIONAL) ---
         function toggleStatusPro() {
             proOnline = !proOnline; const b = document.getElementById('btn-status-pro'); const d = document.getElementById('dot-pro');
             if(proOnline) { 
                 b.innerText = "Buscando Clientes..."; b.classList.add('online'); d.style.color = 'var(--neon-green)'; 
-                radarInt = setInterval(api_Radar, 5000); api_Radar(); 
-                document.getElementById('pro-radar').innerHTML = loader(); 
+                radarInt = setInterval(api_Radar, 5000); api_Radar(); document.getElementById('pro-radar').innerHTML = loader(); 
             } else { 
                 b.innerText = "Ficar Online"; b.classList.remove('online'); d.style.color = '#555'; 
                 clearInterval(radarInt); document.getElementById('pro-radar').innerHTML = "Offline. Ligue para ver pedidos."; 
@@ -440,15 +456,11 @@
             if(!proOnline) return;
             const res = await chamadoraAPI('buscar_pedidos_pro', { profissao: user.profissao });
             if(res && res.pedidos.length > 0) {
-                document.getElementById('pro-radar').innerHTML = res.pedidos.map(p=>`
-                    <div style="border-left:3px solid var(--neon-yellow); padding:10px; margin-bottom:10px; background:rgba(0,0,0,0.3); border-radius:4px;">
-                        ${p.desc}<br><button onclick="prepararOrcamento('${p.id_pedido}')" class="btn-neon" style="padding:8px; margin-top:8px;">Fazer Orçamento</button>
-                    </div>`).join('');
+                document.getElementById('pro-radar').innerHTML = res.pedidos.map(p=>`<div style="border-left:3px solid var(--neon-yellow); padding:10px; margin-bottom:10px; background:rgba(0,0,0,0.3); border-radius:4px;">${p.desc}<br><button onclick="prepararOrcamento('${p.id_pedido}')" class="btn-neon" style="padding:8px; margin-top:8px;">Fazer Orçamento</button></div>`).join('');
             } else if (res) document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Aguardando novos clientes...</span>";
         }
 
         function prepararOrcamento(idPed) { tempIdPedido = idPed; abrirModal('modal-enviar-orc'); }
-        
         async function enviarOrcamentoReal() {
             const v = document.getElementById('orc-valor').value; const m = document.getElementById('orc-msg').value;
             if(!v || !m) return alert("Preencha o valor e a mensagem.");
@@ -473,58 +485,28 @@
             }
         }
         async function enviarAvaliacao() { 
-            const nota = document.getElementById('nota-aval').value; 
-            await chamadoraAPI('avaliar_usuario', { idAlvo: tempIdDestinatario, nota: nota }); 
+            const nota = document.getElementById('nota-aval').value; await chamadoraAPI('avaliar_usuario', { idAlvo: tempIdDestinatario, nota: nota }); 
             alert("Avaliação registada com sucesso!"); fecharChat();
         }
 
-        // --- ADMIN (BANIMENTO SEGURO) ---
+        // --- ADMIN ---
         async function carregarAdmin(tipo) {
-            const box = document.getElementById('admin-lista-users'); 
-            box.innerHTML = loader();
-            
-            let acao = 'admin_listar_usuarios';
-            if(tipo === 'pendentes') acao = 'admin_listar_pendentes';
-
+            const box = document.getElementById('admin-lista-users'); box.innerHTML = loader();
+            let acao = tipo === 'pendentes' ? 'admin_listar_pendentes' : 'admin_listar_usuarios';
             const res = await chamadoraAPI(acao, {});
             
             if (res && tipo === 'pendentes') {
                 document.getElementById('admin-titulo').innerHTML = '<i class="fas fa-user-clock"></i> Pendentes';
-                box.innerHTML = res.pendentes.map(p => `
-                    <div class="glass card-blue">
-                        <b>${p.nomeCompleto}</b><br><small>${p.profissao} | ${p.email}</small>
-                        <div style="margin-top:10px; display:flex; gap:10px;">
-                            <button onclick="aprovarProfissional('${p.id}')" class="btn-small btn-bg-green">Aprovar</button>
-                            <button onclick="rejeitarProfissional('${p.id}')" class="btn-small btn-bg-red">Rejeitar</button>
-                        </div>
-                    </div>
-                `).join('') || '<span class="loading-text">Nenhuma pendência.</span>';
+                box.innerHTML = res.pendentes.map(p => `<div class="glass card-blue"><b>${p.nomeCompleto}</b><br><small>${p.profissao} | ${p.email}</small><div style="margin-top:10px; display:flex; gap:10px;"><button onclick="aprovarProfissional('${p.id}')" class="btn-small btn-bg-green">Aprovar</button><button onclick="rejeitarProfissional('${p.id}')" class="btn-small btn-bg-red">Rejeitar</button></div></div>`).join('') || '<span class="loading-text">Nenhuma pendência.</span>';
             } else if (res) {
                 document.getElementById('admin-titulo').innerHTML = `<i class="fas fa-users"></i> ${tipo === 'todos' ? 'Todos' : tipo + 's'}`;
-                let filtrados = res.usuarios;
-                if(tipo !== 'todos') filtrados = res.usuarios.filter(u => u.tipo === tipo);
-
-                box.innerHTML = filtrados.map(u => `
-                    <div class="glass">
-                        <b>${u.nome}</b> (${u.tipo})<br><small>Status: ${u.status}</small>
-                        <div style="margin-top:10px; display:flex; gap:10px;">
-                            <button onclick="iniciarBanimento('${u.id}')" class="btn-small btn-bg-red">Banir / Suspender</button>
-                        </div>
-                    </div>
-                `).join('') || '<span class="loading-text">Nenhum utilizador encontrado.</span>';
+                let filtrados = tipo !== 'todos' ? res.usuarios.filter(u => u.tipo === tipo) : res.usuarios;
+                box.innerHTML = filtrados.map(u => `<div class="glass"><b>${u.nome}</b> (${u.tipo})<br><small>Status: ${u.status}</small><div style="margin-top:10px; display:flex; gap:10px;"><button onclick="iniciarBanimento('${u.id}')" class="btn-small btn-bg-red">Banir / Suspender</button></div></div>`).join('') || '<span class="loading-text">Nenhum utilizador encontrado.</span>';
             }
         }
 
-        async function aprovarProfissional(id) { 
-            const res = await chamadoraAPI('admin_aprovar_pro', { id: id }); 
-            if(res) { alert("Aprovado!"); carregarAdmin('pendentes'); }
-        }
-
-        async function rejeitarProfissional(id) { 
-            if(!confirm('Deseja rejeitar este profissional?')) return;
-            const res = await chamadoraAPI('admin_alterar_status', { id: id, status: 'Rejeitado' }); 
-            if(res) { alert("Rejeitado!"); carregarAdmin('pendentes'); }
-        }
+        async function aprovarProfissional(id) { const res = await chamadoraAPI('admin_aprovar_pro', { id: id }); if(res) { alert("Aprovado!"); carregarAdmin('pendentes'); } }
+        async function rejeitarProfissional(id) { if(!confirm('Deseja rejeitar este profissional?')) return; const res = await chamadoraAPI('admin_alterar_status', { id: id, status: 'Rejeitado' }); if(res) { alert("Rejeitado!"); carregarAdmin('pendentes'); } }
 
         function iniciarBanimento(id) { tempBanId = id; abrirModal('modal-confirmar-ban'); }
         function abrirModalSenhaBan() { fecharModal('modal-confirmar-ban'); abrirModal('modal-senha-ban'); document.getElementById('input-senha-ban').value = ''; }
@@ -532,10 +514,8 @@
         async function executarBanimento() {
             const senha = document.getElementById('input-senha-ban').value; if(!senha) return alert("Insira a senha!");
             const res = await chamadoraAPI('admin_banir_usuario', { id: tempBanId, senhaAdmin: senha });
-            if(res && res.sucesso) { alert("Utilizador banido com sucesso!"); fecharModal('modal-senha-ban'); carregarAdmin('Cliente'); } 
-            else if(res) alert(res.erro);
+            if(res && res.sucesso) { alert("Utilizador banido com sucesso!"); fecharModal('modal-senha-ban'); carregarAdmin('Cliente'); } else if(res) alert(res.erro);
         }
-
     </script>
 </body>
 </html>
