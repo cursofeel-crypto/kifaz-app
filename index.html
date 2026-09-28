@@ -4,198 +4,173 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KIFAZ - Quem faz, está aqui.</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <!-- ========================================== -->
     <!-- ESTILOS (CSS)                              -->
     <!-- ========================================== -->
     <style>
-        :root {
-            --bg-dark: #121212;
-            --bg-panel: #1e1e1e;
-            --neon-yellow: #FFC107; /* Amarelo da Logo KIFAZ */
-            --neon-green: #39FF14;
-            --text-main: #FFFFFF;
-            --text-muted: #A0A0A0;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-
+        :root { --bg-dark: #121212; --bg-panel: #1e1e1e; --neon-yellow: #FFC107; --neon-green: #39FF14; --neon-red: #FF3B30; --text-main: #FFFFFF; --text-muted: #A0A0A0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
 
         .screen { display: none; padding: 20px; min-height: 100vh; flex-direction: column; }
         .screen.active { display: flex; }
 
-        /* Identidade Visual (Logo) */
+        /* Logo e Identidade */
         .logo-container { text-align: center; margin-top: 5vh; margin-bottom: 30px; }
         .logo-container img { width: 140px; height: 140px; border-radius: 50%; box-shadow: 0 0 20px rgba(255, 193, 7, 0.4); object-fit: contain; background: #fff; }
         .logo-text { font-size: 2.5rem; font-weight: 800; letter-spacing: 2px; margin-top: 15px; }
         .neon-dot { color: var(--neon-yellow); text-shadow: 0 0 10px var(--neon-yellow); }
 
-        /* Componentes Base */
-        .glass { background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 20px; }
-        input[type="text"], input[type="password"], select, textarea { width: 100%; padding: 15px; margin-bottom: 15px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; color: var(--text-main); border-radius: 8px; outline: none; font-size: 16px; }
+        /* Caixas e Inputs */
+        .glass { background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 20px; }
+        input[type="text"], input[type="password"], input[type="email"], select, textarea { width: 100%; padding: 15px; margin-bottom: 15px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; color: var(--text-main); border-radius: 8px; outline: none; font-size: 16px; }
         input:focus, select:focus, textarea:focus { border-color: var(--neon-yellow); box-shadow: 0 0 8px rgba(255, 193, 7, 0.2); }
-
-        /* Range Slider */
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--neon-yellow); cursor: pointer; box-shadow: 0 0 10px var(--neon-yellow); margin-top: -6px;}
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #333; border-radius: 2px; }
+        .row-inputs { display: flex; gap: 10px; }
 
         /* Botões */
         button { border: none; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; font-size: 16px; }
         .btn-neon-yellow { background: transparent; color: var(--neon-yellow); border: 2px solid var(--neon-yellow); padding: 15px; text-transform: uppercase; box-shadow: 0 0 10px rgba(255, 193, 7, 0.2); width: 100%; }
-        .btn-neon-yellow:hover, .btn-neon-yellow:active { background: var(--neon-yellow); color: #000; box-shadow: 0 0 20px var(--neon-yellow); }
+        .btn-neon-yellow:hover { background: var(--neon-yellow); color: #000; box-shadow: 0 0 20px var(--neon-yellow); }
+        .btn-link { background: none; color: var(--text-muted); text-decoration: underline; padding: 15px; width: 100%; margin-top: 10px; font-weight: normal; }
+        .btn-link:hover { color: var(--neon-yellow); }
         .btn-icon { background: transparent; color: var(--text-muted); font-size: 1.5rem; padding: 5px; }
+        .btn-small { padding: 8px 15px; font-size: 12px; }
+        .btn-green { background: var(--neon-green); color: #000; }
+        .btn-red { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); }
+
+        /* Modais */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center; overflow-y: auto; padding: 20px 0; }
+        .modal.active { display: flex; }
+        .modal-content { width: 90%; max-width: 450px; position: relative; margin: auto; }
+        .close { color: #aaa; float: right; font-size: 28px; cursor: pointer; position: absolute; right: 20px; top: 15px; z-index: 10; }
 
         /* Utilitários */
-        .btn-status { padding: 10px 20px; color: #000; }
-        .btn-status.offline { background: #555; }
-        .btn-status.online { background: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .control-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
-        .modal.active { display: flex; }
-        .modal-content { width: 90%; max-width: 400px; position: relative; }
-        .close { color: #aaa; float: right; font-size: 28px; cursor: pointer; }
-        
-        /* Resultados e Alertas */
-        .chave-resultado { display: none; background: rgba(255, 193, 7, 0.1); border: 1px solid var(--neon-yellow); padding: 15px; margin-top: 15px; border-radius: 8px; text-align: center; }
-        .chave-resultado span { font-size: 1.5rem; font-weight: bold; color: var(--neon-yellow); letter-spacing: 3px; display: block; margin-top: 5px; }
         .badge { background: var(--neon-yellow); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; }
+        .pendente-card { border-left: 3px solid var(--neon-yellow); background: rgba(0,0,0,0.3); padding: 15px; margin-bottom: 10px; border-radius: 0 8px 8px 0; }
     </style>
 </head>
 <body>
 
     <!-- ========================================== -->
-    <!-- HTML: TELA DE LOGIN DINÂMICA               -->
+    <!-- TELA DE LOGIN                              -->
     <!-- ========================================== -->
     <div id="login-screen" class="screen active">
         <div class="logo-container">
-            <!-- A LOGO KIFAZ -->
             <img src="logo kifaz.png" alt="Logo KIFAZ">
             <div class="logo-text">KIFAZ<span class="neon-dot">.</span></div>
             <p style="color: var(--text-muted); margin-top: 5px;">Quem faz, está aqui.</p>
         </div>
         
         <div class="login-box glass">
-            <label style="color: var(--neon-yellow); font-weight: bold; display: block; margin-bottom: 10px;">Como deseja entrar?</label>
-            <select id="tipo-login">
-                <option value="Cliente">Sou Cliente</option>
-                <option value="Profissional">Sou Profissional</option>
-                <option value="Administrador">Administrador</option>
+            <select id="login-tipo">
+                <option value="Cliente">Entrar como Cliente</option>
+                <option value="Profissional">Entrar como Profissional</option>
+                <option value="Administrador">Acesso Restrito (Admin)</option>
             </select>
-
-            <!-- Inputs Dinâmicos dependendo da escolha -->
-            <div id="form-cliente">
-                <input type="text" id="nome-cliente" placeholder="Qual o seu nome?">
-            </div>
-
-            <div id="form-pro" style="display: none;">
-                <input type="text" id="chave-pro" placeholder="Chave de Acesso (6 dígitos)">
-            </div>
-
-            <div id="form-admin" style="display: none;">
-                <input type="password" id="senha-admin" placeholder="Senha Administrativa">
-            </div>
-
-            <button id="btn-login" onclick="fazerLogin()" class="btn-neon-yellow">Entrar</button>
+            
+            <input type="email" id="login-email" placeholder="Seu Email" style="display: block;">
+            <input type="password" id="login-senha" placeholder="Sua Senha">
+            
+            <button onclick="fazerLogin()" class="btn-neon-yellow" id="btn-entrar">Entrar</button>
+            <button onclick="abrirModalRegisto()" class="btn-link" id="btn-abrir-registo">Ainda não tem conta? Criar Conta</button>
         </div>
     </div>
 
     <!-- ========================================== -->
-    <!-- HTML: TELA DE ADMINISTRADOR                -->
+    <!-- MODAL DE CRIAR CONTA (REGISTO)             -->
+    <!-- ========================================== -->
+    <div id="modal-registo" class="modal">
+        <div class="modal-content glass">
+            <span class="close" onclick="fecharModalRegisto()">&times;</span>
+            <h2 style="color: var(--neon-yellow); margin-bottom: 20px;">Criar Conta</h2>
+            
+            <label style="color: var(--text-muted); font-size: 0.9em;">Quero me cadastrar como:</label>
+            <select id="reg-tipo" onchange="toggleRegistoFields()">
+                <option value="Cliente">Cliente</option>
+                <option value="Profissional">Profissional</option>
+            </select>
+
+            <div class="row-inputs">
+                <input type="text" id="reg-nome" placeholder="Nome">
+                <input type="text" id="reg-sobrenome" placeholder="Último Nome">
+            </div>
+            
+            <input type="email" id="reg-email" placeholder="Email">
+            
+            <div id="reg-prof-container" style="display: none;">
+                <select id="reg-profissao">
+                    <option value="" disabled selected>Selecione a sua Profissão</option>
+                    <option value="Pladur">Pladur</option>
+                    <option value="Eletricista">Eletricista</option>
+                    <option value="Pintor">Pintor</option>
+                    <option value="Canalizador">Canalizador</option>
+                    <option value="Barrador">Barrador</option>
+                </select>
+            </div>
+
+            <input type="password" id="reg-senha" placeholder="Senha">
+            <input type="password" id="reg-senha-conf" placeholder="Confirmar Senha">
+
+            <button onclick="enviarRegisto()" id="btn-submit-reg" class="btn-neon-yellow">CRIAR</button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TELA DE ADMINISTRADOR (APROVAÇÕES)         -->
     <!-- ========================================== -->
     <div id="admin-screen" class="screen">
         <header>
             <h2>Painel Admin <span class="neon-dot">•</span></h2>
             <button onclick="logout()" class="btn-icon"><i class="fas fa-sign-out-alt"></i></button>
         </header>
-
         <div class="glass">
-            <h3 style="margin-bottom: 15px; color: var(--neon-yellow);">Cadastrar Novo Profissional</h3>
-            <p style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 15px;">Apenas profissionais criados aqui terão acesso ao sistema.</p>
-            
-            <input type="text" id="admin-nome-pro" placeholder="Nome do Profissional">
-            <select id="admin-prof-pro">
-                <option value="Pladur">Pladur</option>
-                <option value="Eletricista">Eletricista</option>
-                <option value="Pintor">Pintor</option>
-                <option value="Canalizador">Canalizador</option>
-                <option value="Barrador">Barrador</option>
-            </select>
-            
-            <button onclick="gerarChaveProfissional()" id="btn-gerar-chave" class="btn-neon-yellow">Gerar Chave de Acesso</button>
-            
-            <div id="resultado-chave" class="chave-resultado">
-                Chave gerada para envio:
-                <span id="valor-chave-gerada">000000</span>
-            </div>
+            <h3 style="color: var(--neon-yellow); margin-bottom: 15px;"><i class="fas fa-users"></i> Solicitações Pendentes</h3>
+            <p style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 15px;">Aprove os profissionais para que eles possam receber pedidos no app.</p>
+            <div id="lista-pendentes">Carregando...</div>
         </div>
     </div>
 
     <!-- ========================================== -->
-    <!-- HTML: TELA DO CLIENTE                      -->
+    <!-- TELA DO CLIENTE E PROFISSIONAL (Simplificadas p/ foco) -->
     <!-- ========================================== -->
     <div id="cliente-screen" class="screen">
         <header>
             <h2>Olá, <span id="nome-cliente-display"></span></h2>
             <button onclick="logout()" class="btn-icon"><i class="fas fa-sign-out-alt"></i></button>
         </header>
-        
-        <div class="glass" style="margin-bottom: 20px;">
-            <i class="fas fa-map-marker-alt" style="color: var(--neon-yellow);"></i> <span id="loc-cliente">Buscando localização...</span>
-        </div>
-
-        <button onclick="abrirModalPedido()" class="btn-neon-yellow" style="padding: 20px; font-size: 1.2rem; margin-bottom: 20px;">
+        <button onclick="document.getElementById('modal-pedido').classList.add('active');" class="btn-neon-yellow" style="padding: 20px; font-size: 1.2rem; margin-bottom: 20px;">
             <i class="fas fa-bolt"></i> Solicitar Serviço
         </button>
-
         <div>
             <h3 style="color: var(--neon-yellow); margin-bottom: 10px;">Meus Pedidos</h3>
-            <div id="lista-pedidos-cliente" class="glass">Nenhum pedido ativo no momento.</div>
+            <div id="lista-pedidos-cliente" class="glass">Nenhum pedido ativo.</div>
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- HTML: TELA DO PROFISSIONAL                 -->
-    <!-- ========================================== -->
     <div id="pro-screen" class="screen">
         <header>
             <h2>Modo Pro <span style="color:var(--neon-green)">•</span></h2>
             <button onclick="logout()" class="btn-icon"><i class="fas fa-sign-out-alt"></i></button>
         </header>
-
-        <div class="glass" style="margin-bottom: 20px;">
-            <div class="control-row">
-                <label>Status:</label>
-                <button id="btn-status" class="btn-status offline" onclick="toggleStatus()">Ficar Online</button>
-            </div>
-            <div class="control-row">
-                <label>Raio: <span id="raio-display">15</span> km</label>
-                <input type="range" id="raio-pro" min="1" max="50" value="15" oninput="atualizarRaio(this.value)">
-            </div>
+        <div class="glass" style="margin-bottom: 20px; text-align: center;">
+            <button id="btn-status" onclick="toggleStatus()" style="background: var(--neon-yellow); color:#000; padding:15px; width:100%; border-radius:8px; font-weight:bold;">FICAR ONLINE PARA RECEBER PEDIDOS</button>
         </div>
-
         <div class="glass">
             <h3 style="color: var(--neon-yellow); margin-bottom: 10px;">Pedidos Disponíveis <span id="alerta-pedidos" class="badge">0</span></h3>
-            <div id="lista-pedidos-pro">Fique online para receber.</div>
+            <div id="lista-pedidos-pro">Fique online para ver pedidos próximos a você.</div>
         </div>
     </div>
 
     <!-- MODAL DE PEDIDO (CLIENTE) -->
     <div id="modal-pedido" class="modal">
         <div class="modal-content glass">
-            <span class="close" onclick="fecharModal()">&times;</span>
+            <span class="close" onclick="document.getElementById('modal-pedido').classList.remove('active');">&times;</span>
             <h3 style="margin-bottom:15px; color: var(--neon-yellow);">O que você precisa?</h3>
             <select id="categoria-pedido">
-                <option value="Pladur">Pladur</option>
-                <option value="Eletricista">Eletricista</option>
-                <option value="Pintor">Pintor</option>
-                <option value="Canalizador">Canalizador</option>
-                <option value="Barrador">Barrador</option>
+                <option value="Pladur">Pladur</option><option value="Eletricista">Eletricista</option>
             </select>
             <textarea id="desc-pedido" placeholder="Descreva o serviço..." rows="4"></textarea>
             <button onclick="enviarPedido()" class="btn-neon-yellow">Pedir Orçamento</button>
@@ -203,171 +178,178 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- JAVASCRIPT (LÓGICA E CONEXÃO)              -->
+    <!-- JAVASCRIPT (LÓGICA)                        -->
     <!-- ========================================== -->
     <script>
-        // O URL EXATO DA SUA API GERADA NO GOOGLE APPS SCRIPT
         const API_URL = 'https://script.google.com/macros/s/AKfycbwECa674WOxJLt_vT8vR7SlRsup45jMBAxVl8PLMn1oLAxwxD9tm8gYng8ZTpfTKfYH/exec'; 
-
         let usuarioAtual = null;
         let coordsAtuais = { lat: 0, lng: 0 };
         let proIsOnline = false;
 
-        // Troca de formulários na tela inicial
-        document.getElementById('tipo-login').addEventListener('change', function() {
-            document.getElementById('form-cliente').style.display = 'none';
-            document.getElementById('form-pro').style.display = 'none';
-            document.getElementById('form-admin').style.display = 'none';
-
-            if (this.value === 'Cliente') document.getElementById('form-cliente').style.display = 'block';
-            if (this.value === 'Profissional') document.getElementById('form-pro').style.display = 'block';
-            if (this.value === 'Administrador') document.getElementById('form-admin').style.display = 'block';
+        // UI Login
+        document.getElementById('login-tipo').addEventListener('change', function() {
+            const emailInput = document.getElementById('login-email');
+            const regBtn = document.getElementById('btn-abrir-registo');
+            if (this.value === 'Administrador') {
+                emailInput.style.display = 'none';
+                regBtn.style.display = 'none';
+            } else {
+                emailInput.style.display = 'block';
+                regBtn.style.display = 'block';
+            }
         });
 
-        // Capturar Localização (GPS)
-        function obterLocalizacao(callback) {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => { coordsAtuais.lat = pos.coords.latitude; coordsAtuais.lng = pos.coords.longitude; if(callback) callback(); },
-                    (err) => { alert("Aviso: Usando localização padrão."); if(callback) callback(); }
-                );
-            } else { if(callback) callback(); }
-        }
-
-        // ==========================================
-        // FLUXO DE LOGIN (3 ROLES)
-        // ==========================================
-        async function fazerLogin() {
-            const tipo = document.getElementById('tipo-login').value;
-            const btn = document.getElementById('btn-login');
-
-            // 1. LOGIN ADMIN
-            if (tipo === 'Administrador') {
-                const senha = document.getElementById('senha-admin').value;
-                if (!senha) return alert('Insira a senha.');
-                btn.innerText = 'Validando...';
-                try {
-                    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login_admin', payload: { senha } }) });
-                    const data = await res.json();
-                    if (data.sucesso) navegarParaTela('admin-screen');
-                    else alert(data.erro);
-                } catch(e) { alert("Erro de conexão."); }
-                btn.innerText = 'Entrar';
-                return;
-            }
-
-            // 2. LOGIN PROFISSIONAL
+        // UI Registo
+        function abrirModalRegisto() { document.getElementById('modal-registo').classList.add('active'); }
+        function fecharModalRegisto() { document.getElementById('modal-registo').classList.remove('active'); }
+        
+        function toggleRegistoFields() {
+            const tipo = document.getElementById('reg-tipo').value;
+            const btn = document.getElementById('btn-submit-reg');
+            const profField = document.getElementById('reg-prof-container');
             if (tipo === 'Profissional') {
-                const chave = document.getElementById('chave-pro').value;
-                if (!chave) return alert('Insira a sua Chave de Acesso.');
-                btn.innerText = 'Validando Chave...';
-                try {
-                    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login_profissional', payload: { chave } }) });
-                    const data = await res.json();
-                    if (data.sucesso) {
-                        usuarioAtual = { id: data.id, nome: data.nome, profissao: data.profissao, raio: data.raio };
-                        obterLocalizacao(() => navegarParaTela('pro-screen'));
-                    } else { alert(data.erro); }
-                } catch(e) { alert("Erro de conexão."); }
-                btn.innerText = 'Entrar';
-                return;
-            }
-
-            // 3. REGISTO/LOGIN CLIENTE
-            if (tipo === 'Cliente') {
-                const nome = document.getElementById('nome-cliente').value;
-                if (!nome) return alert('Preencha o seu nome.');
-                btn.innerText = 'A conectar...';
-                obterLocalizacao(async () => {
-                    try {
-                        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'registrar_cliente', payload: { nome, lat: coordsAtuais.lat, lng: coordsAtuais.lng } }) });
-                        const data = await res.json();
-                        usuarioAtual = { id: data.id, nome: nome };
-                        document.getElementById('nome-cliente-display').innerText = nome;
-                        document.getElementById('loc-cliente').innerText = `Lat: ${coordsAtuais.lat.toFixed(2)}, Lng: ${coordsAtuais.lng.toFixed(2)}`;
-                        navegarParaTela('cliente-screen');
-                    } catch(e) { alert("Erro de conexão."); }
-                    btn.innerText = 'Entrar';
-                });
+                profField.style.display = 'block'; btn.innerText = 'ENVIAR SOLICITAÇÃO';
+            } else {
+                profField.style.display = 'none'; btn.innerText = 'CRIAR';
             }
         }
 
-        // ==========================================
-        // FLUXO ADMINISTRADOR
-        // ==========================================
-        async function gerarChaveProfissional() {
-            const nome = document.getElementById('admin-nome-pro').value;
-            const profissao = document.getElementById('admin-prof-pro').value;
-            const btn = document.getElementById('btn-gerar-chave');
+        // 1. FUNÇÃO DE REGISTAR CONTA
+        async function enviarRegisto() {
+            const payload = {
+                tipo: document.getElementById('reg-tipo').value,
+                nome: document.getElementById('reg-nome').value,
+                sobrenome: document.getElementById('reg-sobrenome').value,
+                email: document.getElementById('reg-email').value,
+                senha: document.getElementById('reg-senha').value,
+                senhaConf: document.getElementById('reg-senha-conf').value,
+                profissao: document.getElementById('reg-profissao').value
+            };
 
-            if(!nome) return alert("Preencha o nome do profissional.");
-            btn.innerText = "A gerar...";
+            if (!payload.nome || !payload.email || !payload.senha) return alert('Preencha todos os campos obrigatórios.');
+            if (payload.senha !== payload.senhaConf) return alert('As senhas não coincidem.');
+            if (payload.tipo === 'Profissional' && !payload.profissao) return alert('Selecione uma profissão.');
+
+            const btn = document.getElementById('btn-submit-reg');
+            btn.innerText = 'A ENVIAR...';
 
             try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_criar_pro', payload: { nome, profissao } }) });
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'registrar_conta', payload }) });
                 const data = await res.json();
                 
-                document.getElementById('valor-chave-gerada').innerText = data.chave;
-                document.getElementById('resultado-chave').style.display = 'block';
-                document.getElementById('admin-nome-pro').value = '';
-            } catch(e) { alert("Erro ao gerar chave."); }
-            btn.innerText = "Gerar Chave de Acesso";
-        }
-
-        // ==========================================
-        // FLUXOS CLIENTE E PRO (Simplificados)
-        // ==========================================
-        function abrirModalPedido() { document.getElementById('modal-pedido').classList.add('active'); }
-        function fecharModal() { document.getElementById('modal-pedido').classList.remove('active'); }
-
-        async function enviarPedido() {
-            const categoria = document.getElementById('categoria-pedido').value;
-            const descricao = document.getElementById('desc-pedido').value;
-            if (!descricao) return;
-
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'criar_pedido', payload: { idCliente: usuarioAtual.id, categoria, descricao, lat: coordsAtuais.lat, lng: coordsAtuais.lng } }) });
+                if (data.sucesso) {
+                    alert(data.mensagem);
+                    fecharModalRegisto();
+                    document.getElementById('login-email').value = payload.email; // Autopreencher login
+                    document.getElementById('login-senha').value = '';
+                } else { alert(data.erro); }
+            } catch(e) { alert("Erro ao contactar o servidor."); }
             
-            fecharModal();
-            document.getElementById('lista-pedidos-cliente').innerHTML = `<div style="border-left: 3px solid var(--neon-yellow); padding-left: 10px;"><strong>${categoria}</strong><br><span style="font-size: 0.9em;">${descricao}</span><br><small style="color: var(--neon-yellow);">Procurando profissionais...</small></div>`;
+            toggleRegistoFields(); // Reseta o texto do botão
         }
 
-        function atualizarRaio(val) { document.getElementById('raio-display').innerText = val; usuarioAtual.raio = val; }
+        // 2. FUNÇÃO DE LOGIN
+        async function fazerLogin() {
+            const payload = {
+                tipo: document.getElementById('login-tipo').value,
+                email: document.getElementById('login-email').value,
+                senha: document.getElementById('login-senha').value
+            };
 
+            if (!payload.senha) return alert('Insira a senha.');
+
+            const btn = document.getElementById('btn-entrar');
+            btn.innerText = 'VALIDANDO...';
+
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', payload }) });
+                const data = await res.json();
+                
+                if (data.sucesso) {
+                    if (data.tipo === 'Administrador') {
+                        navegarParaTela('admin-screen');
+                        carregarPendentesAdmin();
+                    } else {
+                        usuarioAtual = data;
+                        obterLocalizacao(() => {
+                            if (data.tipo === 'Cliente') {
+                                document.getElementById('nome-cliente-display').innerText = data.nome;
+                                navegarParaTela('cliente-screen');
+                            } else { navegarParaTela('pro-screen'); }
+                        });
+                    }
+                } else { alert(data.erro); }
+            } catch(e) { alert("Erro de conexão com o KIFAZ."); }
+            
+            btn.innerText = 'ENTRAR';
+        }
+
+        // 3. ADMIN: APROVAÇÕES
+        async function carregarPendentesAdmin() {
+            const container = document.getElementById('lista-pendentes');
+            container.innerHTML = 'Buscando solicitações...';
+            
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_listar_pendentes' }) });
+            const data = await res.json();
+            
+            if (data.pendentes && data.pendentes.length > 0) {
+                container.innerHTML = data.pendentes.map(p => `
+                    <div class="pendente-card">
+                        <strong>${p.nomeCompleto}</strong> <span class="badge">${p.profissao}</span><br>
+                        <span style="font-size:0.85em; color:var(--text-muted);">${p.email}</span>
+                        <div style="margin-top: 10px; display:flex; gap:10px;">
+                            <button onclick="aprovarPro('${p.id}')" class="btn-small btn-green">Aprovar Conta</button>
+                            <button onclick="rejeitarPro('${p.id}')" class="btn-small btn-red">Rejeitar</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else { container.innerHTML = 'Nenhum profissional na fila de espera no momento.'; }
+        }
+
+        async function aprovarPro(id) {
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_aprovar_pro', payload: { id } }) });
+            alert("Profissional Aprovado!"); carregarPendentesAdmin();
+        }
+        
+        async function rejeitarPro(id) {
+            if(confirm("Tem certeza que deseja rejeitar?")) {
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_rejeitar_pro', payload: { id } }) });
+                carregarPendentesAdmin();
+            }
+        }
+
+        // 4. FUNÇÕES GERAIS (Geo e Nav)
+        function obterLocalizacao(cb) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => { coordsAtuais.lat = pos.coords.latitude; coordsAtuais.lng = pos.coords.longitude; if(cb) cb(); }, err => { if(cb) cb(); });
+            } else { if(cb) cb(); }
+        }
+        function navegarParaTela(idTela) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(idTela).classList.add('active'); }
+        function logout() { usuarioAtual = null; document.getElementById('login-senha').value = ''; if(window.proSearchInterval) clearInterval(window.proSearchInterval); navegarParaTela('login-screen'); }
+
+        // 5. PEDIDOS (Simulados p/ o front-end rodar liso)
+        async function enviarPedido() {
+            fecharModal();
+            const cat = document.getElementById('categoria-pedido').value;
+            const desc = document.getElementById('desc-pedido').value;
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'criar_pedido', payload: { idCliente: usuarioAtual.id, categoria: cat, descricao: desc, lat: coordsAtuais.lat, lng: coordsAtuais.lng } }) });
+            document.getElementById('lista-pedidos-cliente').innerHTML = `<div class="glass" style="border-left: 3px solid var(--neon-yellow);"><strong>${cat}</strong><br>Buscando orçamentos...</div>`;
+        }
         function toggleStatus() {
             proIsOnline = !proIsOnline;
             const btn = document.getElementById('btn-status');
-            if (proIsOnline) {
-                btn.innerText = 'ONLINE - Buscando...'; btn.classList.replace('offline', 'online');
-                window.proSearchInterval = setInterval(buscarPedidos, 5000); buscarPedidos(); 
-            } else {
-                btn.innerText = 'Ficar Online'; btn.classList.replace('online', 'offline');
-                clearInterval(window.proSearchInterval);
-            }
+            if (proIsOnline) { btn.innerText = 'BUSCANDO PEDIDOS NA REGIÃO...'; btn.style.background = 'var(--neon-green)'; window.proSearchInterval = setInterval(buscarPedidos, 5000); buscarPedidos(); } 
+            else { btn.innerText = 'FICAR ONLINE PARA RECEBER PEDIDOS'; btn.style.background = 'var(--neon-yellow)'; clearInterval(window.proSearchInterval); }
         }
-
         async function buscarPedidos() {
             if(!proIsOnline) return;
             const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'buscar_pedidos_pro', payload: { latPro: coordsAtuais.lat, lngPro: coordsAtuais.lng, raioPro: usuarioAtual.raio, profissao: usuarioAtual.profissao } }) });
             const data = await res.json();
-            const lista = document.getElementById('lista-pedidos-pro');
-            
             if (data.pedidos && data.pedidos.length > 0) {
                 document.getElementById('alerta-pedidos').innerText = data.pedidos.length;
-                lista.innerHTML = data.pedidos.map(p => `
-                    <div style="border-bottom: 1px solid #333; padding: 15px 0;">
-                        <strong><i class="fas fa-map-marker-alt" style="color:var(--neon-yellow);"></i> A ${p.distancia_km}km daqui!</strong><br>
-                        <span style="display:block; margin: 8px 0; color:#ccc">${p.descricao}</span>
-                        <button class="btn-neon-yellow" style="padding:8px; font-size:12px;">Fazer Orçamento</button>
-                    </div>
-                `).join('');
-            } else {
-                document.getElementById('alerta-pedidos').innerText = "0";
-                lista.innerHTML = "Nenhum pedido novo.";
+                document.getElementById('lista-pedidos-pro').innerHTML = data.pedidos.map(p => `<div class="glass" style="margin-bottom:10px;"><strong>A ${p.distancia_km}km!</strong><br>${p.descricao}<br><button class="btn-neon-yellow" style="padding:8px; margin-top:10px;">Orçamentar</button></div>`).join('');
             }
         }
-
-        function navegarParaTela(idTela) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(idTela).classList.add('active'); }
-        function logout() { usuarioAtual = null; if (window.proSearchInterval) clearInterval(window.proSearchInterval); navegarParaTela('login-screen'); }
     </script>
 </body>
 </html>
