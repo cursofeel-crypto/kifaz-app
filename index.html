@@ -1,370 +1,206 @@
-<!DOCTYPE html>
-<html lang="pt-PT">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KIFAZ - Quem faz, está aqui.</title>
+/**
+ * KIFAZ - BACKEND (API REST)
+ * Desenvolvido no Google Apps Script
+ */
+
+const CONFIG = {
+  PLANILHA_ID: '1G9z6IEmwduFdmIwoksFJ9cXagBYUUurUPK9o9Z6yUXE',
+  ABAS: {
+    USUARIOS: 'Usuarios',
+    PEDIDOS: 'Pedidos'
+  },
+  SENHA_ADMIN: 'kifaz2026'
+};
+
+function doGet(e) {
+  return responderJSON({ status: 'API KIFAZ Online!' });
+}
+
+function doPost(e) {
+  try {
+    const requestData = JSON.parse(e.postData.contents);
+    const action = requestData.action;
+    const payload = requestData.payload;
+
+    // Autenticação e Registo
+    if (action === 'registrar_conta') return registrarConta(payload);
+    if (action === 'login') return fazerLogin(payload);
     
-    <!-- Ícone na Aba do Navegador (Favicon) -->
-    <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500">
-    <!-- Ícone para instalação no iPhone (iOS) -->
-    <link rel="apple-touch-icon" href="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500">
-    <!-- Ligação ao Ficheiro de Instalação (PWA) -->
-    <link rel="manifest" href="manifest.json">
+    // Rotas do Administrador
+    if (action === 'admin_listar_pendentes') return adminListarPendentes();
+    if (action === 'admin_aprovar_pro') return adminAprovarPro(payload);
+    if (action === 'admin_rejeitar_pro') return adminRejeitarPro(payload);
+    if (action === 'admin_listar_usuarios') return adminListarUsuarios(); // NOVA ROTA
     
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    // Rotas de Pedidos
+    if (action === 'criar_pedido') return criarPedido(payload);
+    if (action === 'buscar_pedidos_pro') return buscarPedidosParaProfissional(payload);
 
-    <!-- ========================================== -->
-    <!-- ESTILOS (CSS)                              -->
-    <!-- ========================================== -->
-    <style>
-        :root { --bg-dark: #121212; --bg-panel: #1e1e1e; --neon-yellow: #FFC107; --neon-green: #39FF14; --neon-red: #FF3B30; --text-main: #FFFFFF; --text-muted: #A0A0A0; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
+    return responderJSON({ erro: 'Ação não reconhecida.' }, 400);
+  } catch (error) {
+    return responderJSON({ erro: 'Falha no servidor: ' + error.message }, 500);
+  }
+}
 
-        .screen { display: none; padding: 20px; min-height: 100vh; flex-direction: column; }
-        .screen.active { display: flex; }
+// ==========================================
+// CONTROLADORES (LÓGICA DE NEGÓCIO)
+// ==========================================
 
-        /* Logo e Identidade */
-        .logo-container { text-align: center; margin-top: 5vh; margin-bottom: 30px; }
-        .logo-container img { width: 140px; height: 140px; border-radius: 50%; box-shadow: 0 0 20px rgba(255, 193, 7, 0.4); object-fit: contain; background: #fff; }
-        .logo-text { font-size: 2.5rem; font-weight: 800; letter-spacing: 2px; margin-top: 15px; }
-        .neon-dot { color: var(--neon-yellow); text-shadow: 0 0 10px var(--neon-yellow); }
+function registrarConta(dados) {
+  const planilha = SpreadsheetApp.openById(CONFIG.PLANILHA_ID).getSheetByName(CONFIG.ABAS.USUARIOS);
+  const registros = planilha.getDataRange().getValues();
+  const inputEmail = String(dados.email).trim().toLowerCase();
+  
+  // Verifica se o email já existe
+  for (let i = 1; i < registros.length; i++) {
+    const rowEmail = String(registros[i][4]).trim().toLowerCase();
+    if (rowEmail === inputEmail) {
+      return responderJSON({ sucesso: false, erro: 'Este email já está cadastrado.' }, 400);
+    }
+  }
 
-        /* Caixas e Inputs */
-        .glass { background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 20px; }
-        input[type="text"], input[type="password"], input[type="email"], select, textarea { width: 100%; padding: 15px; margin-bottom: 15px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; color: var(--text-main); border-radius: 8px; outline: none; font-size: 16px; }
-        input:focus, select:focus, textarea:focus { border-color: var(--neon-yellow); box-shadow: 0 0 8px rgba(255, 193, 7, 0.2); }
-        .row-inputs { display: flex; gap: 10px; }
+  const novoId = gerarUUID();
+  const statusInicial = dados.tipo === 'Cliente' ? 'Ativo' : 'Pendente';
+  
+  planilha.appendRow([
+    novoId, dados.nome, dados.sobrenome, dados.tipo, inputEmail, String(dados.senha).trim(), 
+    dados.profissao || '', statusInicial, 15, '', '', new Date()
+  ]);
 
-        /* Botões */
-        button { border: none; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; font-size: 16px; }
-        .btn-neon-yellow { background: transparent; color: var(--neon-yellow); border: 2px solid var(--neon-yellow); padding: 15px; text-transform: uppercase; box-shadow: 0 0 10px rgba(255, 193, 7, 0.2); width: 100%; }
-        .btn-neon-yellow:hover { background: var(--neon-yellow); color: #000; box-shadow: 0 0 20px var(--neon-yellow); }
-        .btn-link { background: none; color: var(--text-muted); text-decoration: underline; padding: 15px; width: 100%; margin-top: 10px; font-weight: normal; }
-        .btn-link:hover { color: var(--neon-yellow); }
-        .btn-icon { background: transparent; color: var(--text-muted); font-size: 1.5rem; padding: 5px; }
-        .btn-small { padding: 8px 15px; font-size: 12px; }
-        .btn-green { background: var(--neon-green); color: #000; }
-        .btn-red { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); }
+  if (dados.tipo === 'Profissional') {
+    return responderJSON({ sucesso: true, mensagem: 'Solicitação enviada com sucesso! Aguarde a aprovação do administrador.' });
+  } else {
+    return responderJSON({ sucesso: true, mensagem: 'Conta criada! Pode fazer login.', id: novoId });
+  }
+}
 
-        /* Modais */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center; overflow-y: auto; padding: 20px 0; }
-        .modal.active { display: flex; }
-        .modal-content { width: 90%; max-width: 450px; position: relative; margin: auto; }
-        .close { color: #aaa; float: right; font-size: 28px; cursor: pointer; position: absolute; right: 20px; top: 15px; z-index: 10; }
+function fazerLogin(dados) {
+  if (dados.tipo === 'Administrador') {
+    if (dados.senha === CONFIG.SENHA_ADMIN) return responderJSON({ sucesso: true, tipo: 'Administrador' });
+    return responderJSON({ sucesso: false, erro: 'Senha de Administrador incorreta.' }, 401);
+  }
 
-        /* Utilitários */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .badge { background: var(--neon-yellow); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; }
-        .pendente-card { border-left: 3px solid var(--neon-yellow); background: rgba(0,0,0,0.3); padding: 15px; margin-bottom: 10px; border-radius: 0 8px 8px 0; }
-    </style>
-</head>
-<body>
+  const planilha = SpreadsheetApp.openById(CONFIG.PLANILHA_ID).getSheetByName(CONFIG.ABAS.USUARIOS);
+  const registros = planilha.getDataRange().getValues();
+  
+  const inputEmail = String(dados.email).trim().toLowerCase();
+  const inputSenha = String(dados.senha).trim();
 
-    <!-- ========================================== -->
-    <!-- TELA DE LOGIN                              -->
-    <!-- ========================================== -->
-    <div id="login-screen" class="screen active">
-        <div class="logo-container">
-            <img src="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500" alt="Logo KIFAZ">
-            <div class="logo-text">KIFAZ<span class="neon-dot">.</span></div>
-            <p style="color: var(--text-muted); margin-top: 5px;">Quem faz, está aqui.</p>
-        </div>
-        
-        <div class="login-box glass">
-            <select id="login-tipo">
-                <option value="Cliente">Entrar como Cliente</option>
-                <option value="Profissional">Entrar como Profissional</option>
-                <option value="Administrador">Acesso Restrito (Admin)</option>
-            </select>
-            
-            <input type="email" id="login-email" placeholder="Seu Email" style="display: block;">
-            <input type="password" id="login-senha" placeholder="Sua Senha">
-            
-            <button onclick="fazerLogin()" class="btn-neon-yellow" id="btn-entrar">Entrar</button>
-            <button onclick="abrirModalRegisto()" class="btn-link" id="btn-abrir-registo">Ainda não tem conta? Criar Conta</button>
-        </div>
-    </div>
+  for (let i = 1; i < registros.length; i++) {
+    const linha = registros[i];
+    const rowEmail = String(linha[4]).trim().toLowerCase();
+    const rowSenha = String(linha[5]).trim();
+    const rowTipo = String(linha[3]).trim();
 
-    <!-- ========================================== -->
-    <!-- MODAL DE CRIAR CONTA (REGISTO)             -->
-    <!-- ========================================== -->
-    <div id="modal-registo" class="modal">
-        <div class="modal-content glass">
-            <span class="close" onclick="fecharModalRegisto()">&times;</span>
-            <h2 style="color: var(--neon-yellow); margin-bottom: 20px;">Criar Conta</h2>
-            
-            <label style="color: var(--text-muted); font-size: 0.9em;">Quero me cadastrar como:</label>
-            <select id="reg-tipo" onchange="toggleRegistoFields()">
-                <option value="Cliente">Cliente</option>
-                <option value="Profissional">Profissional</option>
-            </select>
+    // BUG CORRIGIDO: Validação em String para evitar problemas com senhas numéricas no Sheets
+    if (rowEmail === inputEmail && rowSenha === inputSenha && rowTipo === dados.tipo) {
+      
+      if (linha[7] === 'Pendente') return responderJSON({ sucesso: false, erro: 'A sua conta profissional ainda está em análise. Aguarde a aprovação.' }, 401);
+      if (linha[7] !== 'Ativo') return responderJSON({ sucesso: false, erro: 'Esta conta foi desativada ou rejeitada.' }, 401);
 
-            <div class="row-inputs">
-                <input type="text" id="reg-nome" placeholder="Nome">
-                <input type="text" id="reg-sobrenome" placeholder="Último Nome">
-            </div>
-            
-            <input type="email" id="reg-email" placeholder="Email">
-            
-            <div id="reg-prof-container" style="display: none;">
-                <select id="reg-profissao">
-                    <option value="" disabled selected>Selecione a sua Profissão</option>
-                    <option value="Pladur">Pladur</option>
-                    <option value="Eletricista">Eletricista</option>
-                    <option value="Pintor">Pintor</option>
-                    <option value="Canalizador">Canalizador</option>
-                    <option value="Barrador">Barrador</option>
-                </select>
-            </div>
+      return responderJSON({
+        sucesso: true,
+        id: linha[0],
+        nome: linha[1] + ' ' + linha[2],
+        tipo: linha[3],
+        profissao: linha[6],
+        raio: linha[8]
+      });
+    }
+  }
+  return responderJSON({ sucesso: false, erro: 'Email ou senha incorretos.' }, 401);
+}
 
-            <input type="password" id="reg-senha" placeholder="Senha">
-            <input type="password" id="reg-senha-conf" placeholder="Confirmar Senha">
+function adminListarPendentes() {
+  const planilha = SpreadsheetApp.openById(CONFIG.PLANILHA_ID).getSheetByName(CONFIG.ABAS.USUARIOS);
+  const registros = planilha.getDataRange().getValues();
+  const pendentes = [];
+  
+  for (let i = 1; i < registros.length; i++) {
+    if (registros[i][3] === 'Profissional' && registros[i][7] === 'Pendente') {
+      pendentes.push({
+        id: registros[i][0], nomeCompleto: registros[i][1] + ' ' + registros[i][2],
+        email: registros[i][4], profissao: registros[i][6], data: registros[i][11]
+      });
+    }
+  }
+  return responderJSON({ sucesso: true, pendentes: pendentes });
+}
 
-            <button onclick="enviarRegisto()" id="btn-submit-reg" class="btn-neon-yellow">CRIAR</button>
-        </div>
-    </div>
+// NOVA ROTA: Listar todos os utilizadores (Ativos, Rejeitados, etc)
+function adminListarUsuarios() {
+  const planilha = SpreadsheetApp.openById(CONFIG.PLANILHA_ID).getSheetByName(CONFIG.ABAS.USUARIOS);
+  const registros = planilha.getDataRange().getValues();
+  const usuarios = [];
+  
+  // Ignora o cabeçalho
+  for (let i = 1; i < registros.length; i++) {
+    usuarios.push({
+      id: registros[i][0],
+      nomeCompleto: registros[i][1] + ' ' + registros[i][2],
+      tipo: registros[i][3],
+      email: registros[i][4],
+      profissao: registros[i][6],
+      status: registros[i][7]
+    });
+  }
+  return responderJSON({ sucesso: true, usuarios: usuarios });
+}
 
-    <!-- ========================================== -->
-    <!-- TELA DE ADMINISTRADOR (APROVAÇÕES)         -->
-    <!-- ========================================== -->
-    <div id="admin-screen" class="screen">
-        <header>
-            <h2>Painel Admin <span class="neon-dot">•</span></h2>
-            <button onclick="logout()" class="btn-icon"><i class="fas fa-sign-out-alt"></i></button>
-        </header>
-        <div class="glass">
-            <h3 style="color: var(--neon-yellow); margin-bottom: 15px;"><i class="fas fa-users"></i> Solicitações Pendentes</h3>
-            <p style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 15px;">Aprove os profissionais para que eles possam receber pedidos no app.</p>
-            <div id="lista-pendentes">Carregando...</div>
-        </div>
-    </div>
+function adminAprovarPro(dados) {
+  const planilha = SpreadsheetApp.openById(CONFIG.PLANILHA_ID).getSheetByName(CONFIG.ABAS.USUARIOS);
+  const registros = planilha.getDataRange().getValues();
+  for (let i = 1; i < registros.length; i++) {
+    if (registros[i][0] === dados.id) {
+      planilha.getRange(i + 1, 8).setValue('Ativo');
+      return responderJSON({ sucesso: true });
+    }
+  }
+  return responderJSON({ erro: 'Profissional não encontrado.' });
+}
 
-    <!-- ========================================== -->
-    <!-- TELA DO CLIENTE E PROFISSIONAL             -->
-    <!-- ========================================== -->
-    <div id="cliente-screen" class="screen">
-        <header>
-            <h2>Olá, <span id="nome-cliente-display"></span></h2>
-            <button onclick="logout()" class="btn-icon"><i class="fas fa-sign-out-alt"></i></button>
-        </header>
-        <button onclick="document.getElementById('modal-pedido').classList.add('active');" class="btn-neon-yellow" style="padding: 20px; font-size: 1.2rem; margin-bottom: 20px;">
-            <i class="fas fa-bolt"></i> Solicitar Serviço
-        </button>
-        <div>
-            <h3 style="color: var(--neon-yellow); margin-bottom: 10px;">Meus Pedidos</h3>
-            <div id="lista-pedidos-cliente" class="glass">Nenhum pedido ativo.</div>
-        </div>
-    </div>
+function adminRejeitarPro(dados) {
+  const planilha = SpreadsheetApp.openById(CONFIG.PLANILHA_ID).getSheetByName(CONFIG.ABAS.USUARIOS);
+  const registros = planilha.getDataRange().getValues();
+  for (let i = 1; i < registros.length; i++) {
+    if (registros[i][0] === dados.id) {
+      planilha.getRange(i + 1, 8).setValue('Rejeitado');
+      return responderJSON({ sucesso: true });
+    }
+  }
+  return responderJSON({ erro: 'Profissional não encontrado.' });
+}
 
-    <div id="pro-screen" class="screen">
-        <header>
-            <h2>Modo Pro <span style="color:var(--neon-green)">•</span></h2>
-            <button onclick="logout()" class="btn-icon"><i class="fas fa-sign-out-alt"></i></button>
-        </header>
-        <div class="glass" style="margin-bottom: 20px; text-align: center;">
-            <button id="btn-status" onclick="toggleStatus()" style="background: var(--neon-yellow); color:#000; padding:15px; width:100%; border-radius:8px; font-weight:bold;">FICAR ONLINE PARA RECEBER PEDIDOS</button>
-        </div>
-        <div class="glass">
-            <h3 style="color: var(--neon-yellow); margin-bottom: 10px;">Pedidos Disponíveis <span id="alerta-pedidos" class="badge">0</span></h3>
-            <div id="lista-pedidos-pro">Fique online para ver pedidos próximos a você.</div>
-        </div>
-    </div>
+function criarPedido(dados) {
+  const planilha = SpreadsheetApp.openById(CONFIG.PLANILHA_ID).getSheetByName(CONFIG.ABAS.PEDIDOS);
+  const pedidoId = gerarUUID();
+  planilha.appendRow([pedidoId, dados.idCliente, dados.categoria, dados.descricao, dados.lat, dados.lng, 'Aberto', new Date()]);
+  return responderJSON({ mensagem: 'Pedido criado com sucesso!', id_pedido: pedidoId });
+}
 
-    <!-- MODAL DE PEDIDO (CLIENTE) -->
-    <div id="modal-pedido" class="modal">
-        <div class="modal-content glass">
-            <span class="close" onclick="document.getElementById('modal-pedido').classList.remove('active');">&times;</span>
-            <h3 style="margin-bottom:15px; color: var(--neon-yellow);">O que você precisa?</h3>
-            <select id="categoria-pedido">
-                <option value="Pladur">Pladur</option><option value="Eletricista">Eletricista</option>
-            </select>
-            <textarea id="desc-pedido" placeholder="Descreva o serviço..." rows="4"></textarea>
-            <button onclick="enviarPedido()" class="btn-neon-yellow">Pedir Orçamento</button>
-        </div>
-    </div>
+function buscarPedidosParaProfissional(dados) {
+  const { latPro, lngPro, raioPro, profissao } = dados;
+  const planilha = SpreadsheetApp.openById(CONFIG.PLANILHA_ID).getSheetByName(CONFIG.ABAS.PEDIDOS);
+  const registros = planilha.getDataRange().getValues();
+  const pedidosCompativeis = [];
+  
+  for (let i = 1; i < registros.length; i++) {
+    if (registros[i][6] === 'Aberto' && registros[i][2] === profissao) {
+      const distancia = calcularDistanciaHaversine(latPro, lngPro, parseFloat(registros[i][4]), parseFloat(registros[i][5]));
+      if (distancia <= raioPro) {
+        pedidosCompativeis.push({ id_pedido: registros[i][0], descricao: registros[i][3], distancia_km: distancia.toFixed(1), data: registros[i][7] });
+      }
+    }
+  }
+  return responderJSON({ pedidos: pedidosCompativeis });
+}
 
-    <!-- ========================================== -->
-    <!-- JAVASCRIPT (LÓGICA)                        -->
-    <!-- ========================================== -->
-    <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwECa674WOxJLt_vT8vR7SlRsup45jMBAxVl8PLMn1oLAxwxD9tm8gYng8ZTpfTKfYH/exec'; 
-        let usuarioAtual = null;
-        let coordsAtuais = { lat: 0, lng: 0 };
-        let proIsOnline = false;
+function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
+  const R = 6371; 
+  const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
 
-        // Ativar PWA (Service Worker) para instalar o App
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW falhou', err));
-            });
-        }
-
-        // UI Login
-        document.getElementById('login-tipo').addEventListener('change', function() {
-            const emailInput = document.getElementById('login-email');
-            const regBtn = document.getElementById('btn-abrir-registo');
-            if (this.value === 'Administrador') {
-                emailInput.style.display = 'none';
-                regBtn.style.display = 'none';
-            } else {
-                emailInput.style.display = 'block';
-                regBtn.style.display = 'block';
-            }
-        });
-
-        // UI Registo
-        function abrirModalRegisto() { document.getElementById('modal-registo').classList.add('active'); }
-        function fecharModalRegisto() { document.getElementById('modal-registo').classList.remove('active'); }
-        
-        function toggleRegistoFields() {
-            const tipo = document.getElementById('reg-tipo').value;
-            const btn = document.getElementById('btn-submit-reg');
-            const profField = document.getElementById('reg-prof-container');
-            if (tipo === 'Profissional') {
-                profField.style.display = 'block'; btn.innerText = 'ENVIAR SOLICITAÇÃO';
-            } else {
-                profField.style.display = 'none'; btn.innerText = 'CRIAR';
-            }
-        }
-
-        // 1. FUNÇÃO DE REGISTAR CONTA
-        async function enviarRegisto() {
-            const payload = {
-                tipo: document.getElementById('reg-tipo').value,
-                nome: document.getElementById('reg-nome').value,
-                sobrenome: document.getElementById('reg-sobrenome').value,
-                email: document.getElementById('reg-email').value,
-                senha: document.getElementById('reg-senha').value,
-                senhaConf: document.getElementById('reg-senha-conf').value,
-                profissao: document.getElementById('reg-profissao').value
-            };
-
-            if (!payload.nome || !payload.email || !payload.senha) return alert('Preencha todos os campos obrigatórios.');
-            if (payload.senha !== payload.senhaConf) return alert('As senhas não coincidem.');
-            if (payload.tipo === 'Profissional' && !payload.profissao) return alert('Selecione uma profissão.');
-
-            const btn = document.getElementById('btn-submit-reg');
-            btn.innerText = 'A ENVIAR...';
-
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'registrar_conta', payload }) });
-                const data = await res.json();
-                
-                if (data.sucesso) {
-                    alert(data.mensagem);
-                    fecharModalRegisto();
-                    document.getElementById('login-email').value = payload.email; // Autopreencher login
-                    document.getElementById('login-senha').value = '';
-                } else { alert(data.erro); }
-            } catch(e) { alert("Erro ao contactar o servidor."); }
-            
-            toggleRegistoFields(); // Reseta o texto do botão
-        }
-
-        // 2. FUNÇÃO DE LOGIN
-        async function fazerLogin() {
-            const payload = {
-                tipo: document.getElementById('login-tipo').value,
-                email: document.getElementById('login-email').value,
-                senha: document.getElementById('login-senha').value
-            };
-
-            if (!payload.senha) return alert('Insira a senha.');
-
-            const btn = document.getElementById('btn-entrar');
-            btn.innerText = 'VALIDANDO...';
-
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', payload }) });
-                const data = await res.json();
-                
-                if (data.sucesso) {
-                    if (data.tipo === 'Administrador') {
-                        navegarParaTela('admin-screen');
-                        carregarPendentesAdmin();
-                    } else {
-                        usuarioAtual = data;
-                        obterLocalizacao(() => {
-                            if (data.tipo === 'Cliente') {
-                                document.getElementById('nome-cliente-display').innerText = data.nome;
-                                navegarParaTela('cliente-screen');
-                            } else { navegarParaTela('pro-screen'); }
-                        });
-                    }
-                } else { alert(data.erro); }
-            } catch(e) { alert("Erro de conexão com o KIFAZ."); }
-            
-            btn.innerText = 'ENTRAR';
-        }
-
-        // 3. ADMIN: APROVAÇÕES
-        async function carregarPendentesAdmin() {
-            const container = document.getElementById('lista-pendentes');
-            container.innerHTML = 'Buscando solicitações...';
-            
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_listar_pendentes' }) });
-            const data = await res.json();
-            
-            if (data.pendentes && data.pendentes.length > 0) {
-                container.innerHTML = data.pendentes.map(p => `
-                    <div class="pendente-card">
-                        <strong>${p.nomeCompleto}</strong> <span class="badge">${p.profissao}</span><br>
-                        <span style="font-size:0.85em; color:var(--text-muted);">${p.email}</span>
-                        <div style="margin-top: 10px; display:flex; gap:10px;">
-                            <button onclick="aprovarPro('${p.id}')" class="btn-small btn-green">Aprovar Conta</button>
-                            <button onclick="rejeitarPro('${p.id}')" class="btn-small btn-red">Rejeitar</button>
-                        </div>
-                    </div>
-                `).join('');
-            } else { container.innerHTML = 'Nenhum profissional na fila de espera no momento.'; }
-        }
-
-        async function aprovarPro(id) {
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_aprovar_pro', payload: { id } }) });
-            alert("Profissional Aprovado!"); carregarPendentesAdmin();
-        }
-        
-        async function rejeitarPro(id) {
-            if(confirm("Tem certeza que deseja rejeitar?")) {
-                await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_rejeitar_pro', payload: { id } }) });
-                carregarPendentesAdmin();
-            }
-        }
-
-        // 4. FUNÇÕES GERAIS (Geo e Nav)
-        function obterLocalizacao(cb) {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => { coordsAtuais.lat = pos.coords.latitude; coordsAtuais.lng = pos.coords.longitude; if(cb) cb(); }, err => { if(cb) cb(); });
-            } else { if(cb) cb(); }
-        }
-        function navegarParaTela(idTela) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(idTela).classList.add('active'); }
-        function logout() { usuarioAtual = null; document.getElementById('login-senha').value = ''; if(window.proSearchInterval) clearInterval(window.proSearchInterval); navegarParaTela('login-screen'); }
-
-        // 5. PEDIDOS (Simulados)
-        async function enviarPedido() {
-            fecharModal();
-            const cat = document.getElementById('categoria-pedido').value;
-            const desc = document.getElementById('desc-pedido').value;
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'criar_pedido', payload: { idCliente: usuarioAtual.id, categoria: cat, descricao: desc, lat: coordsAtuais.lat, lng: coordsAtuais.lng } }) });
-            document.getElementById('lista-pedidos-cliente').innerHTML = `<div class="glass" style="border-left: 3px solid var(--neon-yellow);"><strong>${cat}</strong><br>Buscando orçamentos...</div>`;
-        }
-        function toggleStatus() {
-            proIsOnline = !proIsOnline;
-            const btn = document.getElementById('btn-status');
-            if (proIsOnline) { btn.innerText = 'BUSCANDO PEDIDOS NA REGIÃO...'; btn.style.background = 'var(--neon-green)'; window.proSearchInterval = setInterval(buscarPedidos, 5000); buscarPedidos(); } 
-            else { btn.innerText = 'FICAR ONLINE PARA RECEBER PEDIDOS'; btn.style.background = 'var(--neon-yellow)'; clearInterval(window.proSearchInterval); }
-        }
-        async function buscarPedidos() {
-            if(!proIsOnline) return;
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'buscar_pedidos_pro', payload: { latPro: coordsAtuais.lat, lngPro: coordsAtuais.lng, raioPro: usuarioAtual.raio, profissao: usuarioAtual.profissao } }) });
-            const data = await res.json();
-            if (data.pedidos && data.pedidos.length > 0) {
-                document.getElementById('alerta-pedidos').innerText = data.pedidos.length;
-                document.getElementById('lista-pedidos-pro').innerHTML = data.pedidos.map(p => `<div class="glass" style="margin-bottom:10px;"><strong>A ${p.distancia_km}km!</strong><br>${p.descricao}<br><button class="btn-neon-yellow" style="padding:8px; margin-top:10px;">Orçamentar</button></div>`).join('');
-            }
-        }
-    </script>
-</body>
-</html>
+function responderJSON(dados, codigoStatus = 200) { return ContentService.createTextOutput(JSON.stringify(dados)).setMimeType(ContentService.MimeType.JSON); }
+function gerarUUID() { return 'ID-' + Math.random().toString(36).substr(2, 9).toUpperCase(); }
