@@ -14,7 +14,7 @@
     <!-- ESTILOS (CSS)                              -->
     <!-- ========================================== -->
     <style>
-        :root { --bg-dark: #121212; --bg-panel: #1e1e1e; --neon-yellow: #FFC107; --neon-green: #39FF14; --neon-red: #FF3B30; --text-main: #FFFFFF; --text-muted: #A0A0A0; }
+        :root { --bg-dark: #121212; --bg-panel: #1e1e1e; --neon-yellow: #FFC107; --neon-green: #39FF14; --neon-red: #FF3B30; --text-main: #FFFFFF; --text-muted: #666666; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
 
@@ -23,7 +23,7 @@
 
         /* Logo */
         .logo-container { text-align: center; margin-top: 5vh; margin-bottom: 30px; }
-        .logo-container img { width: 140px; height: 140px; border-radius: 50%; box-shadow: 0 0 20px rgba(255, 193, 7, 0.4); object-fit: contain; background: #fff; }
+        .logo-container img { width: 140px; height: 140px; border-radius: 50%; box-shadow: 0 0 25px rgba(255, 193, 7, 0.3); object-fit: contain; background: #fff; }
         .logo-text { font-size: 2.5rem; font-weight: 800; letter-spacing: 2px; margin-top: 15px; }
         .neon-dot { color: var(--neon-yellow); text-shadow: 0 0 10px var(--neon-yellow); }
 
@@ -33,46 +33,82 @@
         input:focus, select:focus, textarea:focus { border-color: var(--neon-yellow); box-shadow: 0 0 8px rgba(255, 193, 7, 0.2); }
         .row-inputs { display: flex; gap: 10px; }
 
-        /* Botões */
-        button { border: none; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; font-size: 16px; }
-        .btn-neon-yellow { background: transparent; color: var(--neon-yellow); border: 2px solid var(--neon-yellow); padding: 15px; text-transform: uppercase; box-shadow: 0 0 10px rgba(255, 193, 7, 0.2); width: 100%; }
-        .btn-neon-yellow:hover { background: var(--neon-yellow); color: #000; box-shadow: 0 0 20px var(--neon-yellow); }
-        .btn-link { background: none; color: var(--text-muted); text-decoration: underline; padding: 15px; width: 100%; margin-top: 10px; font-weight: normal; }
+        /* Botões Estilo Néon Real (Fundo Transparente + Brilho) */
+        button { border: none; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; font-size: 15px; letter-spacing: 1px; }
+        
+        .btn-neon-yellow { 
+            background: transparent; 
+            color: var(--neon-yellow); 
+            border: 2px solid var(--neon-yellow); 
+            padding: 15px; 
+            text-transform: uppercase; 
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.3), inset 0 0 10px rgba(255, 193, 7, 0.1); 
+            width: 100%; 
+        }
+        .btn-neon-yellow:hover, .btn-neon-yellow:active { 
+            background: rgba(255, 193, 7, 0.1); 
+            box-shadow: 0 0 25px rgba(255, 193, 7, 0.6), inset 0 0 15px rgba(255, 193, 7, 0.3); 
+        }
+
+        .btn-neon-green { 
+            background: transparent; 
+            color: var(--neon-green); 
+            border: 2px solid var(--neon-green); 
+            padding: 15px; 
+            text-transform: uppercase; 
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.3), inset 0 0 10px rgba(57, 255, 20, 0.1); 
+            width: 100%; 
+        }
+        .btn-neon-green:hover, .btn-neon-green:active { 
+            background: rgba(57, 255, 20, 0.1); 
+            box-shadow: 0 0 25px rgba(57, 255, 20, 0.6), inset 0 0 15px rgba(57, 255, 20, 0.3); 
+        }
+
+        /* Links e Ícones Menores */
+        .btn-link { background: none; color: #aaa; text-decoration: underline; padding: 15px; width: 100%; margin-top: 10px; font-weight: normal; }
         .btn-link:hover { color: var(--neon-yellow); }
         
-        /* BOTÃO DO MENU ATUALIZADO E INFALÍVEL */
-        .menu-btn { background: transparent; color: var(--neon-yellow); font-size: 32px; padding: 0 15px 0 0; line-height: 1; text-shadow: 0 0 10px rgba(255,193,7,0.5); }
+        /* Botão do Menu Hambúrguer */
+        .btn-menu-bars { background: transparent; color: var(--text-main); font-size: 1.8rem; padding: 5px 15px 5px 0; border: none; cursor: pointer; }
+        .btn-menu-bars:hover { color: var(--neon-yellow); text-shadow: 0 0 10px var(--neon-yellow); }
         
-        .btn-small { padding: 8px 15px; font-size: 12px; }
-        .btn-green { background: var(--neon-green); color: #000; }
-        .btn-red { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); }
+        .btn-icon { background: transparent; color: var(--text-muted); font-size: 1.5rem; padding: 5px; cursor: pointer; border: none; }
+        .btn-icon:hover { color: var(--neon-red); }
+        .btn-small { padding: 8px 15px; font-size: 12px; border: none; border-radius: 5px; color: #000; font-weight: bold; }
+        .btn-bg-green { background: var(--neon-green); }
+        .btn-bg-red { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); }
 
         /* Menu Lateral (Sidebar) */
-        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #181818; z-index: 1000; transition: left 0.3s ease; padding: 30px 20px; border-right: 1px solid rgba(255,193,7,0.2); box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+        .sidebar { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: #151515; z-index: 1000; transition: left 0.3s ease; padding: 30px 20px; border-right: 1px solid rgba(255,193,7,0.2); box-shadow: 5px 0 20px rgba(0,0,0,0.8); }
         .sidebar.active { left: 0; }
-        .sidebar-header { font-size: 2rem; font-weight: 800; margin-bottom: 40px; color: #fff; }
-        .menu-item { padding: 15px; font-size: 1.1rem; border-bottom: 1px solid #333; color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 15px; transition: 0.2s; }
-        .menu-item:hover { color: var(--neon-yellow); background: rgba(255,193,7,0.05); border-radius: 8px; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; backdrop-filter: blur(3px); }
+        .sidebar-header { font-size: 2rem; font-weight: 800; margin-bottom: 40px; color: #fff; text-align: center; }
+        .menu-item { padding: 15px; font-size: 1.1rem; border-bottom: 1px solid #222; color: #ddd; cursor: pointer; display: flex; align-items: center; gap: 15px; transition: 0.2s; }
+        .menu-item:hover { color: var(--neon-yellow); background: rgba(255,193,7,0.05); border-radius: 8px; border-bottom: 1px solid transparent; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; backdrop-filter: blur(4px); }
         .overlay.active { display: block; }
 
         /* Modais */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center; overflow-y: auto; padding: 20px 0; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.95); align-items: center; justify-content: center; overflow-y: auto; padding: 20px 0; }
         .modal.active { display: flex; }
         .modal-content { width: 90%; max-width: 450px; position: relative; margin: auto; }
         .close { color: #aaa; float: right; font-size: 28px; cursor: pointer; position: absolute; right: 20px; top: 15px; z-index: 10; }
 
-        /* Utilitários Admin */
-        header { display: flex; align-items: center; margin-bottom: 25px; }
-        .badge { background: var(--neon-yellow); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; }
-        .user-card { border-left: 3px solid #333; background: rgba(0,0,0,0.3); padding: 15px; margin-bottom: 10px; border-radius: 0 8px 8px 0; }
+        /* Utilitários Admin e Cards */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; width: 100%; border-bottom: 1px solid #222; padding-bottom: 15px; }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        
+        .badge { background: var(--neon-yellow); color: #000; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
+        .user-card { border-left: 3px solid #333; background: rgba(0,0,0,0.4); padding: 15px; margin-bottom: 15px; border-radius: 0 8px 8px 0; border-top: 1px solid #222; border-right: 1px solid #222; border-bottom: 1px solid #222; }
         .user-card.pendente { border-left-color: var(--neon-yellow); }
         .user-card.ativo { border-left-color: var(--neon-green); }
         .user-card.rejeitado { border-left-color: var(--neon-red); }
         
-        .tab-menu { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; background: #333; color: #fff; padding: 10px; text-align: center; border-radius: 8px; font-size: 14px; }
-        .tab-btn.active { background: var(--neon-yellow); color: #000; box-shadow: 0 0 10px rgba(255,193,7,0.3); }
+        .tab-menu { display: flex; gap: 10px; margin-bottom: 25px; }
+        .tab-btn { flex: 1; background: #222; color: #aaa; padding: 12px; text-align: center; border-radius: 8px; font-size: 14px; transition: 0.3s; border: none; }
+        .tab-btn.active { background: rgba(255,193,7,0.1); color: var(--neon-yellow); box-shadow: inset 0 0 10px rgba(255,193,7,0.2); border: 1px solid var(--neon-yellow); }
+
+        /* Ponto de Status */
+        .status-dot { display: inline-block; font-size: 1.2em; transition: 0.3s; }
     </style>
 </head>
 <body>
@@ -95,7 +131,7 @@
         <div class="logo-container">
             <img src="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500" alt="Logo KIFAZ">
             <div class="logo-text">KIFAZ<span class="neon-dot">.</span></div>
-            <p style="color: var(--text-muted); margin-top: 5px;">Quem faz, está aqui.</p>
+            <p style="color: #888; margin-top: 5px;">Quem faz, está aqui.</p>
         </div>
         
         <div class="login-box glass">
@@ -120,7 +156,7 @@
         <div class="modal-content glass">
             <span class="close" onclick="fecharModalRegisto()">&times;</span>
             <h2 style="color: var(--neon-yellow); margin-bottom: 20px;">Criar Conta</h2>
-            <label style="color: var(--text-muted); font-size: 0.9em;">Quero me cadastrar como:</label>
+            <label style="color: #aaa; font-size: 0.9em;">Quero me cadastrar como:</label>
             <select id="reg-tipo" onchange="toggleRegistoFields()">
                 <option value="Cliente">Cliente</option>
                 <option value="Profissional">Profissional</option>
@@ -138,7 +174,7 @@
             </div>
             <input type="password" id="reg-senha" placeholder="Senha">
             <input type="password" id="reg-senha-conf" placeholder="Confirmar Senha">
-            <button onclick="enviarRegisto()" id="btn-submit-reg" class="btn-neon-yellow">CRIAR</button>
+            <button onclick="enviarRegisto()" id="btn-submit-reg" class="btn-neon-yellow" style="margin-top: 10px;">CRIAR</button>
         </div>
     </div>
 
@@ -147,8 +183,11 @@
     <!-- ========================================== -->
     <div id="admin-screen" class="screen">
         <header>
-            <button onclick="abrirMenu()" class="menu-btn">☰</button>
-            <h2 style="margin: 0;">Painel Admin <span class="neon-dot">•</span></h2>
+            <div class="header-left">
+                <button onclick="abrirMenu()" class="btn-menu-bars"><i class="fas fa-bars"></i></button>
+                <h2 style="margin: 0;">Painel Admin <span class="status-dot" style="color:var(--neon-yellow);">•</span></h2>
+            </div>
+            <button onclick="logout()" class="btn-icon" title="Sair"><i class="fas fa-sign-out-alt"></i></button>
         </header>
         <div class="glass">
             <div class="tab-menu">
@@ -157,12 +196,12 @@
             </div>
             
             <div id="admin-view-pendentes">
-                <p style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 15px;">Aprove os profissionais pendentes.</p>
+                <p style="color: #aaa; font-size: 0.9em; margin-bottom: 15px;">Aprove os profissionais pendentes para acessarem o app.</p>
                 <div id="lista-pendentes">Carregando...</div>
             </div>
 
             <div id="admin-view-todos" style="display: none;">
-                <p style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 15px;">Todos os utilizadores registados no KIFAZ.</p>
+                <p style="color: #aaa; font-size: 0.9em; margin-bottom: 15px;">Todos os utilizadores registados no sistema.</p>
                 <div id="lista-todos-usuarios">Carregando...</div>
             </div>
         </div>
@@ -173,15 +212,18 @@
     <!-- ========================================== -->
     <div id="cliente-screen" class="screen">
         <header>
-            <button onclick="abrirMenu()" class="menu-btn">☰</button>
-            <h2 style="margin: 0;">Olá, <span id="nome-cliente-display"></span></h2>
+            <div class="header-left">
+                <button onclick="abrirMenu()" class="btn-menu-bars"><i class="fas fa-bars"></i></button>
+                <h2 style="margin: 0;">Olá, <span id="nome-cliente-display"></span></h2>
+            </div>
+            <button onclick="logout()" class="btn-icon" title="Sair"><i class="fas fa-sign-out-alt"></i></button>
         </header>
-        <button onclick="document.getElementById('modal-pedido').classList.add('active');" class="btn-neon-yellow" style="padding: 20px; font-size: 1.2rem; margin-bottom: 20px;">
-            <i class="fas fa-bolt"></i> Solicitar Serviço
+        <button onclick="document.getElementById('modal-pedido').classList.add('active');" class="btn-neon-yellow" style="padding: 20px; font-size: 1.2rem; margin-bottom: 25px;">
+            <i class="fas fa-bolt" style="margin-right: 10px;"></i> Solicitar Serviço
         </button>
         <div>
-            <h3 style="color: var(--neon-yellow); margin-bottom: 10px;">Meus Pedidos</h3>
-            <div id="lista-pedidos-cliente" class="glass">Nenhum pedido ativo.</div>
+            <h3 style="color: var(--neon-yellow); margin-bottom: 15px;"><i class="fas fa-list-alt"></i> Meus Pedidos</h3>
+            <div id="lista-pedidos-cliente" class="glass">Nenhum pedido ativo no momento.</div>
         </div>
     </div>
 
@@ -190,15 +232,28 @@
     <!-- ========================================== -->
     <div id="pro-screen" class="screen">
         <header>
-            <button onclick="abrirMenu()" class="menu-btn">☰</button>
-            <h2 style="margin: 0;">Modo Pro <span style="color:var(--neon-green)">•</span></h2>
+            <div class="header-left">
+                <button onclick="abrirMenu()" class="btn-menu-bars"><i class="fas fa-bars"></i></button>
+                <!-- Ponto Cinza (Offline) por padrão -->
+                <h2 style="margin: 0;">Modo Pro <span id="dot-status-pro" class="status-dot" style="color:var(--text-muted);">•</span></h2>
+            </div>
+            <button onclick="logout()" class="btn-icon" title="Sair"><i class="fas fa-sign-out-alt"></i></button>
         </header>
-        <div class="glass" style="margin-bottom: 20px; text-align: center;">
-            <button id="btn-status" onclick="toggleStatus()" style="background: var(--neon-yellow); color:#000; padding:15px; width:100%; border-radius:8px; font-weight:bold;">FICAR ONLINE PARA RECEBER PEDIDOS</button>
+        
+        <div style="margin-bottom: 30px;">
+            <!-- O botão agora usa a classe neon transparente, sem fundo sólido -->
+            <button id="btn-status" onclick="toggleStatus()" class="btn-neon-yellow">
+                <i class="fas fa-power-off" style="margin-right: 8px;"></i> FICAR ONLINE
+            </button>
         </div>
+        
         <div class="glass">
-            <h3 style="color: var(--neon-yellow); margin-bottom: 10px;">Pedidos Disponíveis <span id="alerta-pedidos" class="badge">0</span></h3>
-            <div id="lista-pedidos-pro">Fique online para ver pedidos próximos a você.</div>
+            <h3 style="color: var(--neon-yellow); margin-bottom: 15px;">
+                <i class="fas fa-map-marker-alt"></i> Pedidos Próximos <span id="alerta-pedidos" class="badge">0</span>
+            </h3>
+            <div id="lista-pedidos-pro" style="color: #aaa;">
+                Fique online para ver clientes a procurar os seus serviços na região.
+            </div>
         </div>
     </div>
 
@@ -206,12 +261,12 @@
     <div id="modal-pedido" class="modal">
         <div class="modal-content glass">
             <span class="close" onclick="document.getElementById('modal-pedido').classList.remove('active');">&times;</span>
-            <h3 style="margin-bottom:15px; color: var(--neon-yellow);">O que você precisa?</h3>
+            <h3 style="margin-bottom:20px; color: var(--neon-yellow); text-align:center;">O que você precisa?</h3>
             <select id="categoria-pedido">
                 <option value="Pladur">Pladur</option><option value="Eletricista">Eletricista</option><option value="Pintor">Pintor</option><option value="Canalizador">Canalizador</option><option value="Barrador">Barrador</option>
             </select>
-            <textarea id="desc-pedido" placeholder="Descreva o serviço..." rows="4"></textarea>
-            <button onclick="enviarPedido()" class="btn-neon-yellow">Pedir Orçamento</button>
+            <textarea id="desc-pedido" placeholder="Descreva o serviço com o máximo de detalhes..." rows="5"></textarea>
+            <button onclick="enviarPedido()" class="btn-neon-yellow" style="margin-top: 10px;">PEDIR ORÇAMENTOS AGORA</button>
         </div>
     </div>
 
@@ -242,20 +297,20 @@
             const menu = document.getElementById('sidebar-menu-items');
             if (tipo === 'Administrador') {
                 menu.innerHTML = `
-                    <div class="menu-item" onclick="fecharMenu(); mudarAbaAdmin('pendentes')"><i class="fas fa-user-clock" style="width:25px;"></i> Solicitações Pendentes</div>
-                    <div class="menu-item" onclick="fecharMenu(); mudarAbaAdmin('todos')"><i class="fas fa-users" style="width:25px;"></i> Todos os Utilizadores</div>
-                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Sair do Painel</div>
+                    <div class="menu-item" onclick="fecharMenu(); mudarAbaAdmin('pendentes')"><i class="fas fa-user-clock" style="width:25px; text-align:center;"></i> Solicitações</div>
+                    <div class="menu-item" onclick="fecharMenu(); mudarAbaAdmin('todos')"><i class="fas fa-users" style="width:25px; text-align:center;"></i> Utilizadores</div>
+                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px; border-top:1px solid #333;"><i class="fas fa-sign-out-alt" style="width:25px; text-align:center;"></i> Sair</div>
                 `;
             } else if (tipo === 'Cliente') {
                 menu.innerHTML = `
-                    <div class="menu-item" onclick="fecharMenu()"><i class="fas fa-home" style="width:25px;"></i> Meu Início</div>
-                    <div class="menu-item" onclick="fecharMenu(); document.getElementById('modal-pedido').classList.add('active');"><i class="fas fa-bolt" style="width:25px;"></i> Pedir Serviço</div>
-                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>
+                    <div class="menu-item" onclick="fecharMenu()"><i class="fas fa-home" style="width:25px; text-align:center;"></i> Início</div>
+                    <div class="menu-item" onclick="fecharMenu(); document.getElementById('modal-pedido').classList.add('active');"><i class="fas fa-bolt" style="width:25px; text-align:center;"></i> Novo Pedido</div>
+                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px; border-top:1px solid #333;"><i class="fas fa-sign-out-alt" style="width:25px; text-align:center;"></i> Sair</div>
                 `;
             } else if (tipo === 'Profissional') {
                 menu.innerHTML = `
-                    <div class="menu-item" onclick="fecharMenu()"><i class="fas fa-briefcase" style="width:25px;"></i> Painel de Trabalho</div>
-                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>
+                    <div class="menu-item" onclick="fecharMenu()"><i class="fas fa-briefcase" style="width:25px; text-align:center;"></i> Painel de Obras</div>
+                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px; border-top:1px solid #333;"><i class="fas fa-sign-out-alt" style="width:25px; text-align:center;"></i> Sair</div>
                 `;
             }
         }
@@ -309,7 +364,7 @@
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', payload }) });
                 const data = await res.json();
                 if (data.sucesso) {
-                    construirMenu(data.tipo); // Constrói o menu lateral!
+                    construirMenu(data.tipo); 
                     if (data.tipo === 'Administrador') {
                         navegarParaTela('admin-screen'); carregarPendentesAdmin();
                     } else {
@@ -328,20 +383,10 @@
         // UI: ADMIN (ABAS E LISTAGENS)
         // ==========================================
         function mudarAbaAdmin(aba) {
-            document.getElementById('tab-pendentes').classList.remove('active');
-            document.getElementById('tab-todos').classList.remove('active');
-            document.getElementById('admin-view-pendentes').style.display = 'none';
-            document.getElementById('admin-view-todos').style.display = 'none';
-
-            if(aba === 'pendentes') {
-                document.getElementById('tab-pendentes').classList.add('active');
-                document.getElementById('admin-view-pendentes').style.display = 'block';
-                carregarPendentesAdmin();
-            } else {
-                document.getElementById('tab-todos').classList.add('active');
-                document.getElementById('admin-view-todos').style.display = 'block';
-                carregarTodosUsuariosAdmin();
-            }
+            document.getElementById('tab-pendentes').classList.remove('active'); document.getElementById('tab-todos').classList.remove('active');
+            document.getElementById('admin-view-pendentes').style.display = 'none'; document.getElementById('admin-view-todos').style.display = 'none';
+            if(aba === 'pendentes') { document.getElementById('tab-pendentes').classList.add('active'); document.getElementById('admin-view-pendentes').style.display = 'block'; carregarPendentesAdmin(); } 
+            else { document.getElementById('tab-todos').classList.add('active'); document.getElementById('admin-view-todos').style.display = 'block'; carregarTodosUsuariosAdmin(); }
         }
 
         async function carregarPendentesAdmin() {
@@ -351,14 +396,14 @@
             if (data.pendentes && data.pendentes.length > 0) {
                 container.innerHTML = data.pendentes.map(p => `
                     <div class="user-card pendente">
-                        <strong>${p.nomeCompleto}</strong> <span class="badge">${p.profissao}</span><br>
+                        <strong style="color:#fff;">${p.nomeCompleto}</strong> <span class="badge">${p.profissao}</span><br>
                         <span style="font-size:0.85em; color:var(--text-muted);">${p.email}</span>
-                        <div style="margin-top: 10px; display:flex; gap:10px;">
-                            <button onclick="aprovarPro('${p.id}')" class="btn-small btn-green">Aprovar Conta</button>
-                            <button onclick="rejeitarPro('${p.id}')" class="btn-small btn-red">Rejeitar</button>
+                        <div style="margin-top: 15px; display:flex; gap:10px;">
+                            <button onclick="aprovarPro('${p.id}')" class="btn-small btn-bg-green"><i class="fas fa-check"></i> Aprovar</button>
+                            <button onclick="rejeitarPro('${p.id}')" class="btn-small btn-bg-red"><i class="fas fa-times"></i> Rejeitar</button>
                         </div>
                     </div>`).join('');
-            } else { container.innerHTML = 'Nenhuma solicitação pendente.'; }
+            } else { container.innerHTML = '<div class="glass">Nenhuma solicitação pendente.</div>'; }
         }
 
         async function carregarTodosUsuariosAdmin() {
@@ -368,22 +413,22 @@
             if (data.usuarios && data.usuarios.length > 0) {
                 container.innerHTML = data.usuarios.map(u => {
                     let classeStatus = u.status === 'Ativo' ? 'ativo' : (u.status === 'Rejeitado' ? 'rejeitado' : 'pendente');
-                    let prof = u.tipo === 'Profissional' ? `<span class="badge">${u.profissao}</span>` : `<span class="badge" style="background:#555; color:#fff;">Cliente</span>`;
+                    let prof = u.tipo === 'Profissional' ? `<span class="badge">${u.profissao}</span>` : `<span class="badge" style="background:#444; color:#fff;">Cliente</span>`;
                     return `
                     <div class="user-card ${classeStatus}">
-                        <strong>${u.nomeCompleto}</strong> ${prof}<br>
+                        <strong style="color:#fff;">${u.nomeCompleto}</strong> ${prof}<br>
                         <span style="font-size:0.85em; color:var(--text-muted);">${u.email}</span><br>
-                        <span style="font-size:0.75em; text-transform:uppercase; font-weight:bold; color:var(--text-muted);">STATUS: ${u.status}</span>
+                        <span style="font-size:0.75em; text-transform:uppercase; font-weight:bold; color:var(--text-muted); display:inline-block; margin-top:5px;">STATUS: ${u.status}</span>
                     </div>`;
                 }).join('');
-            } else { container.innerHTML = 'Base de dados vazia.'; }
+            } else { container.innerHTML = '<div class="glass">Base de dados vazia.</div>'; }
         }
 
-        async function aprovarPro(id) { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_aprovar_pro', payload: { id } }) }); alert("Profissional Aprovado!"); carregarPendentesAdmin(); }
+        async function aprovarPro(id) { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_aprovar_pro', payload: { id } }) }); carregarPendentesAdmin(); }
         async function rejeitarPro(id) { if(confirm("Deseja rejeitar este profissional?")) { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_rejeitar_pro', payload: { id } }) }); carregarPendentesAdmin(); } }
 
         // ==========================================
-        // UTILITÁRIOS (Geo, Nav, Pedidos)
+        // UTILITÁRIOS E FUNCIONALIDADES PRINCIPAIS
         // ==========================================
         function obterLocalizacao(cb) { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(pos => { coordsAtuais.lat = pos.coords.latitude; coordsAtuais.lng = pos.coords.longitude; if(cb) cb(); }, err => { if(cb) cb(); }); } else { if(cb) cb(); } }
         function navegarParaTela(idTela) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(idTela).classList.add('active'); fecharMenu(); }
@@ -393,20 +438,46 @@
             document.getElementById('modal-pedido').classList.remove('active');
             const cat = document.getElementById('categoria-pedido').value; const desc = document.getElementById('desc-pedido').value;
             await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'criar_pedido', payload: { idCliente: usuarioAtual.id, categoria: cat, descricao: desc, lat: coordsAtuais.lat, lng: coordsAtuais.lng } }) });
-            document.getElementById('lista-pedidos-cliente').innerHTML = `<div class="glass" style="border-left: 3px solid var(--neon-yellow);"><strong>${cat}</strong><br>Buscando orçamentos...</div>`;
+            document.getElementById('lista-pedidos-cliente').innerHTML = `<div class="glass" style="border-left: 3px solid var(--neon-yellow);"><strong style="color:var(--neon-yellow);">${cat}</strong><br><span style="font-size:0.9em; color:#ccc;">${desc}</span><br><br><span style="font-size:0.8em; color:var(--neon-green);"><i class="fas fa-satellite-dish"></i> Buscando profissionais próximos...</span></div>`;
         }
+
+        // LÓGICA DO STATUS (NÉON TRANSPARENTE + PONTO VERDE/CINZA)
         function toggleStatus() {
-            proIsOnline = !proIsOnline; const btn = document.getElementById('btn-status');
-            if (proIsOnline) { btn.innerText = 'BUSCANDO PEDIDOS NA REGIÃO...'; btn.style.background = 'var(--neon-green)'; window.proSearchInterval = setInterval(buscarPedidos, 5000); buscarPedidos(); } 
-            else { btn.innerText = 'FICAR ONLINE PARA RECEBER PEDIDOS'; btn.style.background = 'var(--neon-yellow)'; clearInterval(window.proSearchInterval); }
+            proIsOnline = !proIsOnline; 
+            const btn = document.getElementById('btn-status');
+            const dot = document.getElementById('dot-status-pro');
+
+            if (proIsOnline) { 
+                btn.innerHTML = '<i class="fas fa-radar" style="margin-right: 8px;"></i> BUSCANDO PEDIDOS...'; 
+                btn.classList.remove('btn-neon-yellow');
+                btn.classList.add('btn-neon-green');
+                
+                // Liga o Ponto
+                dot.style.color = 'var(--neon-green)';
+                dot.style.textShadow = '0 0 10px var(--neon-green)';
+
+                window.proSearchInterval = setInterval(buscarPedidos, 5000); 
+                buscarPedidos(); 
+            } else { 
+                btn.innerHTML = '<i class="fas fa-power-off" style="margin-right: 8px;"></i> FICAR ONLINE'; 
+                btn.classList.remove('btn-neon-green');
+                btn.classList.add('btn-neon-yellow');
+                
+                // Desliga o Ponto
+                dot.style.color = 'var(--text-muted)';
+                dot.style.textShadow = 'none';
+
+                clearInterval(window.proSearchInterval); 
+            }
         }
+
         async function buscarPedidos() {
             if(!proIsOnline) return;
             const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'buscar_pedidos_pro', payload: { latPro: coordsAtuais.lat, lngPro: coordsAtuais.lng, raioPro: 15, profissao: usuarioAtual.profissao } }) });
             const data = await res.json();
             if (data.pedidos && data.pedidos.length > 0) {
                 document.getElementById('alerta-pedidos').innerText = data.pedidos.length;
-                document.getElementById('lista-pedidos-pro').innerHTML = data.pedidos.map(p => `<div class="glass" style="margin-bottom:10px;"><strong>A ${p.distancia_km}km!</strong><br>${p.descricao}<br><button class="btn-neon-yellow" style="padding:8px; margin-top:10px;">Orçamentar</button></div>`).join('');
+                document.getElementById('lista-pedidos-pro').innerHTML = data.pedidos.map(p => `<div class="glass" style="margin-bottom:15px; border:1px solid #333;"><strong style="color:var(--neon-yellow);"><i class="fas fa-map-marker-alt"></i> Cliente a ${p.distancia_km}km!</strong><br><span style="display:block; margin: 10px 0; color:#ddd;">${p.descricao}</span><button class="btn-neon-yellow" style="padding:10px; font-size:12px;"><i class="fas fa-file-invoice-dollar"></i> Enviar Orçamento</button></div>`).join('');
             }
         }
     </script>
