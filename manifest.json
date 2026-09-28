@@ -1,22 +1,24 @@
 {
   "name": "KIFAZ - Encontre Profissionais",
   "short_name": "KIFAZ",
-  "description": "Conectando clientes a profissionais em tempo real.",
+  "description": "Quem faz, está aqui.",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#121212",
-  "theme_color": "#00FFFF",
+  "theme_color": "#FFC107",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://via.placeholder.com/192/00FFFF/121212?text=K",
+      "src": "https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://via.placeholder.com/512/00FFFF/121212?text=K",
+      "src": "https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
