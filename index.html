@@ -3,327 +3,418 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KIFAZ - Marketplace de Serviços</title>
+    <title>KIFAZ - Quem faz, está aqui.</title>
     
     <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500">
+    <link rel="apple-touch-icon" href="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500">
     <link rel="manifest" href="manifest.json">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- ========================================== -->
+    <!-- ESTILOS (CSS) O VISUAL APROVADO            -->
+    <!-- ========================================== -->
     <style>
-        :root { --bg-dark: #121212; --neon-yellow: #FFC107; --neon-green: #39FF14; --neon-red: #FF3B30; --text-main: #FFF; --text-muted: #888; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        :root { --bg-dark: #121212; --bg-panel: #1e1e1e; --neon-yellow: #FFC107; --neon-green: #39FF14; --neon-red: #FF3B30; --text-main: #FFFFFF; --text-muted: #666666; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
 
         .screen { display: none; padding: 20px; min-height: 100vh; flex-direction: column; }
         .screen.active { display: flex; }
 
-        /* Utilitários Visuais */
-        .glass { background: rgba(30,30,30,0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom:15px; }
-        input, select, textarea { width: 100%; padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.5); border: 1px solid #333; color: #fff; border-radius: 8px; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: var(--neon-yellow); box-shadow: 0 0 8px rgba(255,193,7,0.2); }
-        
-        button { border: none; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; font-size: 14px; text-transform: uppercase; }
-        .btn-neon { background: transparent; color: var(--neon-yellow); border: 2px solid var(--neon-yellow); padding: 15px; width: 100%; box-shadow: 0 0 10px rgba(255,193,7,0.2), inset 0 0 5px rgba(255,193,7,0.1); }
-        .btn-neon:hover { background: rgba(255,193,7,0.1); box-shadow: 0 0 20px rgba(255,193,7,0.5); }
-        .btn-neon.green { color: var(--neon-green); border-color: var(--neon-green); box-shadow: 0 0 10px rgba(57,255,20,0.2); }
-        .btn-link { background: none; color: var(--text-muted); text-decoration: underline; padding: 10px; width:100%; font-weight:normal; }
-        .btn-small { padding: 8px 12px; font-size: 12px; border-radius:5px; color:#000; }
-        
-        /* Modais e Chat */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; padding: 15px; }
-        .modal.active { display: flex; }
-        .modal-content { width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; position: relative; }
-        .close { color: #aaa; float: right; font-size: 28px; cursor: pointer; position: absolute; right: 15px; top: 10px; z-index: 10; }
-        
-        .chat-box { height: 300px; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 8px; padding: 10px; margin-bottom: 10px; display:flex; flex-direction:column; gap:8px;}
-        .msg { max-width: 80%; padding: 10px; border-radius: 8px; font-size:14px; }
-        .msg.minha { background: rgba(255,193,7,0.2); align-self: flex-end; border: 1px solid var(--neon-yellow); }
-        .msg.deles { background: #333; align-self: flex-start; }
+        /* Logo */
+        .logo-container { text-align: center; margin-top: 5vh; margin-bottom: 30px; }
+        .logo-container img { width: 140px; height: 140px; border-radius: 50%; box-shadow: 0 0 25px rgba(255, 193, 7, 0.3); object-fit: contain; background: #fff; }
+        .logo-text { font-size: 2.5rem; font-weight: 800; letter-spacing: 2px; margin-top: 15px; }
+        .neon-dot { color: var(--neon-yellow); text-shadow: 0 0 10px var(--neon-yellow); }
 
-        /* Rankings e Cards */
-        .rank-card { display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #222; font-size:14px; }
-        .star { color: var(--neon-yellow); }
+        /* Caixas e Inputs */
+        .glass { background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 20px; margin-bottom: 15px;}
+        input[type="text"], input[type="password"], input[type="email"], input[type="number"], select, textarea { width: 100%; padding: 15px; margin-bottom: 15px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; color: var(--text-main); border-radius: 8px; outline: none; font-size: 16px; }
+        input:focus, select:focus, textarea:focus { border-color: var(--neon-yellow); box-shadow: 0 0 8px rgba(255, 193, 7, 0.2); }
+        .row-inputs { display: flex; gap: 10px; }
+
+        /* Botões Néon Real (Fundo Transparente) */
+        button { border: none; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; font-size: 15px; letter-spacing: 1px; }
+        .btn-neon-outline { background: transparent !important; color: var(--neon-yellow) !important; border: 2px solid var(--neon-yellow) !important; padding: 15px; text-transform: uppercase; box-shadow: 0 0 15px rgba(255, 193, 7, 0.3), inset 0 0 10px rgba(255, 193, 7, 0.1) !important; width: 100%; }
+        .btn-neon-outline:hover { background: rgba(255, 193, 7, 0.1) !important; box-shadow: 0 0 25px rgba(255, 193, 7, 0.6), inset 0 0 15px rgba(255, 193, 7, 0.3) !important; }
         
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #222; padding-bottom: 15px; }
-        .btn-menu { background: none; color: #fff; font-size: 28px; padding:0 10px 0 0; }
+        .btn-neon-outline.online { color: var(--neon-green) !important; border-color: var(--neon-green) !important; box-shadow: 0 0 15px rgba(57, 255, 20, 0.3), inset 0 0 10px rgba(57, 255, 20, 0.1) !important; }
+        .btn-neon-outline.online:hover { background: rgba(57, 255, 20, 0.1) !important; box-shadow: 0 0 25px rgba(57, 255, 20, 0.6), inset 0 0 15px rgba(57, 255, 20, 0.3) !important; }
+
+        .btn-link { background: none; color: #aaa; text-decoration: underline; padding: 15px; width: 100%; margin-top: 10px; font-weight: normal; }
+        .btn-link:hover { color: var(--neon-yellow); }
+        .btn-small { padding: 8px 15px; font-size: 12px; border: none; border-radius: 5px; color: #000; font-weight: bold; }
+        .btn-bg-green { background: var(--neon-green); }
+        .btn-bg-red { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); }
+
+        /* Header e Menu Lateral */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; width: 100%; border-bottom: 1px solid #222; padding-bottom: 15px; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .btn-menu { background: transparent !important; border: none !important; color: #fff; font-size: 32px; cursor: pointer; padding: 0 5px; line-height: 1; }
+        .btn-logout { background: transparent; border: none; color: #666; font-size: 24px; cursor: pointer; }
+        .btn-logout:hover { color: var(--neon-red); }
         
-        /* Sidebar */
-        .sidebar { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: #151515; z-index: 2000; transition: left 0.3s; padding: 30px 20px; border-right: 1px solid rgba(255,193,7,0.2); }
+        .sidebar { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: #151515; z-index: 2000; transition: left 0.3s ease; padding: 30px 20px; border-right: 1px solid rgba(255,193,7,0.2); box-shadow: 5px 0 20px rgba(0,0,0,0.8); }
         .sidebar.active { left: 0; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; }
+        .sidebar-header { font-size: 2rem; font-weight: 800; margin-bottom: 40px; color: #fff; text-align: center; }
+        .menu-item { padding: 15px; font-size: 1.1rem; border-bottom: 1px solid #222; color: #ddd; cursor: pointer; display: flex; align-items: center; gap: 15px; transition: 0.2s; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; backdrop-filter: blur(4px); }
         .overlay.active { display: block; }
-        .menu-item { padding: 15px 0; border-bottom: 1px solid #222; font-size: 16px; cursor: pointer; }
+
+        /* Modais */
+        .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.95); align-items: center; justify-content: center; padding: 15px; }
+        .modal.active { display: flex; }
+        .modal-content { width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; position: relative; margin: auto; }
+        .close { color: #aaa; float: right; font-size: 28px; cursor: pointer; position: absolute; right: 20px; top: 15px; z-index: 10; }
+
+        /* Chat e Cards */
+        .badge { background: var(--neon-yellow); color: #000; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
+        .user-card { border-left: 3px solid #333; background: rgba(0,0,0,0.4); padding: 15px; margin-bottom: 15px; border-radius: 0 8px 8px 0; border: 1px solid #222; }
+        .chat-box { height: 350px; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 8px; padding: 15px; margin-bottom: 15px; display:flex; flex-direction:column; gap:10px; }
+        .msg { max-width: 85%; padding: 12px; border-radius: 8px; font-size:14px; }
+        .msg.minha { background: rgba(255,193,7,0.2); align-self: flex-end; border: 1px solid var(--neon-yellow); color:#fff; }
+        .msg.deles { background: #333; align-self: flex-start; color:#ddd; }
+        
+        .rank-card { display:flex; justify-content:space-between; align-items: center; padding:12px; border-bottom:1px solid #222; font-size:14px; background: rgba(0,0,0,0.3); border-radius: 5px; margin-bottom: 5px;}
+        .star { color: var(--neon-yellow); font-weight: bold; }
     </style>
 </head>
 <body>
 
+    <!-- OVERLAY E MENU LATERAL -->
     <div id="overlay" class="overlay" onclick="fecharMenu()"></div>
     <div id="sidebar" class="sidebar">
-        <h2 style="color:var(--neon-yellow); margin-bottom:30px;">KIFAZ.</h2>
+        <div class="sidebar-header">KIFAZ<span class="neon-dot">.</span></div>
         <div id="sidebar-menu-items"></div>
     </div>
 
     <!-- TELA DE LOGIN -->
     <div id="login-screen" class="screen active">
-        <div style="text-align:center; margin: 40px 0;">
-            <img src="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500" width="120" style="border-radius:50%; box-shadow:0 0 20px rgba(255,193,7,0.3);">
-            <h1 style="margin-top:15px; letter-spacing:2px;">KIFAZ<span style="color:var(--neon-yellow)">.</span></h1>
+        <div class="logo-container">
+            <img src="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500" alt="Logo KIFAZ">
+            <div class="logo-text">KIFAZ<span class="neon-dot">.</span></div>
+            <p style="color: #888; margin-top: 5px;">Quem faz, está aqui.</p>
         </div>
         
         <div class="glass">
-            <select id="login-tipo" onchange="document.getElementById('login-email').style.display = this.value === 'Administrador' ? 'none' : 'block';">
-                <option value="Cliente">Cliente</option><option value="Profissional">Profissional</option><option value="Administrador">Administrador</option>
+            <select id="login-tipo" onchange="document.getElementById('login-email').style.display = this.value === 'Administrador' ? 'none' : 'block'; document.getElementById('btn-abrir-registo').style.display = this.value === 'Administrador' ? 'none' : 'block';">
+                <option value="Cliente">Entrar como Cliente</option>
+                <option value="Profissional">Entrar como Profissional</option>
+                <option value="Administrador">Acesso Restrito (Admin)</option>
             </select>
-            <input type="email" id="login-email" placeholder="Email">
-            <input type="password" id="login-senha" placeholder="Senha">
-            <button onclick="api_Login()" class="btn-neon">Entrar</button>
-            <button onclick="abrir('modal-registo')" class="btn-link">Criar Conta</button>
+            <input type="email" id="login-email" placeholder="Seu Email">
+            <input type="password" id="login-senha" placeholder="Sua Senha">
+            <button onclick="fazerLogin()" class="btn-neon-outline" id="btn-entrar">ENTRAR</button>
+            <button onclick="abrirModal('modal-registo')" class="btn-link" id="btn-abrir-registo">Ainda não tem conta? Criar Conta</button>
         </div>
     </div>
 
+    <!-- MODAL REGISTO -->
+    <div id="modal-registo" class="modal"><div class="modal-content glass">
+        <span class="close" onclick="fecharModal('modal-registo')">&times;</span>
+        <h2 style="color: var(--neon-yellow); margin-bottom: 20px;">Criar Conta</h2>
+        <select id="reg-tipo" onchange="document.getElementById('reg-prof-container').style.display=this.value==='Profissional'?'block':'none'">
+            <option value="Cliente">Cliente</option><option value="Profissional">Profissional</option>
+        </select>
+        <div class="row-inputs"><input type="text" id="reg-nome" placeholder="Nome"><input type="text" id="reg-sobrenome" placeholder="Último Nome"></div>
+        <input type="email" id="reg-email" placeholder="Email">
+        <div id="reg-prof-container" style="display: none;">
+            <select id="reg-profissao"><option value="" disabled selected>Sua Profissão</option><option value="Pladur">Pladur</option><option value="Eletricista">Eletricista</option><option value="Pintor">Pintor</option><option value="Canalizador">Canalizador</option><option value="Barrador">Barrador</option></select>
+        </div>
+        <input type="password" id="reg-senha" placeholder="Senha">
+        <input type="password" id="reg-senha-conf" placeholder="Confirmar Senha">
+        <button onclick="enviarRegisto()" id="btn-submit-reg" class="btn-neon-outline" style="margin-top: 10px;">CRIAR</button>
+    </div></div>
+
     <!-- TELA ADMIN -->
     <div id="admin-screen" class="screen">
-        <header><button class="btn-menu" onclick="abrirMenu()">☰</button><h3>Admin <span style="color:var(--neon-yellow)">•</span></h3></header>
-        
-        <button class="btn-neon" onclick="api_AdminListar('pendentes')" style="margin-bottom:15px;">Aprovações Pendentes</button>
-        <button class="btn-neon" onclick="api_AdminListar('todos')">Todos os Usuários</button>
-        
-        <div id="admin-view" class="glass" style="margin-top:20px; display:none;">
-            <h4 style="color:var(--neon-yellow); margin-bottom:10px;" id="admin-view-title">Resultados</h4>
+        <header>
+            <div class="header-left"><button onclick="abrirMenu()" class="btn-menu">☰</button><h2 style="margin: 0;">Painel Admin <span style="color:var(--neon-yellow);">•</span></h2></div>
+            <button onclick="logout()" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
+        </header>
+        <button class="btn-neon-outline" onclick="carregarAdmin('pendentes')" style="margin-bottom:15px;"><i class="fas fa-user-clock"></i> Solicitações Pendentes</button>
+        <button class="btn-neon-outline" onclick="carregarAdmin('todos')"><i class="fas fa-users"></i> Todos os Utilizadores</button>
+        <div id="admin-view" style="display:none; margin-top:20px;">
+            <h3 id="admin-titulo" style="color:var(--neon-yellow); margin-bottom:15px;"></h3>
             <div id="admin-lista"></div>
         </div>
     </div>
 
     <!-- TELA CLIENTE -->
     <div id="cliente-screen" class="screen">
-        <header><button class="btn-menu" onclick="abrirMenu()">☰</button><h3 id="cli-nome"></h3></header>
-        
-        <button onclick="abrir('modal-pedido')" class="btn-neon" style="margin-bottom:20px; padding:20px; font-size:1.1rem;"><i class="fas fa-bolt"></i> Solicitar Serviço</button>
+        <header>
+            <div class="header-left"><button onclick="abrirMenu()" class="btn-menu">☰</button><h2 style="margin: 0;" id="nome-cliente-display">Olá!</h2></div>
+            <button onclick="logout()" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
+        </header>
+        <button onclick="abrirModal('modal-pedido')" class="btn-neon-outline" style="padding: 20px; font-size: 1.2rem; margin-bottom: 25px;"><i class="fas fa-bolt" style="margin-right: 10px;"></i> Solicitar Serviço</button>
         
         <div class="glass">
-            <h4 style="color:var(--neon-yellow); margin-bottom:10px;">Acompanhar Pedidos</h4>
-            <div id="cli-pedidos" style="color:var(--text-muted); font-size:14px;">Buscando pedidos...</div>
-            <button onclick="api_VerOrçamentos()" class="btn-neon" style="margin-top:15px; font-size:12px; padding:10px;">Ver Orçamentos Recebidos</button>
+            <h3 style="color: var(--neon-yellow); margin-bottom: 15px;"><i class="fas fa-list-alt"></i> Obras e Orçamentos</h3>
+            <div id="lista-pedidos-cliente" style="color:#aaa; font-size:14px;">Buscando os seus pedidos...</div>
         </div>
 
         <div class="glass">
-            <h4 style="color:var(--neon-yellow); margin-bottom:10px;"><i class="fas fa-trophy"></i> Top 5 Profissionais (Volume)</h4>
-            <div id="cli-rank-vol">Carregando...</div>
+            <h3 style="color: var(--neon-yellow); margin-bottom: 15px;"><i class="fas fa-trophy"></i> Top Profissionais do Mês</h3>
+            <div id="cli-rankings">A carregar rankings...</div>
         </div>
     </div>
 
     <!-- TELA PROFISSIONAL -->
     <div id="pro-screen" class="screen">
-        <header><button class="btn-menu" onclick="abrirMenu()">☰</button><h3>Modo Pro <span id="dot-pro" style="color:#555;">•</span></h3></header>
+        <header>
+            <div class="header-left"><button onclick="abrirMenu()" class="btn-menu">☰</button><h2 style="margin: 0;">Modo Pro <span id="dot-status-pro" style="color:#666; text-shadow:none; transition:0.3s;">•</span></h2></div>
+            <button onclick="logout()" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
+        </header>
         
-        <button id="btn-status-pro" onclick="toggleStatusPro()" class="btn-neon" style="margin-bottom:20px;">Ficar Online</button>
+        <div style="margin-bottom: 30px;"><button id="btn-status" onclick="toggleStatus()" class="btn-neon-outline">FICAR ONLINE PARA RECEBER PEDIDOS</button></div>
         
         <div class="glass">
-            <h4 style="color:var(--neon-yellow); margin-bottom:10px;"><i class="fas fa-wallet"></i> Faturamento do Mês</h4>
-            <h2 id="pro-faturamento">0.00 €</h2>
+            <h3 style="color: var(--neon-yellow); margin-bottom: 15px;"><i class="fas fa-chart-line"></i> O meu Faturamento (Mês)</h3>
+            <h1 id="pro-faturamento" style="font-size:2.5rem; color:#fff; text-shadow:0 0 10px rgba(255,255,255,0.3);">0.00 €</h1>
             <canvas id="proChart" height="150" style="margin-top:15px;"></canvas>
         </div>
 
         <div class="glass">
-            <h4 style="color:var(--neon-yellow); margin-bottom:10px;"><i class="fas fa-satellite-dish"></i> Radar de Pedidos</h4>
-            <div id="pro-radar" style="font-size:14px; color:#aaa;">Fique online para receber.</div>
+            <h3 style="color: var(--neon-yellow); margin-bottom: 15px;"><i class="fas fa-map-marker-alt"></i> Radar de Clientes <span id="alerta-pedidos" class="badge">0</span></h3>
+            <div id="lista-pedidos-pro" style="color: #aaa;">Fique online para ver os clientes da região.</div>
         </div>
-        
+
         <div class="glass">
-            <h4 style="color:var(--neon-yellow); margin-bottom:10px;"><i class="fas fa-trophy"></i> Meu Ranking (Top 5)</h4>
-            <div id="pro-rank">Carregando...</div>
+            <h3 style="color: var(--neon-yellow); margin-bottom: 15px;"><i class="fas fa-star"></i> Trabalhos Aprovados / Chat</h3>
+            <div id="lista-trabalhos-pro" style="color: #aaa; font-size:14px;">Buscando as suas obras em andamento...</div>
         </div>
     </div>
 
-    <!-- MODAIS COMPARTILHADOS -->
-    <div id="modal-registo" class="modal"><div class="modal-content glass"><span class="close" onclick="fechar('modal-registo')">&times;</span><h3 style="color:var(--neon-yellow); margin-bottom:15px;">Criar Conta</h3>
-        <select id="r-tipo" onchange="document.getElementById('r-prof').style.display=this.value==='Profissional'?'block':'none'"><option value="Cliente">Cliente</option><option value="Profissional">Profissional</option></select>
-        <div style="display:flex; gap:10px;"><input id="r-nome" placeholder="Nome"><input id="r-sobrenome" placeholder="Sobrenome"></div>
-        <input id="r-email" type="email" placeholder="Email">
-        <select id="r-prof" style="display:none;"><option value="Pladur">Pladur</option><option value="Eletricista">Eletricista</option><option value="Pintor">Pintor</option></select>
-        <input id="r-senha" type="password" placeholder="Senha"><button onclick="api_Registar()" class="btn-neon">Criar</button>
+    <!-- MODAIS DE OPERAÇÃO -->
+    <div id="modal-pedido" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharModal('modal-pedido')">&times;</span>
+        <h3 style="color: var(--neon-yellow); margin-bottom:20px; text-align:center;">O que você precisa?</h3>
+        <select id="categoria-pedido"><option value="Pladur">Pladur</option><option value="Eletricista">Eletricista</option><option value="Pintor">Pintor</option><option value="Canalizador">Canalizador</option><option value="Barrador">Barrador</option></select>
+        <textarea id="desc-pedido" placeholder="Descreva o serviço com detalhes..." rows="5"></textarea>
+        <button onclick="enviarPedido()" class="btn-neon-outline" style="margin-top: 10px;">PEDIR ORÇAMENTOS</button>
     </div></div>
 
-    <div id="modal-pedido" class="modal"><div class="modal-content glass"><span class="close" onclick="fechar('modal-pedido')">&times;</span><h3 style="color:var(--neon-yellow); margin-bottom:15px;">O que precisa?</h3>
-        <select id="p-cat"><option value="Pladur">Pladur</option><option value="Eletricista">Eletricista</option><option value="Pintor">Pintor</option></select>
-        <textarea id="p-desc" placeholder="Detalhes da obra..." rows="4"></textarea><button onclick="api_CriarPedido()" class="btn-neon">Pedir Agora</button>
+    <div id="modal-enviar-orc" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharModal('modal-enviar-orc')">&times;</span>
+        <h3 style="color: var(--neon-yellow); margin-bottom:20px;">Enviar Orçamento</h3>
+        <input type="number" id="orc-valor" placeholder="Valor Estimado em € (ex: 150.00)">
+        <textarea id="orc-msg" placeholder="Descreva quando pode começar, material incluído, etc..." rows="4"></textarea>
+        <button onclick="enviarOrcamentoReal()" class="btn-neon-outline">ENVIAR OFERTA AO CLIENTE</button>
     </div></div>
 
-    <!-- Modal Enviar Orçamento (Pro) -->
-    <div id="modal-enviar-orc" class="modal"><div class="modal-content glass"><span class="close" onclick="fechar('modal-enviar-orc')">&times;</span><h3 style="color:var(--neon-yellow); margin-bottom:15px;">Enviar Orçamento</h3>
-        <input type="number" id="orc-valor" placeholder="Valor Estimado (€)">
-        <textarea id="orc-msg" placeholder="Mensagem para o cliente..."></textarea>
-        <button onclick="api_EnviarOrcamento()" class="btn-neon">Enviar Oferta</button>
-    </div></div>
-
-    <!-- Modal Ver Orçamentos (Cliente) -->
-    <div id="modal-ver-orc" class="modal"><div class="modal-content glass"><span class="close" onclick="fechar('modal-ver-orc')">&times;</span><h3 style="color:var(--neon-yellow); margin-bottom:15px;">Orçamentos</h3>
+    <div id="modal-ver-orc" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharModal('modal-ver-orc')">&times;</span>
+        <h3 style="color: var(--neon-yellow); margin-bottom:20px;">Orçamentos Recebidos</h3>
         <div id="lista-orcamentos-recebidos">Buscando...</div>
     </div></div>
 
-    <!-- Chat Master e Avaliação -->
-    <div id="modal-chat" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharChat()">&times;</span><h3 style="color:var(--neon-yellow); margin-bottom:10px;">Chat Direto</h3>
+    <div id="modal-chat" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharChat()">&times;</span>
+        <h3 style="color: var(--neon-yellow); margin-bottom:15px;"><i class="fas fa-comments"></i> Chat da Obra</h3>
         <div class="chat-box" id="chat-box"></div>
-        <div style="display:flex; gap:10px;"><input type="text" id="chat-input" placeholder="Mensagem..." style="margin:0;"><button onclick="api_EnviarMsg()" class="btn-neon" style="width:80px;">Enviar</button></div>
-        <hr style="border-color:#333; margin:15px 0;">
-        <h5 style="color:#aaa; margin-bottom:5px;">Finalizou o serviço? Avalie:</h5>
+        <div style="display:flex; gap:10px;"><input type="text" id="chat-input" placeholder="Escreva a mensagem..." style="margin:0;"><button onclick="enviarMensagem()" class="btn-neon-outline" style="width:100px; padding:10px;">ENVIAR</button></div>
+        <hr style="border-color:#333; margin:20px 0 15px 0;">
+        <h4 style="color:#aaa; font-size:14px; margin-bottom:10px;">A obra terminou? Avalie:</h4>
         <div style="display:flex; gap:10px;">
-            <select id="nota-aval" style="margin:0; width:100px;"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="1">⭐</option></select>
-            <button onclick="api_Avaliar()" class="btn-neon" style="padding:10px;">Avaliar</button>
+            <select id="nota-aval" style="margin:0;"><option value="5">5 Estrelas (Excelente)</option><option value="4">4 Estrelas (Muito Bom)</option><option value="3">3 Estrelas (Razoável)</option><option value="2">2 Estrelas (Fraco)</option><option value="1">1 Estrela (Péssimo)</option></select>
+            <button onclick="enviarAvaliacao()" class="btn-neon-outline" style="padding:10px;">AVALIAR</button>
         </div>
     </div></div>
 
     <script>
-        // ======= CONFIGURAÇÃO OBRIGATÓRIA =======
-        const API_URL = 'COLE_AQUI_SEU_URL_APPS_SCRIPT'; 
+        // A SUA URL ORIGINAL INTACTA
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwECa674WOxJLt_vT8vR7SlRsup45jMBAxVl8PLMn1oLAxwxD9tm8gYng8ZTpfTKfYH/exec'; 
         
-        let user = null; let proOnline = false; let radarInt, chatInt; 
-        let tempIdPedido = null; let tempIdDestinatario = null; let chart = null;
+        let user = null; let coordsAtuais = { lat: 0, lng: 0 }; let proIsOnline = false;
+        let proSearchInterval, chatInterval; 
+        let tempIdPedido = null; let tempIdDestinatario = null; let meuGrafico = null;
 
-        function abrir(id) { document.getElementById(id).classList.add('active'); }
-        function fechar(id) { document.getElementById(id).classList.remove('active'); }
-        function abrirMenu() { abrir('sidebar'); abrir('overlay'); }
-        function fecharMenu() { fechar('sidebar'); fechar('overlay'); }
-        function nav(id) { document.querySelectorAll('.screen').forEach(s=>fechar(s.id)); abrir(id); fecharMenu(); }
-        function msgLog(btn, text) { const b = document.getElementById(btn); const old = b.innerText; b.innerText = text; setTimeout(()=>b.innerText = old, 3000); }
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW falhou')); }); }
 
-        async function api(action, payload) {
-            try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, payload }) }); return await r.json(); } 
-            catch(e) { alert("Erro de rede."); return null; }
+        // ==========================================
+        // UI BÁSICA E MENUS
+        // ==========================================
+        function abrirModal(id) { document.getElementById(id).classList.add('active'); }
+        function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
+        function abrirMenu() { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+        function fecharMenu() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); }
+        function navegarPara(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); fecharMenu(); }
+
+        async function chamadoraAPI(acao, payload) {
+            try { const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: acao, payload: payload }) }); return await res.json(); } 
+            catch(e) { alert("Erro de conexão. Verifique a internet."); return null; }
         }
 
-        // --- AUTENTICAÇÃO ---
-        async function api_Registar() {
-            const p = { tipo: document.getElementById('r-tipo').value, nome: document.getElementById('r-nome').value, sobrenome: document.getElementById('r-sobrenome').value, email: document.getElementById('r-email').value, senha: document.getElementById('r-senha').value, profissao: document.getElementById('r-prof').value };
-            document.getElementById('btn-submit-reg').innerText = 'A ENVIAR...';
-            const res = await api('registrar_conta', p);
-            if(res && res.sucesso) { alert(res.msg); fechar('modal-registo'); } else if(res) alert(res.erro);
-            document.getElementById('btn-submit-reg').innerText = 'CRIAR';
+        function construirMenu(tipo) {
+            const menu = document.getElementById('sidebar-menu-items');
+            if (tipo === 'Administrador') {
+                menu.innerHTML = `<div class="menu-item" onclick="fecharMenu()"><i class="fas fa-user-shield" style="width:25px;"></i> Painel Gestão</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px; border-top:1px solid #333;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Sair</div>`;
+            } else if (tipo === 'Cliente') {
+                menu.innerHTML = `<div class="menu-item" onclick="fecharMenu()"><i class="fas fa-home" style="width:25px;"></i> Início</div><div class="menu-item" onclick="fecharMenu(); abrirModal('modal-pedido');"><i class="fas fa-bolt" style="width:25px;"></i> Novo Pedido</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px; border-top:1px solid #333;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Sair</div>`;
+            } else if (tipo === 'Profissional') {
+                menu.innerHTML = `<div class="menu-item" onclick="fecharMenu()"><i class="fas fa-briefcase" style="width:25px;"></i> Painel de Obras</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px; border-top:1px solid #333;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Sair</div>`;
+            }
         }
 
-        async function api_Login() {
+        function logout() { user = null; document.getElementById('login-senha').value = ''; if(proSearchInterval) clearInterval(proSearchInterval); navegarPara('login-screen'); }
+
+        // ==========================================
+        // LOGIN E REGISTO
+        // ==========================================
+        async function enviarRegisto() {
+            const p = { tipo: document.getElementById('reg-tipo').value, nome: document.getElementById('reg-nome').value, sobrenome: document.getElementById('reg-sobrenome').value, email: document.getElementById('reg-email').value, senha: document.getElementById('reg-senha').value, senhaConf: document.getElementById('reg-senha-conf').value, profissao: document.getElementById('reg-profissao').value };
+            if (!p.nome || !p.email || !p.senha) return alert('Preencha os campos obrigatórios.');
+            if (p.senha !== p.senhaConf) return alert('As senhas não coincidem.');
+            const btn = document.getElementById('btn-submit-reg'); btn.innerText = 'A ENVIAR...';
+            const res = await chamadoraAPI('registrar_conta', p);
+            if(res && res.sucesso) { alert(res.mensagem); fecharModal('modal-registo'); document.getElementById('login-email').value = p.email; document.getElementById('login-senha').value = ''; } else if(res) { alert(res.erro); }
+            btn.innerText = 'CRIAR CONTA';
+        }
+
+        async function fazerLogin() {
             const p = { tipo: document.getElementById('login-tipo').value, email: document.getElementById('login-email').value, senha: document.getElementById('login-senha').value };
-            document.getElementById('btn-entrar').innerText = 'VALIDANDO...';
-            const res = await api('login', p);
+            if (!p.senha) return alert('Insira a senha.');
+            const btn = document.getElementById('btn-entrar'); btn.innerText = 'VALIDANDO...';
+            const res = await chamadoraAPI('login', p);
             
             if(res && res.sucesso) {
-                user = res;
-                if(user.tipo === 'Administrador') { nav('admin-screen'); const menu = `
-                    <div class="menu-item" onclick="api_AdminListar('pendentes')">⏳ Solicitações</div>
-                    <div class="menu-item" onclick="api_AdminListar('todos')">👥 Utilizadores</div>
-                    <div class="menu-item" onclick="location.reload()" style="color:var(--neon-red);">❌ Sair</div>`;
-                    document.getElementById('sidebar-menu-items').innerHTML = menu;
-                } else if(user.tipo === 'Cliente') {
-                    document.getElementById('cli-nome').innerText = "Olá, " + user.nome; nav('cliente-screen');
-                    document.getElementById('sidebar-menu-items').innerHTML = `<div class="menu-item" onclick="location.reload()" style="color:var(--neon-red);">❌ Sair</div>`;
-                    api_LoadDashboardCliente();
+                user = res; construirMenu(user.tipo);
+                if (user.tipo === 'Administrador') { navegarPara('admin-screen'); carregarAdmin('pendentes'); } 
+                else if (user.tipo === 'Cliente') {
+                    document.getElementById('nome-cliente-display').innerText = "Olá, " + user.nome; navegarPara('cliente-screen'); carregarDashboardCliente();
                 } else {
-                    nav('pro-screen');
-                    document.getElementById('sidebar-menu-items').innerHTML = `<div class="menu-item" onclick="location.reload()" style="color:var(--neon-red);">❌ Sair</div>`;
-                    api_LoadDashboardPro();
+                    navegarPara('pro-screen'); carregarDashboardPro();
                 }
-            } else if (res) { alert(res.erro); document.getElementById('btn-entrar').innerText = 'ENTRAR'; }
+            } else if(res) { alert(res.erro); }
+            btn.innerText = 'ENTRAR';
         }
 
-        // --- DASHBOARDS (Pro e Cliente) ---
-        async function api_LoadDashboardPro() {
-            const res = await api('obter_dashboard_pro', { idPro: user.id });
+        // ==========================================
+        // FLUXO DO CLIENTE
+        // ==========================================
+        async function carregarDashboardCliente() {
+            const res = await chamadoraAPI('obter_dashboard_cliente', {});
+            if(res) {
+                document.getElementById('cli-rankings').innerHTML = res.rankings.topVolume.map((p,i) => `<div class="rank-card"><span>#${i+1} <b>${p.nome}</b> <small>(${p.prof})</small></span><span class="star">${parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
+                document.getElementById('lista-pedidos-cliente').innerHTML = `<button onclick="verMeusOrcamentos()" class="btn-neon-outline" style="font-size:12px; padding:10px;">VER ORÇAMENTOS RECEBIDOS</button>`;
+            }
+        }
+
+        async function enviarPedido() {
+            const cat = document.getElementById('categoria-pedido').value; const desc = document.getElementById('desc-pedido').value;
+            fecharModal('modal-pedido');
+            const res = await chamadoraAPI('criar_pedido', { idCliente: user.id, categoria: cat, descricao: desc, lat: 0, lng: 0 });
+            if(res) {
+                tempIdPedido = res.id_pedido;
+                alert("Pedido enviado para os profissionais!");
+            }
+        }
+
+        async function verMeusOrcamentos() {
+            abrirModal('modal-ver-orc'); document.getElementById('lista-orcamentos-recebidos').innerHTML = 'Buscando...';
+            const res = await chamadoraAPI('listar_orcamentos_cliente', { idPedido: tempIdPedido });
+            if(res && res.orcamentos.length > 0) {
+                document.getElementById('lista-orcamentos-recebidos').innerHTML = res.orcamentos.map(o => `<div class="glass" style="border:1px solid var(--neon-yellow);"><b>${o.nome}</b> - <span style="color:var(--neon-green); font-size:1.2em; font-weight:bold;">${o.valor}€</span><br><span style="display:block; margin:10px 0; font-size:0.9em; color:#ddd;">${o.msg}</span><button onclick="aceitarOrcamento('${o.id_orc}', '${o.id_pro}')" class="btn-neon-outline online" style="padding:10px;">ACEITAR E ABRIR CHAT</button></div>`).join('');
+            } else { document.getElementById('lista-orcamentos-recebidos').innerHTML = "Nenhum orçamento recebido ainda."; }
+        }
+
+        async function aceitarOrcamento(idOrc, idPro) {
+            const res = await chamadoraAPI('responder_orcamento', { idOrcamento: idOrc, resposta: 'Aceite' });
+            if(res) { fecharModal('modal-ver-orc'); alert("Orçamento Aceite! Combinem os detalhes no chat."); abrirChatView(idPro); }
+        }
+
+        // ==========================================
+        // FLUXO DO PROFISSIONAL
+        // ==========================================
+        async function carregarDashboardPro() {
+            const res = await chamadoraAPI('obter_dashboard_pro', { idPro: user.id });
             if(res) {
                 document.getElementById('pro-faturamento').innerText = res.faturamento.toFixed(2) + ' €';
-                renderChart(res.chart);
-                document.getElementById('pro-rank').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="rank-card"><span>#${i+1} ${p.nome}</span> <span>${p.obras} Obras</span></div>`).join('');
-            }
-        }
-        async function api_LoadDashboardCliente() {
-            const res = await api('obter_dashboard_cliente', {});
-            if(res) { document.getElementById('cli-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="rank-card"><span>#${i+1} ${p.nome} <small>(${p.prof})</small></span> <span class="star">${p.estrelas} ⭐</span></div>`).join(''); }
-        }
-        function renderChart(dataArr) {
-            const ctx = document.getElementById('proChart').getContext('2d');
-            Chart.defaults.color = '#888'; Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
-            if(chart) chart.destroy();
-            chart = new Chart(ctx, { type: 'line', data: { labels: ['Sem 1','Sem 2','Sem 3','Sem 4'], datasets: [{ label:'€', data: dataArr, borderColor: '#39FF14', backgroundColor:'rgba(57,255,20,0.1)', fill:true, tension:0.4 }] }, options: { plugins:{legend:{display:false}} }});
-        }
-
-        // --- PEDIDOS E ORÇAMENTOS ---
-        async function api_CriarPedido() {
-            const c = document.getElementById('p-cat').value; const d = document.getElementById('p-desc').value;
-            const res = await api('criar_pedido', { idCliente: user.id, categoria: c, descricao: d, lat: 0, lng: 0 });
-            if(res) { fechar('modal-pedido'); document.getElementById('cli-pedidos').innerHTML = `<b>${c}</b><br><small>${d}</small><br><span style="color:var(--neon-green)">Buscando Pros...</span>`; tempIdPedido = res.id_pedido; }
-        }
-
-        function toggleStatusPro() {
-            proOnline = !proOnline; const b = document.getElementById('btn-status-pro'); const d = document.getElementById('dot-pro');
-            if(proOnline) { b.innerText = "Buscando..."; b.classList.add('green'); d.style.color = 'var(--neon-green)'; radarInt = setInterval(api_Radar, 5000); api_Radar(); } 
-            else { b.innerText = "Ficar Online"; b.classList.remove('green'); d.style.color = '#555'; clearInterval(radarInt); }
-        }
-        async function api_Radar() {
-            if(!proOnline) return;
-            const res = await api('buscar_pedidos_pro', { profissao: user.profissao });
-            if(res && res.pedidos.length > 0) {
-                document.getElementById('pro-radar').innerHTML = res.pedidos.map(p=>`<div style="border:1px solid #333; padding:10px; margin-bottom:10px; border-radius:5px;">${p.desc}<br><button onclick="abrirModalEnviarOrc('${p.id_pedido}')" class="btn-neon" style="padding:8px; margin-top:8px;">Fazer Orçamento</button></div>`).join('');
+                const ctx = document.getElementById('proChart').getContext('2d');
+                Chart.defaults.color = '#888'; Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+                if(meuGrafico) meuGrafico.destroy();
+                meuGrafico = new Chart(ctx, { type: 'line', data: { labels: ['Sem1','Sem2','Sem3','Sem4'], datasets: [{ label:'Faturamento €', data: res.chart, borderColor: '#39FF14', backgroundColor:'rgba(57,255,20,0.1)', fill:true, tension:0.4 }] }, options: { plugins:{legend:{display:false}} }});
+                
+                // Simulação de Trabalhos Ativos no botão para abrir chat
+                document.getElementById('lista-trabalhos-pro').innerHTML = `<button onclick="abrirChatView('GERAL_CLIENTE')" class="btn-neon-outline" style="font-size:12px; padding:10px;">ABRIR CHAT COM CLIENTES ATIVOS</button>`;
             }
         }
 
-        function abrirModalEnviarOrc(idPed) { tempIdPedido = idPed; abrir('modal-enviar-orc'); }
-        async function api_EnviarOrcamento() {
-            const v = document.getElementById('orc-valor').value; const m = document.getElementById('orc-msg').value;
-            await api('enviar_orcamento', { idPedido: tempIdPedido, idPro: user.id, nomePro: user.nome, valor: v, msg: m });
-            fechar('modal-enviar-orc'); alert("Orçamento Enviado!");
+        function toggleStatus() {
+            proIsOnline = !proIsOnline; const btn = document.getElementById('btn-status'); const dot = document.getElementById('dot-status-pro');
+            if (proIsOnline) { 
+                btn.innerHTML = 'BUSCANDO PEDIDOS...'; btn.classList.add('online'); dot.style.color = 'var(--neon-green)'; dot.style.textShadow = '0 0 10px var(--neon-green)';
+                proSearchInterval = setInterval(buscarPedidosRadar, 5000); buscarPedidosRadar(); 
+            } else { 
+                btn.innerHTML = 'FICAR ONLINE PARA RECEBER PEDIDOS'; btn.classList.remove('online'); dot.style.color = '#666'; dot.style.textShadow = 'none';
+                clearInterval(proSearchInterval); 
+            }
         }
 
-        async function api_VerOrçamentos() {
-            if(!tempIdPedido) return alert("Nenhum pedido ativo.");
-            abrir('modal-ver-orc');
-            const res = await api('listar_orcamentos_cliente', { idPedido: tempIdPedido });
-            const box = document.getElementById('lista-orcamentos-recebidos');
-            if(res && res.orcamentos.length > 0) {
-                box.innerHTML = res.orcamentos.map(o=>`<div class="glass"><b>${o.nome}</b> - <span style="color:var(--neon-yellow)">${o.valor}€</span><br><small>${o.msg}</small><br><div style="display:flex;gap:5px;margin-top:10px;"><button onclick="api_ResponderOrc('${o.id_orc}','Aceite','${o.id_pro}')" style="background:var(--neon-green);color:#000;padding:5px;flex:1;">Aceitar</button><button onclick="api_ResponderOrc('${o.id_orc}','Rejeitado','')" style="background:#555;color:#fff;padding:5px;flex:1;">Recusar</button></div></div>`).join('');
-            } else { box.innerHTML = "Nenhum orçamento ainda."; }
+        async function buscarPedidosRadar() {
+            if(!proIsOnline) return;
+            const res = await chamadoraAPI('buscar_pedidos_pro', { profissao: user.profissao });
+            if (res && res.pedidos.length > 0) {
+                document.getElementById('alerta-pedidos').innerText = res.pedidos.length;
+                document.getElementById('lista-pedidos-pro').innerHTML = res.pedidos.map(p => `<div class="glass" style="border-left: 3px solid var(--neon-yellow);"><b>Novo Cliente!</b><br><span style="font-size:0.9em; color:#ddd; display:block; margin:8px 0;">${p.desc}</span><button onclick="prepararOrcamento('${p.id_pedido}')" class="btn-neon-outline" style="padding:8px; font-size:12px;">FAZER ORÇAMENTO</button></div>`).join('');
+            }
         }
 
-        async function api_ResponderOrc(idOrc, resp, idPro) {
-            const res = await api('responder_orcamento', { idOrcamento: idOrc, resposta: resp });
-            if(res && resp === 'Aceite') { fechar('modal-ver-orc'); tempIdDestinatario = res.id_pro; alert("Aceitou! O Chat foi aberto."); abrirChat(res.id_pro); }
-        }
-
-        // --- CHAT E AVALIAÇÃO ---
-        function abrirChat(destinatarioId) { tempIdDestinatario = destinatarioId; abrir('modal-chat'); api_LerMsg(); chatInt = setInterval(api_LerMsg, 4000); }
-        function fecharChat() { fechar('modal-chat'); clearInterval(chatInt); }
+        function prepararOrcamento(idPed) { tempIdPedido = idPed; abrirModal('modal-enviar-orc'); }
         
-        async function api_EnviarMsg() {
-            const m = document.getElementById('chat-input').value; if(!m) return; document.getElementById('chat-input').value = '';
-            await api('enviar_mensagem', { remetente: user.id, destinatario: tempIdDestinatario, contexto: tempIdPedido||'Geral', msg: m }); api_LerMsg();
+        async function enviarOrcamentoReal() {
+            const v = document.getElementById('orc-valor').value; const m = document.getElementById('orc-msg').value;
+            if(!v || !m) return alert("Preencha o valor e a mensagem.");
+            const res = await chamadoraAPI('enviar_orcamento', { idPedido: tempIdPedido, idPro: user.id, nomePro: user.nome, valor: v, msg: m });
+            if(res) { fecharModal('modal-enviar-orc'); alert("Orçamento enviado ao cliente com sucesso!"); }
         }
-        async function api_LerMsg() {
-            const res = await api('listar_mensagens', { eu: user.id, ele: tempIdDestinatario });
+
+        // ==========================================
+        // CHAT E AVALIAÇÕES (MÚTUO)
+        // ==========================================
+        function abrirChatView(idAlvo) { tempIdDestinatario = idAlvo; abrirModal('modal-chat'); lerMensagensAPI(); chatInterval = setInterval(lerMensagensAPI, 4000); }
+        function fecharChat() { fecharModal('modal-chat'); clearInterval(chatInterval); }
+
+        async function enviarMensagem() {
+            const m = document.getElementById('chat-input').value; if(!m) return; document.getElementById('chat-input').value = '';
+            await chamadoraAPI('enviar_mensagem', { remetente: user.id, destinatario: tempIdDestinatario, contexto: 'Obra', msg: m }); lerMensagensAPI();
+        }
+
+        async function lerMensagensAPI() {
+            const res = await chamadoraAPI('listar_mensagens', { eu: user.id, ele: tempIdDestinatario });
             if(res) {
                 const box = document.getElementById('chat-box');
-                box.innerHTML = res.msgs.map(m=>`<div class="msg ${m.deMim ? 'minha':'deles'}">${m.txt}</div>`).join('');
+                box.innerHTML = res.msgs.map(m => `<div class="msg ${m.deMim ? 'minha' : 'deles'}">${m.txt}</div>`).join('');
                 box.scrollTop = box.scrollHeight;
             }
         }
-        async function api_Avaliar() {
+
+        async function enviarAvaliacao() {
             const nota = document.getElementById('nota-aval').value;
-            await api('avaliar_usuario', { idAlvo: tempIdDestinatario, nota: nota }); alert("Avaliação registada!");
+            const res = await chamadoraAPI('avaliar_usuario', { idAlvo: tempIdDestinatario, nota: nota });
+            if(res) { alert("Avaliação registada! Obrigado."); fecharChat(); }
         }
 
-        // --- ADMIN ---
-        async function api_AdminListar(tipo) {
-            abrir('admin-view'); document.getElementById('admin-lista').innerHTML = 'Carregando...';
-            const res = await api(tipo === 'pendentes' ? 'admin_listar_pendentes' : 'admin_listar_usuarios', {});
+        // ==========================================
+        // ADMIN (APROVAÇÕES E BANIMENTOS)
+        // ==========================================
+        async function carregarAdmin(tipo) {
+            document.getElementById('admin-view').style.display = 'block'; document.getElementById('admin-lista').innerHTML = 'Carregando...';
+            const res = await chamadoraAPI(tipo === 'pendentes' ? 'admin_listar_pendentes' : 'admin_listar_usuarios', {});
             const box = document.getElementById('admin-lista');
             if(res && tipo === 'pendentes') {
-                document.getElementById('admin-view-title').innerText = "Aprovações Pendentes";
-                box.innerHTML = res.pendentes.map(p=>`<div class="glass"><b>${p.nomeCompleto}</b> - ${p.profissao}<br><div style="display:flex;gap:5px;margin-top:10px;"><button onclick="api_AdminAcao('${p.id}','Ativo')" class="btn-small btn-bg-green">Aprovar</button><button onclick="api_AdminAcao('${p.id}','Rejeitado')" class="btn-small btn-bg-red">Rejeitar</button></div></div>`).join('') || 'Nenhum pendente.';
+                document.getElementById('admin-titulo').innerHTML = '<i class="fas fa-user-clock"></i> Pendentes';
+                box.innerHTML = res.pendentes.map(p=>`<div class="user-card pendente"><strong style="color:#fff;">${p.nomeCompleto}</strong> <span class="badge">${p.profissao}</span><br><span style="font-size:0.85em; color:var(--text-muted);">${p.email}</span><div style="margin-top: 15px; display:flex; gap:10px;"><button onclick="acaoAdmin('${p.id}', 'Ativo')" class="btn-small btn-bg-green">Aprovar</button><button onclick="acaoAdmin('${p.id}', 'Rejeitado')" class="btn-small btn-bg-red">Rejeitar</button></div></div>`).join('') || 'Nenhuma solicitação pendente.';
             } else if(res) {
-                document.getElementById('admin-view-title').innerText = "Todos os Utilizadores";
-                box.innerHTML = res.usuarios.map(u=>`<div class="glass"><b>${u.nome}</b> (${u.tipo})<br><small>Status: ${u.status}</small><br><div style="display:flex;gap:5px;margin-top:10px;"><button onclick="abrirChat('${u.id}')" style="background:var(--neon-yellow);color:#000;" class="btn-small">Chat Direto</button><button onclick="api_AdminAcao('${u.id}','Banido')" class="btn-small btn-bg-red">Banir</button></div></div>`).join('');
+                document.getElementById('admin-titulo').innerHTML = '<i class="fas fa-users"></i> Todos os Utilizadores';
+                box.innerHTML = res.usuarios.map(u=> {
+                    let btnBan = u.status === 'Banido' ? `<button onclick="acaoAdmin('${u.id}', 'Ativo')" class="btn-small btn-bg-green">Desbanir</button>` : `<button onclick="acaoAdmin('${u.id}', 'Banido')" class="btn-small btn-bg-red">Banir</button>`;
+                    return `<div class="user-card ${u.status === 'Ativo' ? 'ativo' : 'rejeitado'}"><strong style="color:#fff;">${u.nome}</strong> (${u.tipo})<br><span style="font-size:0.85em; color:var(--text-muted);">${u.email}</span><br><small style="color:#aaa;">Status: ${u.status}</small><div style="margin-top: 15px; display:flex; gap:10px;">${btnBan}</div></div>`;
+                }).join('');
             }
         }
-        async function api_AdminAcao(id, status) { await api('admin_alterar_status', { id: id, status: status }); alert("Status alterado para " + status); api_AdminListar('todos'); }
 
+        async function acaoAdmin(id, status) {
+            if(status === 'Banido' && !confirm("Tem a certeza que deseja banir este utilizador?")) return;
+            await chamadoraAPI('admin_alterar_status', { id: id, status: status }); alert("Sucesso!"); carregarAdmin('todos');
+        }
     </script>
 </body>
 </html>
