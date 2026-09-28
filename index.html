@@ -33,50 +33,42 @@
         input:focus, select:focus, textarea:focus { border-color: var(--neon-yellow); box-shadow: 0 0 8px rgba(255, 193, 7, 0.2); }
         .row-inputs { display: flex; gap: 10px; }
 
-        /* Botões Estilo Néon Real (Fundo Transparente + Brilho) */
+        /* Botões Base */
         button { border: none; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; font-size: 15px; letter-spacing: 1px; }
         
-        .btn-neon-yellow { 
-            background: transparent; 
-            color: var(--neon-yellow); 
-            border: 2px solid var(--neon-yellow); 
+        /* BOTÕES NÉON (FUNDO TRANSPARENTE OBRIGATÓRIO) */
+        .btn-neon-outline { 
+            background: transparent !important; 
+            color: var(--neon-yellow) !important; 
+            border: 2px solid var(--neon-yellow) !important; 
             padding: 15px; 
             text-transform: uppercase; 
-            box-shadow: 0 0 15px rgba(255, 193, 7, 0.3), inset 0 0 10px rgba(255, 193, 7, 0.1); 
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.3), inset 0 0 10px rgba(255, 193, 7, 0.1) !important; 
             width: 100%; 
         }
-        .btn-neon-yellow:hover, .btn-neon-yellow:active { 
-            background: rgba(255, 193, 7, 0.1); 
-            box-shadow: 0 0 25px rgba(255, 193, 7, 0.6), inset 0 0 15px rgba(255, 193, 7, 0.3); 
-        }
+        .btn-neon-outline:hover { background: rgba(255, 193, 7, 0.1) !important; box-shadow: 0 0 25px rgba(255, 193, 7, 0.6), inset 0 0 15px rgba(255, 193, 7, 0.3) !important; }
 
-        .btn-neon-green { 
-            background: transparent; 
-            color: var(--neon-green); 
-            border: 2px solid var(--neon-green); 
-            padding: 15px; 
-            text-transform: uppercase; 
-            box-shadow: 0 0 15px rgba(57, 255, 20, 0.3), inset 0 0 10px rgba(57, 255, 20, 0.1); 
-            width: 100%; 
+        .btn-neon-outline.online { 
+            color: var(--neon-green) !important; 
+            border-color: var(--neon-green) !important; 
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.3), inset 0 0 10px rgba(57, 255, 20, 0.1) !important; 
         }
-        .btn-neon-green:hover, .btn-neon-green:active { 
-            background: rgba(57, 255, 20, 0.1); 
-            box-shadow: 0 0 25px rgba(57, 255, 20, 0.6), inset 0 0 15px rgba(57, 255, 20, 0.3); 
-        }
+        .btn-neon-outline.online:hover { background: rgba(57, 255, 20, 0.1) !important; box-shadow: 0 0 25px rgba(57, 255, 20, 0.6), inset 0 0 15px rgba(57, 255, 20, 0.3) !important; }
 
         /* Links e Ícones Menores */
         .btn-link { background: none; color: #aaa; text-decoration: underline; padding: 15px; width: 100%; margin-top: 10px; font-weight: normal; }
         .btn-link:hover { color: var(--neon-yellow); }
-        
-        /* Botão do Menu Hambúrguer */
-        .btn-menu-bars { background: transparent; color: var(--text-main); font-size: 1.8rem; padding: 5px 15px 5px 0; border: none; cursor: pointer; }
-        .btn-menu-bars:hover { color: var(--neon-yellow); text-shadow: 0 0 10px var(--neon-yellow); }
-        
-        .btn-icon { background: transparent; color: var(--text-muted); font-size: 1.5rem; padding: 5px; cursor: pointer; border: none; }
-        .btn-icon:hover { color: var(--neon-red); }
         .btn-small { padding: 8px 15px; font-size: 12px; border: none; border-radius: 5px; color: #000; font-weight: bold; }
         .btn-bg-green { background: var(--neon-green); }
         .btn-bg-red { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); }
+
+        /* HEADER E MENU HAMBÚRGUER NATIVO */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; width: 100%; border-bottom: 1px solid #222; padding-bottom: 15px; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .btn-menu { background: transparent !important; border: none !important; color: #fff; font-size: 32px; cursor: pointer; padding: 0 5px; line-height: 1; }
+        .btn-menu:hover { color: var(--neon-yellow); text-shadow: 0 0 10px var(--neon-yellow); }
+        .btn-logout { background: transparent; border: none; color: #666; font-size: 24px; cursor: pointer; }
+        .btn-logout:hover { color: var(--neon-red); }
 
         /* Menu Lateral (Sidebar) */
         .sidebar { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: #151515; z-index: 1000; transition: left 0.3s ease; padding: 30px 20px; border-right: 1px solid rgba(255,193,7,0.2); box-shadow: 5px 0 20px rgba(0,0,0,0.8); }
@@ -94,9 +86,6 @@
         .close { color: #aaa; float: right; font-size: 28px; cursor: pointer; position: absolute; right: 20px; top: 15px; z-index: 10; }
 
         /* Utilitários Admin e Cards */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; width: 100%; border-bottom: 1px solid #222; padding-bottom: 15px; }
-        .header-left { display: flex; align-items: center; gap: 10px; }
-        
         .badge { background: var(--neon-yellow); color: #000; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
         .user-card { border-left: 3px solid #333; background: rgba(0,0,0,0.4); padding: 15px; margin-bottom: 15px; border-radius: 0 8px 8px 0; border-top: 1px solid #222; border-right: 1px solid #222; border-bottom: 1px solid #222; }
         .user-card.pendente { border-left-color: var(--neon-yellow); }
@@ -106,9 +95,6 @@
         .tab-menu { display: flex; gap: 10px; margin-bottom: 25px; }
         .tab-btn { flex: 1; background: #222; color: #aaa; padding: 12px; text-align: center; border-radius: 8px; font-size: 14px; transition: 0.3s; border: none; }
         .tab-btn.active { background: rgba(255,193,7,0.1); color: var(--neon-yellow); box-shadow: inset 0 0 10px rgba(255,193,7,0.2); border: 1px solid var(--neon-yellow); }
-
-        /* Ponto de Status */
-        .status-dot { display: inline-block; font-size: 1.2em; transition: 0.3s; }
     </style>
 </head>
 <body>
@@ -119,9 +105,7 @@
     <div id="overlay" class="overlay" onclick="fecharMenu()"></div>
     <div id="sidebar" class="sidebar">
         <div class="sidebar-header">KIFAZ<span class="neon-dot">.</span></div>
-        <div id="sidebar-menu-items">
-            <!-- Os itens serão injetados aqui pelo JavaScript -->
-        </div>
+        <div id="sidebar-menu-items"></div>
     </div>
 
     <!-- ========================================== -->
@@ -140,11 +124,9 @@
                 <option value="Profissional">Entrar como Profissional</option>
                 <option value="Administrador">Acesso Restrito (Admin)</option>
             </select>
-            
             <input type="email" id="login-email" placeholder="Seu Email" style="display: block;">
             <input type="password" id="login-senha" placeholder="Sua Senha">
-            
-            <button onclick="fazerLogin()" class="btn-neon-yellow" id="btn-entrar">Entrar</button>
+            <button onclick="fazerLogin()" class="btn-neon-outline" id="btn-entrar">Entrar</button>
             <button onclick="abrirModalRegisto()" class="btn-link" id="btn-abrir-registo">Ainda não tem conta? Criar Conta</button>
         </div>
     </div>
@@ -168,13 +150,13 @@
             <input type="email" id="reg-email" placeholder="Email">
             <div id="reg-prof-container" style="display: none;">
                 <select id="reg-profissao">
-                    <option value="" disabled selected>Selecione a sua Profissão</option>
+                    <option value="" disabled selected>Sua Profissão</option>
                     <option value="Pladur">Pladur</option><option value="Eletricista">Eletricista</option><option value="Pintor">Pintor</option><option value="Canalizador">Canalizador</option><option value="Barrador">Barrador</option>
                 </select>
             </div>
             <input type="password" id="reg-senha" placeholder="Senha">
             <input type="password" id="reg-senha-conf" placeholder="Confirmar Senha">
-            <button onclick="enviarRegisto()" id="btn-submit-reg" class="btn-neon-yellow" style="margin-top: 10px;">CRIAR</button>
+            <button onclick="enviarRegisto()" id="btn-submit-reg" class="btn-neon-outline" style="margin-top: 10px;">CRIAR</button>
         </div>
     </div>
 
@@ -184,26 +166,18 @@
     <div id="admin-screen" class="screen">
         <header>
             <div class="header-left">
-                <button onclick="abrirMenu()" class="btn-menu-bars"><i class="fas fa-bars"></i></button>
-                <h2 style="margin: 0;">Painel Admin <span class="status-dot" style="color:var(--neon-yellow);">•</span></h2>
+                <button onclick="abrirMenu()" class="btn-menu">☰</button>
+                <h2 style="margin: 0;">Painel Admin <span style="color:var(--neon-yellow);">•</span></h2>
             </div>
-            <button onclick="logout()" class="btn-icon" title="Sair"><i class="fas fa-sign-out-alt"></i></button>
+            <button onclick="logout()" class="btn-logout" title="Sair"><i class="fas fa-sign-out-alt"></i></button>
         </header>
         <div class="glass">
             <div class="tab-menu">
                 <button class="tab-btn active" id="tab-pendentes" onclick="mudarAbaAdmin('pendentes')">Pendentes</button>
                 <button class="tab-btn" id="tab-todos" onclick="mudarAbaAdmin('todos')">Todos Usuários</button>
             </div>
-            
-            <div id="admin-view-pendentes">
-                <p style="color: #aaa; font-size: 0.9em; margin-bottom: 15px;">Aprove os profissionais pendentes para acessarem o app.</p>
-                <div id="lista-pendentes">Carregando...</div>
-            </div>
-
-            <div id="admin-view-todos" style="display: none;">
-                <p style="color: #aaa; font-size: 0.9em; margin-bottom: 15px;">Todos os utilizadores registados no sistema.</p>
-                <div id="lista-todos-usuarios">Carregando...</div>
-            </div>
+            <div id="admin-view-pendentes"><div id="lista-pendentes">Carregando...</div></div>
+            <div id="admin-view-todos" style="display: none;"><div id="lista-todos-usuarios">Carregando...</div></div>
         </div>
     </div>
 
@@ -213,12 +187,12 @@
     <div id="cliente-screen" class="screen">
         <header>
             <div class="header-left">
-                <button onclick="abrirMenu()" class="btn-menu-bars"><i class="fas fa-bars"></i></button>
+                <button onclick="abrirMenu()" class="btn-menu">☰</button>
                 <h2 style="margin: 0;">Olá, <span id="nome-cliente-display"></span></h2>
             </div>
-            <button onclick="logout()" class="btn-icon" title="Sair"><i class="fas fa-sign-out-alt"></i></button>
+            <button onclick="logout()" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
         </header>
-        <button onclick="document.getElementById('modal-pedido').classList.add('active');" class="btn-neon-yellow" style="padding: 20px; font-size: 1.2rem; margin-bottom: 25px;">
+        <button onclick="document.getElementById('modal-pedido').classList.add('active');" class="btn-neon-outline" style="padding: 20px; font-size: 1.2rem; margin-bottom: 25px;">
             <i class="fas fa-bolt" style="margin-right: 10px;"></i> Solicitar Serviço
         </button>
         <div>
@@ -233,17 +207,16 @@
     <div id="pro-screen" class="screen">
         <header>
             <div class="header-left">
-                <button onclick="abrirMenu()" class="btn-menu-bars"><i class="fas fa-bars"></i></button>
-                <!-- Ponto Cinza (Offline) por padrão -->
-                <h2 style="margin: 0;">Modo Pro <span id="dot-status-pro" class="status-dot" style="color:var(--text-muted);">•</span></h2>
+                <button onclick="abrirMenu()" class="btn-menu">☰</button>
+                <h2 style="margin: 0;">Modo Pro <span id="dot-status-pro" style="color:#666; text-shadow:none; transition:0.3s;">•</span></h2>
             </div>
-            <button onclick="logout()" class="btn-icon" title="Sair"><i class="fas fa-sign-out-alt"></i></button>
+            <button onclick="logout()" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
         </header>
         
         <div style="margin-bottom: 30px;">
-            <!-- O botão agora usa a classe neon transparente, sem fundo sólido -->
-            <button id="btn-status" onclick="toggleStatus()" class="btn-neon-yellow">
-                <i class="fas fa-power-off" style="margin-right: 8px;"></i> FICAR ONLINE
+            <!-- BOTÃO NÉON TRANSPARENTE -->
+            <button id="btn-status" onclick="toggleStatus()" class="btn-neon-outline">
+                FICAR ONLINE PARA RECEBER PEDIDOS
             </button>
         </div>
         
@@ -266,7 +239,7 @@
                 <option value="Pladur">Pladur</option><option value="Eletricista">Eletricista</option><option value="Pintor">Pintor</option><option value="Canalizador">Canalizador</option><option value="Barrador">Barrador</option>
             </select>
             <textarea id="desc-pedido" placeholder="Descreva o serviço com o máximo de detalhes..." rows="5"></textarea>
-            <button onclick="enviarPedido()" class="btn-neon-yellow" style="margin-top: 10px;">PEDIR ORÇAMENTOS AGORA</button>
+            <button onclick="enviarPedido()" class="btn-neon-outline" style="margin-top: 10px;">PEDIR ORÇAMENTOS AGORA</button>
         </div>
     </div>
 
@@ -279,69 +252,44 @@
         let coordsAtuais = { lat: 0, lng: 0 };
         let proIsOnline = false;
 
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW falhou')); }); }
-
-        // ==========================================
-        // UI: MENU LATERAL DINÂMICO
-        // ==========================================
-        function abrirMenu() { 
-            document.getElementById('sidebar').classList.add('active'); 
-            document.getElementById('overlay').classList.add('active'); 
-        }
-        function fecharMenu() { 
-            document.getElementById('sidebar').classList.remove('active'); 
-            document.getElementById('overlay').classList.remove('active'); 
-        }
+        // MENU LATERAL
+        function abrirMenu() { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+        function fecharMenu() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); }
 
         function construirMenu(tipo) {
             const menu = document.getElementById('sidebar-menu-items');
             if (tipo === 'Administrador') {
                 menu.innerHTML = `
-                    <div class="menu-item" onclick="fecharMenu(); mudarAbaAdmin('pendentes')"><i class="fas fa-user-clock" style="width:25px; text-align:center;"></i> Solicitações</div>
-                    <div class="menu-item" onclick="fecharMenu(); mudarAbaAdmin('todos')"><i class="fas fa-users" style="width:25px; text-align:center;"></i> Utilizadores</div>
-                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px; border-top:1px solid #333;"><i class="fas fa-sign-out-alt" style="width:25px; text-align:center;"></i> Sair</div>
-                `;
+                    <div class="menu-item" onclick="fecharMenu(); mudarAbaAdmin('pendentes')">⏳ Solicitações</div>
+                    <div class="menu-item" onclick="fecharMenu(); mudarAbaAdmin('todos')">👥 Utilizadores</div>
+                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px; border-top:1px solid #333;">❌ Sair</div>`;
             } else if (tipo === 'Cliente') {
                 menu.innerHTML = `
-                    <div class="menu-item" onclick="fecharMenu()"><i class="fas fa-home" style="width:25px; text-align:center;"></i> Início</div>
-                    <div class="menu-item" onclick="fecharMenu(); document.getElementById('modal-pedido').classList.add('active');"><i class="fas fa-bolt" style="width:25px; text-align:center;"></i> Novo Pedido</div>
-                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px; border-top:1px solid #333;"><i class="fas fa-sign-out-alt" style="width:25px; text-align:center;"></i> Sair</div>
-                `;
+                    <div class="menu-item" onclick="fecharMenu()">🏠 Início</div>
+                    <div class="menu-item" onclick="fecharMenu(); document.getElementById('modal-pedido').classList.add('active');">⚡ Novo Pedido</div>
+                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px; border-top:1px solid #333;">❌ Sair</div>`;
             } else if (tipo === 'Profissional') {
                 menu.innerHTML = `
-                    <div class="menu-item" onclick="fecharMenu()"><i class="fas fa-briefcase" style="width:25px; text-align:center;"></i> Painel de Obras</div>
-                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px; border-top:1px solid #333;"><i class="fas fa-sign-out-alt" style="width:25px; text-align:center;"></i> Sair</div>
-                `;
+                    <div class="menu-item" onclick="fecharMenu()">💼 Painel de Obras</div>
+                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:20px; border-top:1px solid #333;">❌ Sair</div>`;
             }
         }
 
-        // ==========================================
-        // UI: LOGIN E REGISTO
-        // ==========================================
+        // LOGIN E REGISTO
         document.getElementById('login-tipo').addEventListener('change', function() {
-            const emailInput = document.getElementById('login-email');
-            const regBtn = document.getElementById('btn-abrir-registo');
-            if (this.value === 'Administrador') { emailInput.style.display = 'none'; regBtn.style.display = 'none'; } 
-            else { emailInput.style.display = 'block'; regBtn.style.display = 'block'; }
+            const emailInput = document.getElementById('login-email'); const regBtn = document.getElementById('btn-abrir-registo');
+            if (this.value === 'Administrador') { emailInput.style.display = 'none'; regBtn.style.display = 'none'; } else { emailInput.style.display = 'block'; regBtn.style.display = 'block'; }
         });
 
         function abrirModalRegisto() { document.getElementById('modal-registo').classList.add('active'); }
         function fecharModalRegisto() { document.getElementById('modal-registo').classList.remove('active'); }
         function toggleRegistoFields() {
-            const tipo = document.getElementById('reg-tipo').value;
-            const btn = document.getElementById('btn-submit-reg');
-            const profField = document.getElementById('reg-prof-container');
-            if (tipo === 'Profissional') { profField.style.display = 'block'; btn.innerText = 'ENVIAR SOLICITAÇÃO'; } 
-            else { profField.style.display = 'none'; btn.innerText = 'CRIAR CONTA'; }
+            const tipo = document.getElementById('reg-tipo').value; const profField = document.getElementById('reg-prof-container');
+            if (tipo === 'Profissional') { profField.style.display = 'block'; } else { profField.style.display = 'none'; }
         }
 
         async function enviarRegisto() {
-            const payload = {
-                tipo: document.getElementById('reg-tipo').value, nome: document.getElementById('reg-nome').value,
-                sobrenome: document.getElementById('reg-sobrenome').value, email: document.getElementById('reg-email').value,
-                senha: document.getElementById('reg-senha').value, senhaConf: document.getElementById('reg-senha-conf').value,
-                profissao: document.getElementById('reg-profissao').value
-            };
+            const payload = { tipo: document.getElementById('reg-tipo').value, nome: document.getElementById('reg-nome').value, sobrenome: document.getElementById('reg-sobrenome').value, email: document.getElementById('reg-email').value, senha: document.getElementById('reg-senha').value, senhaConf: document.getElementById('reg-senha-conf').value, profissao: document.getElementById('reg-profissao').value };
             if (!payload.nome || !payload.email || !payload.senha) return alert('Preencha os campos obrigatórios.');
             if (payload.senha !== payload.senhaConf) return alert('As senhas não coincidem.');
             if (payload.tipo === 'Profissional' && !payload.profissao) return alert('Selecione uma profissão.');
@@ -353,7 +301,7 @@
                 if (data.sucesso) { alert(data.mensagem); fecharModalRegisto(); document.getElementById('login-email').value = payload.email; document.getElementById('login-senha').value = ''; } 
                 else { alert(data.erro); }
             } catch(e) { alert("Erro de conexão."); }
-            toggleRegistoFields();
+            btn.innerText = 'CRIAR';
         }
 
         async function fazerLogin() {
@@ -365,23 +313,18 @@
                 const data = await res.json();
                 if (data.sucesso) {
                     construirMenu(data.tipo); 
-                    if (data.tipo === 'Administrador') {
-                        navegarParaTela('admin-screen'); carregarPendentesAdmin();
-                    } else {
+                    if (data.tipo === 'Administrador') { navegarParaTela('admin-screen'); carregarPendentesAdmin(); } 
+                    else {
                         usuarioAtual = data;
-                        obterLocalizacao(() => {
-                            if (data.tipo === 'Cliente') { document.getElementById('nome-cliente-display').innerText = data.nome; navegarParaTela('cliente-screen'); } 
-                            else { navegarParaTela('pro-screen'); }
-                        });
+                        if(navigator.geolocation) { navigator.geolocation.getCurrentPosition(p => {coordsAtuais.lat=p.coords.latitude; coordsAtuais.lng=p.coords.longitude;}); }
+                        if (data.tipo === 'Cliente') { document.getElementById('nome-cliente-display').innerText = data.nome; navegarParaTela('cliente-screen'); } else { navegarParaTela('pro-screen'); }
                     }
                 } else { alert(data.erro); }
             } catch(e) { alert("Erro de conexão."); }
             btn.innerText = 'ENTRAR';
         }
 
-        // ==========================================
-        // UI: ADMIN (ABAS E LISTAGENS)
-        // ==========================================
+        // ADMIN E UTILITÁRIOS
         function mudarAbaAdmin(aba) {
             document.getElementById('tab-pendentes').classList.remove('active'); document.getElementById('tab-todos').classList.remove('active');
             document.getElementById('admin-view-pendentes').style.display = 'none'; document.getElementById('admin-view-todos').style.display = 'none';
@@ -394,18 +337,9 @@
             const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_listar_pendentes' }) });
             const data = await res.json();
             if (data.pendentes && data.pendentes.length > 0) {
-                container.innerHTML = data.pendentes.map(p => `
-                    <div class="user-card pendente">
-                        <strong style="color:#fff;">${p.nomeCompleto}</strong> <span class="badge">${p.profissao}</span><br>
-                        <span style="font-size:0.85em; color:var(--text-muted);">${p.email}</span>
-                        <div style="margin-top: 15px; display:flex; gap:10px;">
-                            <button onclick="aprovarPro('${p.id}')" class="btn-small btn-bg-green"><i class="fas fa-check"></i> Aprovar</button>
-                            <button onclick="rejeitarPro('${p.id}')" class="btn-small btn-bg-red"><i class="fas fa-times"></i> Rejeitar</button>
-                        </div>
-                    </div>`).join('');
+                container.innerHTML = data.pendentes.map(p => `<div class="user-card pendente"><strong style="color:#fff;">${p.nomeCompleto}</strong> <span class="badge">${p.profissao}</span><br><span style="font-size:0.85em; color:var(--text-muted);">${p.email}</span><div style="margin-top: 15px; display:flex; gap:10px;"><button onclick="aprovarPro('${p.id}')" class="btn-small btn-bg-green">Aprovar</button><button onclick="rejeitarPro('${p.id}')" class="btn-small btn-bg-red">Rejeitar</button></div></div>`).join('');
             } else { container.innerHTML = '<div class="glass">Nenhuma solicitação pendente.</div>'; }
         }
-
         async function carregarTodosUsuariosAdmin() {
             const container = document.getElementById('lista-todos-usuarios'); container.innerHTML = 'Carregando lista de utilizadores...';
             const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_listar_usuarios' }) });
@@ -414,23 +348,13 @@
                 container.innerHTML = data.usuarios.map(u => {
                     let classeStatus = u.status === 'Ativo' ? 'ativo' : (u.status === 'Rejeitado' ? 'rejeitado' : 'pendente');
                     let prof = u.tipo === 'Profissional' ? `<span class="badge">${u.profissao}</span>` : `<span class="badge" style="background:#444; color:#fff;">Cliente</span>`;
-                    return `
-                    <div class="user-card ${classeStatus}">
-                        <strong style="color:#fff;">${u.nomeCompleto}</strong> ${prof}<br>
-                        <span style="font-size:0.85em; color:var(--text-muted);">${u.email}</span><br>
-                        <span style="font-size:0.75em; text-transform:uppercase; font-weight:bold; color:var(--text-muted); display:inline-block; margin-top:5px;">STATUS: ${u.status}</span>
-                    </div>`;
+                    return `<div class="user-card ${classeStatus}"><strong style="color:#fff;">${u.nomeCompleto}</strong> ${prof}<br><span style="font-size:0.85em; color:var(--text-muted);">${u.email}</span><br><span style="font-size:0.75em; text-transform:uppercase; font-weight:bold; color:var(--text-muted); display:inline-block; margin-top:5px;">STATUS: ${u.status}</span></div>`;
                 }).join('');
             } else { container.innerHTML = '<div class="glass">Base de dados vazia.</div>'; }
         }
-
         async function aprovarPro(id) { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_aprovar_pro', payload: { id } }) }); carregarPendentesAdmin(); }
         async function rejeitarPro(id) { if(confirm("Deseja rejeitar este profissional?")) { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'admin_rejeitar_pro', payload: { id } }) }); carregarPendentesAdmin(); } }
 
-        // ==========================================
-        // UTILITÁRIOS E FUNCIONALIDADES PRINCIPAIS
-        // ==========================================
-        function obterLocalizacao(cb) { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(pos => { coordsAtuais.lat = pos.coords.latitude; coordsAtuais.lng = pos.coords.longitude; if(cb) cb(); }, err => { if(cb) cb(); }); } else { if(cb) cb(); } }
         function navegarParaTela(idTela) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(idTela).classList.add('active'); fecharMenu(); }
         function logout() { usuarioAtual = null; document.getElementById('login-senha').value = ''; if(window.proSearchInterval) clearInterval(window.proSearchInterval); navegarParaTela('login-screen'); }
 
@@ -438,33 +362,30 @@
             document.getElementById('modal-pedido').classList.remove('active');
             const cat = document.getElementById('categoria-pedido').value; const desc = document.getElementById('desc-pedido').value;
             await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'criar_pedido', payload: { idCliente: usuarioAtual.id, categoria: cat, descricao: desc, lat: coordsAtuais.lat, lng: coordsAtuais.lng } }) });
-            document.getElementById('lista-pedidos-cliente').innerHTML = `<div class="glass" style="border-left: 3px solid var(--neon-yellow);"><strong style="color:var(--neon-yellow);">${cat}</strong><br><span style="font-size:0.9em; color:#ccc;">${desc}</span><br><br><span style="font-size:0.8em; color:var(--neon-green);"><i class="fas fa-satellite-dish"></i> Buscando profissionais próximos...</span></div>`;
+            document.getElementById('lista-pedidos-cliente').innerHTML = `<div class="glass" style="border-left: 3px solid var(--neon-yellow);"><strong style="color:var(--neon-yellow);">${cat}</strong><br><span style="font-size:0.9em; color:#ccc;">${desc}</span><br><br><span style="font-size:0.8em; color:var(--neon-green);">Buscando profissionais próximos...</span></div>`;
         }
 
-        // LÓGICA DO STATUS (NÉON TRANSPARENTE + PONTO VERDE/CINZA)
+        // LÓGICA DO STATUS NÉON (FUNDO TRANSPARENTE E PONTO)
         function toggleStatus() {
             proIsOnline = !proIsOnline; 
             const btn = document.getElementById('btn-status');
             const dot = document.getElementById('dot-status-pro');
 
             if (proIsOnline) { 
-                btn.innerHTML = '<i class="fas fa-radar" style="margin-right: 8px;"></i> BUSCANDO PEDIDOS...'; 
-                btn.classList.remove('btn-neon-yellow');
-                btn.classList.add('btn-neon-green');
+                btn.innerHTML = 'BUSCANDO PEDIDOS...'; 
+                btn.classList.add('online'); // Muda o glow para verde
                 
                 // Liga o Ponto
                 dot.style.color = 'var(--neon-green)';
                 dot.style.textShadow = '0 0 10px var(--neon-green)';
 
-                window.proSearchInterval = setInterval(buscarPedidos, 5000); 
-                buscarPedidos(); 
+                window.proSearchInterval = setInterval(buscarPedidos, 5000); buscarPedidos(); 
             } else { 
-                btn.innerHTML = '<i class="fas fa-power-off" style="margin-right: 8px;"></i> FICAR ONLINE'; 
-                btn.classList.remove('btn-neon-green');
-                btn.classList.add('btn-neon-yellow');
+                btn.innerHTML = 'FICAR ONLINE PARA RECEBER PEDIDOS'; 
+                btn.classList.remove('online'); // Volta o glow para amarelo
                 
                 // Desliga o Ponto
-                dot.style.color = 'var(--text-muted)';
+                dot.style.color = '#666';
                 dot.style.textShadow = 'none';
 
                 clearInterval(window.proSearchInterval); 
@@ -477,7 +398,7 @@
             const data = await res.json();
             if (data.pedidos && data.pedidos.length > 0) {
                 document.getElementById('alerta-pedidos').innerText = data.pedidos.length;
-                document.getElementById('lista-pedidos-pro').innerHTML = data.pedidos.map(p => `<div class="glass" style="margin-bottom:15px; border:1px solid #333;"><strong style="color:var(--neon-yellow);"><i class="fas fa-map-marker-alt"></i> Cliente a ${p.distancia_km}km!</strong><br><span style="display:block; margin: 10px 0; color:#ddd;">${p.descricao}</span><button class="btn-neon-yellow" style="padding:10px; font-size:12px;"><i class="fas fa-file-invoice-dollar"></i> Enviar Orçamento</button></div>`).join('');
+                document.getElementById('lista-pedidos-pro').innerHTML = data.pedidos.map(p => `<div class="glass" style="margin-bottom:15px; border:1px solid #333;"><strong style="color:var(--neon-yellow);">Cliente a ${p.distancia_km}km!</strong><br><span style="display:block; margin: 10px 0; color:#ddd;">${p.descricao}</span><button class="btn-neon-outline" style="padding:10px; font-size:12px;">Enviar Orçamento</button></div>`).join('');
             }
         }
     </script>
