@@ -14,22 +14,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- LEAFLET MAPS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- UI ATUALIZADA (BLUE SLATE / NEON HOVER) -->
     <style>
         :root { 
-            --bg-dark: #0A0F1A;     
-            --bg-panel: #131B2A;    
-            --border-color: #1F2937;
-            --neon-yellow: #FACC15; 
-            --neon-green: #10B981;  
-            --neon-blue: #0EA5E9;   
-            --neon-red: #EF4444;    
-            --text-main: #F9FAFB;   
-            --text-muted: #9CA3AF;  
+            --bg-dark: #0A0F1A; --bg-panel: #131B2A; --border-color: #1F2937;
+            --neon-yellow: #FACC15; --neon-green: #10B981; --neon-blue: #0EA5E9; --neon-red: #EF4444;
+            --text-main: #F9FAFB; --text-muted: #9CA3AF; 
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; touch-action: pan-y; }
         body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
@@ -159,6 +151,12 @@
                 <div id="lista-orcamentos-recebidos" style="margin-top:15px;"></div>
             </div>
 
+            <!-- NOVA ABA CLIENTE: OBRAS EM EXECUÇÃO -->
+            <h4 style="color:var(--neon-green); text-transform:uppercase; font-size:12px; margin-bottom:10px; margin-top:20px;"><i class="fas fa-hammer"></i> Obras em Execução</h4>
+            <div id="cli-obras-andamento" style="margin-bottom:20px;">
+                <span class="loading-text" style="font-size:13px;">Nenhum serviço a decorrer de momento.</span>
+            </div>
+
             <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin-bottom:10px; margin-top:10px;">Profissionais com mais Obras</h4>
             <div id="cli-rank-vol"><div class="spinner"></div></div>
         </div>
@@ -195,7 +193,7 @@
                 <canvas id="proChart" height="150" style="margin-top:15px;"></canvas>
             </div>
             
-            <!-- SECÇÃO OBRAS EM ANDAMENTO (NOVO) -->
+            <!-- SECÇÃO OBRAS EM ANDAMENTO (DUPLO BOTÃO) -->
             <h4 style="color:var(--neon-blue); text-transform:uppercase; font-size:12px; margin-bottom:10px; margin-top:20px;"><i class="fas fa-hammer"></i> Obras em Andamento</h4>
             <div id="pro-obras-andamento" style="margin-bottom:20px;">
                 <span class="loading-text" style="font-size:13px;">Nenhuma obra ativa de momento.</span>
@@ -266,7 +264,6 @@
         <input id="r-senha" type="password" placeholder="Senha"><input id="r-senha-conf" type="password" placeholder="Confirmar Senha"><button onclick="enviarRegisto()" id="btn-submit-reg" class="btn-neon">Finalizar</button>
     </div></div>
 
-    <!-- PONTO 5: Raio de 100km -->
     <div id="modal-pedido" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modal-pedido')">&times;</span>
         <h3 style="color:var(--text-main); margin-bottom:15px;">Novo Pedido</h3>
         <label style="color:var(--text-muted); font-size:12px; text-transform:uppercase;">Categoria</label>
@@ -304,7 +301,7 @@
         let user = null; let proOnline = false; let radarInt, chatInt, cliRadarInt, cliTimerInt, obraInt; 
         let tempIdPedido = null; let tempIdDestinatario = null; let meuGrafico = null; let tempBanId = null; let tempObraFinalizarId = null;
         let map, mapCircle; let coords = {lat: 39.3999, lng: -8.2245}; 
-        let lastPedidosDetectados = []; let rejeitados = []; 
+        let lastPedidosDetectados = []; let rejeitados = []; let lastObrasPro = [];
         
         const somNotificacao = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
         somNotificacao.loop = true; 
@@ -367,7 +364,7 @@
         async function chamadoraAPI(acao, payload) { try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: acao, payload: payload }) }); return await r.json(); } catch(e) { return null; } }
         function logout() { window.location.reload(true); }
 
-        // --- AUTH & RECUPERAÇÃO DE SESSÃO CLIENTE ---
+        // --- AUTH E SESSÃO ---
         async function enviarRegisto() {
             const p = { tipo: document.getElementById('r-tipo').value, nome: document.getElementById('r-nome').value, sobrenome: document.getElementById('r-sobrenome').value, email: document.getElementById('r-email').value, senha: document.getElementById('r-senha').value, senhaConf: document.getElementById('r-senha-conf').value, profissao: document.getElementById('r-prof').value, morada: document.getElementById('r-morada').value, cpostal: document.getElementById('r-cpostal').value };
             if (!p.nome || !p.email || !p.senha || !p.morada || !p.cpostal) return alert('Morada e Código Postal são obrigatórios!');
@@ -387,8 +384,7 @@
                 if (tipoLog !== 'Administrador' && !emailLog) return alert('Insira o email.');
                 if (!senhaLog) return alert('Insira a senha.');
 
-                const btn = document.getElementById('btn-entrar');
-                btn.innerHTML = '<div class="spinner"></div>';
+                const btn = document.getElementById('btn-entrar'); btn.innerHTML = '<div class="spinner"></div>';
 
                 const p = { tipo: tipoLog, email: emailLog, senha: senhaLog };
                 const res = await chamadoraAPI('login', p);
@@ -441,22 +437,19 @@
                 document.getElementById('cli-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b> <small style="color:var(--text-muted);">(${p.prof})</small></span> <span class="badge-green">${p.obras} Obras</span></div>`).join('');
                 document.getElementById('cli-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b> <small style="color:var(--text-muted);">(${p.prof})</small></span> <span class="badge-yellow">${p.estrelas == 0 ? '0.0' : parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
             }
+            carregarObrasAndamentoCliente();
         }
 
-        // --- CLIENTE PEDIDO (INTERFACE OTIMISTA E RÁPIDA) ---
+        // --- CLIENTE PEDIDO ---
         function enviarPedido() {
             const cat = document.getElementById('p-cat').value; const desc = document.getElementById('p-desc').value; const r = document.getElementById('p-raio').value;
             fecharModal('modal-pedido');
             
-            // Renderização Instantânea (Optimistic UI)
-            document.getElementById('area-pedidos-ativos').style.display = 'block';
-            document.getElementById('radar-pulse-anim').style.display = 'block';
+            document.getElementById('area-pedidos-ativos').style.display = 'block'; document.getElementById('radar-pulse-anim').style.display = 'block';
             document.getElementById('lista-orcamentos-recebidos').innerHTML = '<span class="loading-text" style="color:var(--neon-yellow);">A enviar para a rede de profissionais...</span>';
             
             clearInterval(cliTimerInt); clearInterval(cliRadarInt);
-            let tempo = 180;
-            document.getElementById('timer-pedido').innerText = "03:00";
-            document.getElementById('timer-pedido').style.color = "var(--text-main)";
+            let tempo = 180; document.getElementById('timer-pedido').innerText = "03:00"; document.getElementById('timer-pedido').style.color = "var(--text-main)";
             
             cliTimerInt = setInterval(() => {
                 tempo--; let m = Math.floor(tempo / 60).toString().padStart(2, '0'); let s = (tempo % 60).toString().padStart(2, '0');
@@ -467,14 +460,9 @@
                 }
             }, 1000);
 
-            // Fetch Assíncrono Desbloqueado
             setTimeout(async () => {
                 const res = await chamadoraAPI('criar_pedido', { idCliente: user.id, categoria: cat, descricao: desc, lat: coords.lat, lng: coords.lng, raioKm: r });
-                if(res) { 
-                    tempIdPedido = res.id_pedido; 
-                    document.getElementById('lista-orcamentos-recebidos').innerHTML = ''; 
-                    cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); 
-                }
+                if(res) { tempIdPedido = res.id_pedido; document.getElementById('lista-orcamentos-recebidos').innerHTML = ''; cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); }
             }, 50);
         }
 
@@ -482,9 +470,7 @@
             const res = await chamadoraAPI('buscar_pedido_ativo_cliente', { idCliente: user.id });
             if(res && res.ativo) {
                 tempIdPedido = res.id_pedido;
-                document.getElementById('area-pedidos-ativos').style.display = 'block';
-                document.getElementById('radar-pulse-anim').style.display = 'block';
-                document.getElementById('lista-orcamentos-recebidos').innerHTML = '';
+                document.getElementById('area-pedidos-ativos').style.display = 'block'; document.getElementById('radar-pulse-anim').style.display = 'block'; document.getElementById('lista-orcamentos-recebidos').innerHTML = '';
                 
                 clearInterval(cliTimerInt); clearInterval(cliRadarInt);
                 let tempo = res.tempoRestante;
@@ -497,7 +483,6 @@
                         document.getElementById('area-pedidos-ativos').innerHTML = `<h4 style="color:var(--neon-red); margin-bottom:10px;">Tempo Esgotado</h4><p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Nenhum profissional respondeu a tempo.</p><button onclick="window.location.reload();" class="btn-neon">Tentar de Novo</button>`;
                     }
                 }, 1000);
-
                 cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); 
             }
         }
@@ -517,20 +502,76 @@
 
         async function aceitarOrcamento(idOrc, idPro) {
             const res = await chamadoraAPI('responder_orcamento', { idOrcamento: idOrc, resposta: 'Aceite' });
-            if(res) { alert("Orçamento Aceite! A obra entrou em modo de execução (Em Andamento)."); document.getElementById('area-pedidos-ativos').style.display='none'; abrirChatView(idPro); }
+            if(res) { 
+                alert("Orçamento Aceite! A obra entrou em modo de execução."); 
+                document.getElementById('area-pedidos-ativos').style.display='none'; 
+                carregarObrasAndamentoCliente(); // Atualiza a UI do cliente imediatamente
+                abrirChatView(idPro); 
+            }
         }
 
-        // --- PROFISSIONAL ONLINE & OBRAS EM ANDAMENTO ---
+        // --- OBRAS EM ANDAMENTO (MÚTUO) ---
+        async function carregarObrasAndamentoCliente() {
+            if(!user || user.tipo !== 'Cliente') return;
+            const res = await chamadoraAPI('listar_obras_andamento', { idCliente: user.id });
+            const container = document.getElementById('cli-obras-andamento');
+            if(res && res.obras.length > 0) {
+                container.innerHTML = res.obras.map(o => `
+                    <div class="info-card" style="border-left: 3px solid var(--neon-blue);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <b style="color:var(--neon-blue);">${o.categoria}</b><span class="badge-green">${o.valor} €</span>
+                        </div>
+                        <div style="font-size:0.85em; color:var(--text-muted); margin:8px 0;"><b>Profissional:</b> ${o.nomeOutro}</div>
+                        <button onclick="abrirChatView('${o.id_outro}')" class="btn-neon" style="padding:8px; width:100%; margin-top:10px;">💬 ABRIR CHAT</button>
+                    </div>`).join('');
+            } else { container.innerHTML = `<span class="loading-text" style="font-size:13px;">Nenhum serviço a decorrer de momento.</span>`; }
+        }
+
+        async function carregarObrasAndamentoPro() {
+            if(!user || user.tipo !== 'Profissional') return;
+            const res = await chamadoraAPI('listar_obras_andamento', { idPro: user.id });
+            const container = document.getElementById('pro-obras-andamento');
+            if(res && res.obras.length > 0) {
+                
+                // NOTIFICA O PRO SE ENTROU UMA OBRA NOVA!
+                let novosIds = res.obras.map(o => o.id_pedido);
+                if(novosIds.some(id => !lastObrasPro.includes(id)) && lastObrasPro.length > 0) {
+                    somNotificacao.play().then(()=>setTimeout(()=>pararAlarme(),2000)).catch(e=>{}); if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                }
+                lastObrasPro = novosIds;
+
+                container.innerHTML = res.obras.map(o => `
+                    <div class="info-card" style="border-left: 3px solid var(--neon-green);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <b style="color:var(--neon-green);">${o.categoria}</b><span class="badge-green">${o.valor} €</span>
+                        </div>
+                        <div style="font-size:0.85em; color:var(--text-muted); margin:8px 0;"><b>Cliente:</b> ${o.nomeOutro}</div>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <button onclick="abrirChatView('${o.id_outro}')" class="btn-neon" style="padding:8px; flex:1;">💬 CHAT</button>
+                            <button onclick="abrirModalFinalizarObra('${o.id_pedido}', '${o.nomeOutro}', '${o.valor}')" class="btn-neon green" style="padding:8px; flex:1;">✅ FINALIZAR</button>
+                        </div>
+                    </div>`).join('');
+            } else { container.innerHTML = `<span class="loading-text" style="font-size:13px;">Nenhuma obra ativa de momento.</span>`; }
+        }
+
+        function abrirModalFinalizarObra(idPed, nomeCli, valor) {
+            tempObraFinalizarId = idPed; document.getElementById('modal-finalizar-texto').innerHTML = `Deseja marcar esta obra com <b>${nomeCli}</b> no valor de <b style="color:var(--neon-green);">${valor} €</b> como <b>Finalizada</b>?<br><br>Ao finalizar, este valor será somado imediatamente ao seu faturamento mensal.`; abrirModal('modal-finalizar');
+        }
+
+        async function executarFinalizacaoObra() {
+            const res = await chamadoraAPI('finalizar_obra', { idPedido: tempObraFinalizarId });
+            if(res && res.sucesso) { alert("Obra finalizada com sucesso! Faturamento atualizado."); fecharModal('modal-finalizar'); carregarDashboardPro(); } 
+            else { alert("Erro ao finalizar obra."); }
+        }
+
+        // --- PROFISSIONAL ONLINE ---
         function toggleStatusPro() {
             proOnline = !proOnline; const b = document.getElementById('btn-status-pro'); const d = document.getElementById('dot-pro');
             if(proOnline) { 
                 b.innerText = "A Buscar no Radar..."; b.classList.add('green'); b.classList.remove('yellow'); d.style.color = 'var(--neon-green)'; 
                 if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p => { coords.lat = p.coords.latitude; coords.lng = p.coords.longitude; });
-                
                 somNotificacao.volume = 0; somNotificacao.play().then(() => { somNotificacao.pause(); somNotificacao.currentTime = 0; somNotificacao.volume = 1; }).catch(e=>{}); 
-
-                radarInt = setInterval(api_Radar, 5000); api_Radar(); 
-                obraInt = setInterval(carregarObrasAndamentoPro, 10000); carregarObrasAndamentoPro();
+                radarInt = setInterval(api_Radar, 5000); api_Radar(); obraInt = setInterval(carregarObrasAndamentoPro, 10000); carregarObrasAndamentoPro();
             } else { 
                 b.innerText = "Ligar Radar de Obras"; b.classList.remove('green'); b.classList.add('yellow'); d.style.color = '#555'; 
                 clearInterval(radarInt); clearInterval(obraInt); document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Offline.</span>"; pararAlarme();
@@ -543,11 +584,8 @@
             if(res && res.pedidos.length > 0) {
                 let visiveis = res.pedidos.filter(p => !rejeitados.includes(p.id_pedido));
                 if (visiveis.length === 0) { document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Sem pedidos ativos de momento...</span>"; return; }
-
-                let novosIds = visiveis.map(p => p.id_pedido);
-                let temNovo = false;
+                let novosIds = visiveis.map(p => p.id_pedido); let temNovo = false;
                 for(let id of novosIds) { if(!lastPedidosDetectados.includes(id)) temNovo = true; }
-                
                 if(temNovo) { somNotificacao.play().catch(e=>{}); if(navigator.vibrate) navigator.vibrate([300, 200, 300, 200, 300]); }
                 lastPedidosDetectados = novosIds;
                 
@@ -563,34 +601,6 @@
                         <button onclick="prepararOrcamento('${p.id_pedido}')" class="btn-neon" style="padding:10px;">RESPONDER AGORA</button>
                     </div>`).join('');
             } else if (res) { document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Sem pedidos ativos de momento...</span>"; pararAlarme(); }
-        }
-
-        async function carregarObrasAndamentoPro() {
-            if(!user || user.tipo !== 'Profissional') return;
-            const res = await chamadoraAPI('listar_obras_andamento', { idPro: user.id });
-            const container = document.getElementById('pro-obras-andamento');
-            if(res && res.obras.length > 0) {
-                container.innerHTML = res.obras.map(o => `
-                    <div class="info-card" style="border-left: 3px solid var(--neon-green); cursor:pointer;" onclick="abrirModalFinalizarObra('${o.id_pedido}', '${o.nomeCliente}', '${o.valor}')">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <b style="color:var(--neon-green);">${o.categoria}</b><span class="badge-green">${o.valor} €</span>
-                        </div>
-                        <div style="font-size:0.85em; color:var(--text-muted); margin:8px 0;">
-                            <b>Cliente:</b> ${o.nomeCliente}<br><b>Local:</b> ${o.morada}
-                        </div>
-                        <button class="btn-neon green" style="padding:8px; font-size:12px; width:100%;">GERIR / FINALIZAR OBRA</button>
-                    </div>`).join('');
-            } else { container.innerHTML = `<span class="loading-text" style="font-size:13px;">Nenhuma obra ativa de momento.</span>`; }
-        }
-
-        function abrirModalFinalizarObra(idPed, nomeCli, valor) {
-            tempObraFinalizarId = idPed; document.getElementById('modal-finalizar-texto').innerHTML = `Deseja marcar esta obra com <b>${nomeCli}</b> no valor de <b style="color:var(--neon-green);">${valor} €</b> como <b>Finalizada</b>?<br><br>Ao finalizar, este valor será somado imediatamente ao seu faturamento mensal.`; abrirModal('modal-finalizar');
-        }
-
-        async function executarFinalizacaoObra() {
-            const res = await chamadoraAPI('finalizar_obra', { idPedido: tempObraFinalizarId });
-            if(res && res.sucesso) { alert("Obra finalizada com sucesso! Faturamento atualizado."); fecharModal('modal-finalizar'); carregarDashboardPro(); } 
-            else { alert("Erro ao finalizar obra."); }
         }
 
         function prepararOrcamento(idPed) { tempIdPedido = idPed; pararAlarme(); abrirModal('modal-enviar-orc'); }
