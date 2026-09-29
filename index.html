@@ -25,7 +25,7 @@
             --neon-red: #FF3B30; --neon-blue: #00E5FF;
             --text-main: #FFFFFF; --text-muted: #888888; 
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; touch-action: pan-y; }
         body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
 
         .screen { display: none; padding: 20px; min-height: 100vh; flex-direction: column; }
@@ -54,9 +54,13 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-text { color: var(--text-muted); text-align: center; padding: 20px; font-style: italic; }
 
-        /* Animação do Radar Cliente */
+        /* Animação Radar */
         .radar-pulse { width: 80px; height: 80px; background: var(--neon-yellow); border-radius: 50%; margin: 30px auto; animation: pulse-ring 2s infinite; }
         @keyframes pulse-ring { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 40px rgba(255, 193, 7, 0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); } }
+
+        /* Gestos Swipe */
+        .swipeable { transition: transform 0.2s ease-out, opacity 0.3s; position: relative; }
+        .swipeable::after { content: "← Deslize para rejeitar"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: rgba(255,255,255,0.2); pointer-events: none; }
 
         .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); align-items: center; justify-content: center; padding: 15px; }
         .modal.active { display: flex; }
@@ -71,7 +75,8 @@
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; backdrop-filter: blur(4px); }
         .overlay.active { display: block; }
         .menu-item { padding: 15px 0; border-bottom: 1px solid #222; font-size: 16px; cursor: pointer; color: #ddd; }
-        
+        .menu-item:hover { color: var(--neon-yellow); }
+
         .rank-card { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #222; font-size:14px; background: rgba(0,0,0,0.3); border-radius:5px; margin-bottom:5px;}
         .star { color: var(--neon-yellow); font-weight:bold; }
         .chat-box { height: 300px; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 8px; padding: 10px; margin-bottom: 10px; display:flex; flex-direction:column; gap:8px;}
@@ -132,7 +137,7 @@
             <div id="area-pedidos-ativos" class="glass card-blue" style="display:none;">
                 <h4 style="color:var(--neon-blue); margin-bottom:10px;">A Procurar Profissionais...</h4>
                 <div class="radar-pulse"></div>
-                <p style="text-align:center; color:#aaa; font-size:14px;">Os orçamentos aparecerão aqui assim que os profissionais aceitarem o serviço na sua região.</p>
+                <p style="text-align:center; color:#aaa; font-size:14px;">Aguarde. Atualização automática em tempo real.</p>
                 <div id="lista-orcamentos-recebidos" style="margin-top:15px;"></div>
             </div>
 
@@ -154,7 +159,7 @@
                 <input type="text" id="cfg-morada-c" placeholder="Morada Completa">
                 <input type="text" id="cfg-cpostal-c" placeholder="Código Postal">
                 <h4 style="margin:15px 0;">Alterar Senha</h4>
-                <input type="password" id="cfg-senha-antiga-c" placeholder="Senha Atual (Opcional se não quiser alterar)">
+                <input type="password" id="cfg-senha-antiga-c" placeholder="Senha Atual (Opcional)">
                 <input type="password" id="cfg-senha-nova-c" placeholder="Nova Senha">
                 <button onclick="api_AtualizarConfig('c')" class="btn-neon">Guardar Configurações</button>
             </div>
@@ -174,7 +179,7 @@
             </div>
             <div class="glass">
                 <h4 style="color:var(--neon-yellow); margin-bottom:10px;"><i class="fas fa-satellite-dish"></i> Radar de Pedidos</h4>
-                <div id="pro-radar" style="font-size:14px; color:#aaa;">Fique online para ver clientes na região.</div>
+                <div id="pro-radar" style="font-size:14px; color:#aaa; overflow-x:hidden;">Fique online para ver clientes na região.</div>
             </div>
         </div>
 
@@ -186,7 +191,7 @@
         <div id="pro-avaliacoes" class="tab-content">
             <h3 style="color:var(--neon-yellow); margin-bottom:15px;"><i class="fas fa-star"></i> A Minha Reputação</h3>
             <div class="glass card-blue" style="text-align:center;">
-                <h1 style="color:var(--neon-yellow); font-size:3rem; margin:10px 0;" id="pro-minha-nota">5.0</h1>
+                <h1 style="color:var(--neon-yellow); font-size:3rem; margin:10px 0;" id="pro-minha-nota">0.0</h1>
                 <p style="color:#aaa;">Média Geral</p>
             </div>
             <h4 style="margin: 20px 0 10px 0;">Top 5 Profissionais (Avaliação)</h4>
@@ -227,15 +232,15 @@
         <input id="r-senha" type="password" placeholder="Senha"><input id="r-senha-conf" type="password" placeholder="Confirmar Senha"><button onclick="enviarRegisto()" id="btn-submit-reg" class="btn-neon">Criar Conta</button>
     </div></div>
 
-    <!-- Modal Novo Pedido (Com Mapa e Raio) -->
+    <!-- PONTO 5: Slider de Raio Atualizado até 100km -->
     <div id="modal-pedido" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharModal('modal-pedido')">&times;</span>
         <h3 style="color:var(--neon-yellow); margin-bottom:15px;">Novo Pedido</h3>
         <select id="p-cat"><option value="Pladur">Pladur</option><option value="Eletricista">Eletricista</option><option value="Pintor">Pintor</option></select>
         <textarea id="p-desc" placeholder="Detalhes da obra..." rows="4"></textarea>
         
         <h4 style="margin:10px 0; color:#fff;">Área de Busca</h4>
-        <div style="display:flex; justify-content:space-between; color:#aaa; font-size:12px;"><span>1 km</span><span id="label-raio" style="color:var(--neon-yellow); font-weight:bold; font-size:14px;">15 km</span><span>50 km</span></div>
-        <input type="range" id="p-raio" min="1" max="50" value="15" style="width:100%; margin-bottom:15px;" oninput="atualizarRaioMapa(this.value)">
+        <div style="display:flex; justify-content:space-between; color:#aaa; font-size:12px;"><span>1 km</span><span id="label-raio" style="color:var(--neon-yellow); font-weight:bold; font-size:14px;">15 km</span><span>100 km</span></div>
+        <input type="range" id="p-raio" min="1" max="100" value="15" style="width:100%; margin-bottom:15px;" oninput="atualizarRaioMapa(this.value)">
         
         <div id="mapa-pedido" style="height: 150px; border-radius:8px; margin-bottom:15px; border:1px solid #333;"></div>
         <button onclick="enviarPedido()" class="btn-neon">Buscar Profissionais</button>
@@ -246,10 +251,6 @@
         <input type="number" id="orc-valor" placeholder="Valor Estimado (€)"><textarea id="orc-msg" placeholder="Mensagem para o cliente..."></textarea><button onclick="enviarOrcamentoReal()" class="btn-neon">Enviar Oferta</button>
     </div></div>
 
-    <div id="modal-ver-orc" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharModal('modal-ver-orc')">&times;</span><h3 style="color:var(--neon-yellow); margin-bottom:15px;">Orçamentos</h3>
-        <div id="lista-orcamentos-recebidos"><div class="spinner"></div></div>
-    </div></div>
-
     <div id="modal-chat" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharChat()">&times;</span><h3 style="color:var(--neon-yellow); margin-bottom:10px;">Chat Direto</h3>
         <div class="chat-box" id="chat-box"></div>
         <div style="display:flex; gap:10px;"><input type="text" id="chat-input" placeholder="Mensagem..." style="margin:0;"><button onclick="enviarMensagemNoChat()" class="btn-neon" style="width:80px; padding:10px;">Enviar</button></div>
@@ -258,27 +259,30 @@
     </div></div>
 
     <script>
-        // O SEU LINK EXATO DO APPS SCRIPT:
+        // O SEU LINK EXATO:
         const API_URL = 'https://script.google.com/macros/s/AKfycbwECa674WOxJLt_vT8vR7SlRsup45jMBAxVl8PLMn1oLAxwxD9tm8gYng8ZTpfTKfYH/exec'; 
         
         let user = null; let proOnline = false; let radarInt, chatInt, cliRadarInt; 
         let tempIdPedido = null; let tempIdDestinatario = null; let meuGrafico = null; let tempBanId = null;
-        let map, mapCircle; let coords = {lat: 39.3999, lng: -8.2245}; // Portugal by default
+        let map, mapCircle; let coords = {lat: 39.3999, lng: -8.2245}; 
         let lastPedidosDetectados = [];
+        let rejeitados = []; // PONTO 3: Array para guardar IDs rejeitados por Swipe
         
-        // SOM DE NOTIFICAÇÃO PROFISSIONAL
+        // PONTO 2: Som de Despertador (Alarm Loop)
         const somNotificacao = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        somNotificacao.loop = true; // Força repetição contínua
+        
+        function pararAlarme() { somNotificacao.pause(); somNotificacao.currentTime = 0; }
 
         if ('caches' in window) { caches.keys().then((names) => { names.forEach(name => { caches.delete(name); }); }); }
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').then(reg => { reg.update(); }).catch(e=>{}); }); }
 
-        // --- MAPAS LEAFLET (CORRIGIDO PARA MODAL) ---
+        // --- MAPAS LEAFLET ---
         function abrirModalPedido() {
             abrirModal('modal-pedido');
             if(navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(pos => {
-                    coords.lat = pos.coords.latitude; coords.lng = pos.coords.longitude;
-                    iniciarMapa();
+                    coords.lat = pos.coords.latitude; coords.lng = pos.coords.longitude; iniciarMapa();
                 }, () => { iniciarMapa(); });
             } else { iniciarMapa(); }
         }
@@ -288,15 +292,10 @@
             map = L.map('mapa-pedido').setView([coords.lat, coords.lng], 12);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             mapCircle = L.circle([coords.lat, coords.lng], { color: '#FFC107', fillColor: '#FFC107', fillOpacity: 0.2, radius: 15000 }).addTo(map);
-            
-            // Hack poderoso de Engenharia: Força o mapa a renderizar corretamente dentro de Divs escondidas!
             setTimeout(() => { map.invalidateSize(); }, 200); 
         }
 
-        function atualizarRaioMapa(km) {
-            document.getElementById('label-raio').innerText = km + ' km';
-            if(mapCircle) { mapCircle.setRadius(km * 1000); map.fitBounds(mapCircle.getBounds()); }
-        }
+        function atualizarRaioMapa(km) { document.getElementById('label-raio').innerText = km + ' km'; if(mapCircle) { mapCircle.setRadius(km * 1000); map.fitBounds(mapCircle.getBounds()); } }
 
         // --- UTILS UI ---
         function abrirModal(id) { document.getElementById(id).classList.add('active'); }
@@ -307,6 +306,26 @@
         function loader() { return `<div style="text-align:center; padding:20px;"><div class="spinner"></div></div>`; }
         function mostrarAba(screenId, abaId) { document.querySelectorAll(`#${screenId} .tab-content`).forEach(t => t.classList.remove('active')); document.getElementById(abaId).classList.add('active'); fecharMenu(); }
 
+        // PONTO 3: Lógica Touch para Deslizar e Rejeitar
+        let startX = 0, currentX = 0;
+        function ts(e) { startX = e.touches[0].clientX; }
+        function tm(e) { 
+            currentX = e.touches[0].clientX; 
+            let diff = currentX - startX; 
+            if(diff < 0) e.currentTarget.style.transform = `translateX(${diff}px)`; // Só deixa deslizar para a esquerda
+        }
+        function te(e, id) { 
+            let diff = currentX - startX; 
+            if(diff < -80) { 
+                e.currentTarget.style.opacity = '0'; 
+                rejeitados.push(id); 
+                pararAlarme(); 
+                setTimeout(api_Radar, 300); // Atualiza e limpa da tela
+            } else { 
+                e.currentTarget.style.transform = 'translateX(0)'; // Volta pro lugar
+            }
+        }
+
         async function chamadoraAPI(acao, payload) { try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: acao, payload: payload }) }); return await r.json(); } catch(e) { return null; } }
 
         function montarMenu(tipo) {
@@ -316,7 +335,7 @@
             } else if (tipo === 'Profissional') {
                 menu.innerHTML = `<div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início (Ficar Online)</div><div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-ranking')"><i class="fas fa-trophy" style="width:25px;"></i> Ver Ranking</div><div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-avaliacoes')"><i class="fas fa-star" style="width:25px;"></i> Ver Avaliações</div><div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-config')"><i class="fas fa-cog" style="width:25px;"></i> Configurações</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
             } else {
-                menu.innerHTML = `<div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início (Pedir Serviço)</div><div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-avaliacoes')"><i class="fas fa-star" style="width:25px;"></i> Ver Avaliações</div><div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-config')"><i class="fas fa-cog" style="width:25px;"></i> Configurações</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
+                menu.innerHTML = `<div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início (Pedir Serviço)</div><div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-avaliacoes')"><i class="fas fa-star" style="width:25px;"></i> Ranking Avaliações</div><div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-config')"><i class="fas fa-cog" style="width:25px;"></i> Configurações</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
             }
         }
 
@@ -346,7 +365,8 @@
                     navegarPara('cliente-screen'); carregarDashboardCliente(); 
                 } else { 
                     document.getElementById('cfg-morada-p').value = user.morada || ''; document.getElementById('cfg-cpostal-p').value = user.cpostal || '';
-                    navegarPara('pro-screen'); carregarDashboardPro(); document.getElementById('pro-minha-nota').innerText = parseFloat(user.avaliacao).toFixed(1); 
+                    navegarPara('pro-screen'); carregarDashboardPro(); 
+                    document.getElementById('pro-minha-nota').innerText = (parseFloat(user.avaliacao) === 0) ? "0.0" : parseFloat(user.avaliacao).toFixed(1); 
                 }
             } else if (res) { alert(res.erro); document.getElementById('btn-entrar').innerText = 'ENTRAR'; }
         }
@@ -366,14 +386,14 @@
                 if(meuGrafico) meuGrafico.destroy();
                 meuGrafico = new Chart(ctx, { type: 'line', data: { labels: ['Sem 1','Sem 2','Sem 3','Sem 4'], datasets: [{ label:'€', data: res.chart, borderColor: '#00E5FF', backgroundColor:'rgba(0,229,255,0.1)', fill:true, tension:0.4 }] }, options: { plugins:{legend:{display:false}} }});
                 document.getElementById('pro-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="rank-card"><span>#${i+1} <b>${p.nome}</b></span> <span>${p.obras} Obras</span></div>`).join('');
-                document.getElementById('pro-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="rank-card"><span>#${i+1} <b>${p.nome}</b></span> <span class="star">${parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
+                document.getElementById('pro-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="rank-card"><span>#${i+1} <b>${p.nome}</b></span> <span class="star">${p.estrelas == 0 ? '0.0' : parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
             }
         }
         async function carregarDashboardCliente() {
             const res = await chamadoraAPI('obter_dashboard_cliente', {});
             if(res) { 
-                document.getElementById('cli-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="rank-card"><span>#${i+1} <b>${p.nome}</b> <small>(${p.prof})</small></span> <span class="star">${parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
-                document.getElementById('cli-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="rank-card"><span>#${i+1} <b>${p.nome}</b> <small>(${p.prof})</small></span> <span class="star">${parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
+                document.getElementById('cli-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="rank-card"><span>#${i+1} <b>${p.nome}</b> <small>(${p.prof})</small></span> <span class="star">${p.estrelas == 0 ? '0.0' : parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
+                document.getElementById('cli-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="rank-card"><span>#${i+1} <b>${p.nome}</b> <small>(${p.prof})</small></span> <span class="star">${p.estrelas == 0 ? '0.0' : parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
             }
         }
 
@@ -385,7 +405,8 @@
             if(res) { 
                 tempIdPedido = res.id_pedido; 
                 document.getElementById('area-pedidos-ativos').style.display = 'block';
-                cliRadarInt = setInterval(verificarOrcamentosRadar, 5000); 
+                // PONTO 6: Sync Super Rápido (3 segundos)
+                cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); 
             }
         }
 
@@ -394,7 +415,6 @@
             const box = document.getElementById('lista-orcamentos-recebidos');
             if(res && res.orcamentos.length > 0) {
                 clearInterval(cliRadarInt);
-                somNotificacao.play().catch(e=>{}); if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 document.querySelector('.radar-pulse').style.display = 'none';
                 box.innerHTML = res.orcamentos.map(o=>`<div class="glass" style="border:1px solid var(--neon-green);"><b>${o.nome}</b> - <span style="color:var(--neon-green); font-size:1.2em;">${o.valor}€</span><br><small>${o.msg}</small><br><button onclick="aceitarOrcamento('${o.id_orc}','${o.id_pro}')" class="btn-neon green" style="margin-top:10px; padding:10px;">Aceitar Orçamento</button></div>`).join('');
             }
@@ -413,11 +433,12 @@
                 if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p => { coords.lat = p.coords.latitude; coords.lng = p.coords.longitude; });
                 radarInt = setInterval(api_Radar, 5000); api_Radar(); document.getElementById('pro-radar').innerHTML = loader(); 
                 
-                // Desbloqueia a política de áudio do telemóvel através do clique do utilizador
-                somNotificacao.play().catch(e=>{}); 
+                // Silêncio: Somente liberta as permissões de som no telemóvel
+                somNotificacao.play().then(() => somNotificacao.pause()).catch(e=>{}); 
             } else { 
                 b.innerText = "Ficar Online"; b.classList.remove('online'); d.style.color = '#555'; 
                 clearInterval(radarInt); document.getElementById('pro-radar').innerHTML = "Offline. Ligue para ver pedidos."; 
+                pararAlarme();
             }
         }
 
@@ -425,20 +446,36 @@
             if(!proOnline) return;
             const res = await chamadoraAPI('buscar_pedidos_pro', { profissao: user.profissao, lat: coords.lat, lng: coords.lng });
             if(res && res.pedidos.length > 0) {
-                let novosIds = res.pedidos.map(p => p.id_pedido);
+                // Filtra os que já foram rejeitados via Swipe
+                let visiveis = res.pedidos.filter(p => !rejeitados.includes(p.id_pedido));
+                
+                if (visiveis.length === 0) { document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Aguardando novos clientes...</span>"; return; }
+
+                let novosIds = visiveis.map(p => p.id_pedido);
                 if(novosIds.some(id => !lastPedidosDetectados.includes(id))) {
-                    somNotificacao.play().catch(e=>{}); if(navigator.vibrate) navigator.vibrate([200, 100, 200]); 
+                    somNotificacao.play().catch(e=>{}); // PONTO 1: Toca só quando chega
+                    if(navigator.vibrate) navigator.vibrate([300, 200, 300, 200, 300]); 
                 }
                 lastPedidosDetectados = novosIds;
-                document.getElementById('pro-radar').innerHTML = res.pedidos.map(p=>`<div class="glass" style="border-left:3px solid var(--neon-yellow);"><b>${p.nomeCliente}</b> (A ${p.dist}km)<br><small style="color:#888;">${p.morada}</small><br><span style="display:block;margin:8px 0;">${p.desc}</span><button onclick="prepararOrcamento('${p.id_pedido}')" class="btn-neon" style="padding:8px; font-size:12px;">FAZER ORÇAMENTO</button></div>`).join('');
+                
+                // PONTO 4 e PONTO 3 (Info + Swipe)
+                document.getElementById('pro-radar').innerHTML = visiveis.map(p=>`
+                    <div class="glass swipeable" style="border-left:3px solid var(--neon-yellow); overflow:hidden;" ontouchstart="ts(event)" ontouchmove="tm(event)" ontouchend="te(event, '${p.id_pedido}')">
+                        <strong style="color:var(--neon-yellow); font-size:1.1em;">${p.cat}</strong><br>
+                        <b>${p.nomeCliente}</b> (A ${p.dist}km)<br>
+                        <small style="color:#888;">${p.morada}</small><br>
+                        <span style="display:block;margin:8px 0; color:#eee;">${p.desc}</span>
+                        <button onclick="prepararOrcamento('${p.id_pedido}')" class="btn-neon" style="padding:8px; font-size:12px;">FAZER ORÇAMENTO</button>
+                    </div>`).join('');
             } else if (res) document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Aguardando novos clientes...</span>";
         }
 
-        function prepararOrcamento(idPed) { tempIdPedido = idPed; abrirModal('modal-enviar-orc'); }
+        function prepararOrcamento(idPed) { tempIdPedido = idPed; pararAlarme(); abrirModal('modal-enviar-orc'); }
         async function enviarOrcamentoReal() {
             const v = document.getElementById('orc-valor').value; const m = document.getElementById('orc-msg').value;
             await chamadoraAPI('enviar_orcamento', { idPedido: tempIdPedido, idPro: user.id, nomePro: user.nome, valor: v, msg: m });
-            fecharModal('modal-enviar-orc'); alert("Enviado com sucesso!");
+            rejeitados.push(tempIdPedido); // Tira da lista visual após orçamentar
+            fecharModal('modal-enviar-orc'); api_Radar(); alert("Enviado com sucesso!");
         }
 
         // --- CHAT E AVALIAÇÃO ---
