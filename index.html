@@ -17,18 +17,11 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- UI ATUALIZADA (BLUE SLATE / NEON HOVER) -->
     <style>
         :root { 
-            --bg-dark: #0A0F1A;     /* Fundo Profundo Estilo Painel Auto */
-            --bg-panel: #131B2A;    /* Fundo dos Cards */
-            --border-color: #1F2937;/* Borda Subtil */
-            --neon-yellow: #FACC15; /* Amarelo menos agressivo */
-            --neon-green: #10B981;  /* Verde Sucesso */
-            --neon-blue: #0EA5E9;   /* Azul Elétrico */
-            --neon-red: #EF4444;    /* Vermelho Alerta */
-            --text-main: #F9FAFB;   /* Branco Cinza */
-            --text-muted: #9CA3AF;  /* Cinza Secundário */
+            --bg-dark: #0A0F1A; --bg-panel: #131B2A; --border-color: #1F2937;
+            --neon-yellow: #FACC15; --neon-green: #10B981; --neon-blue: #0EA5E9; --neon-red: #EF4444;
+            --text-main: #F9FAFB; --text-muted: #9CA3AF; 
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; touch-action: pan-y; }
         body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
@@ -40,35 +33,15 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s; }
 
-        /* CARDS CLICKAVEIS (EFEITO HOVER GROW + NEON SUBTIL) */
-        .info-card {
-            background-color: var(--bg-panel);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 15px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-        }
-        .info-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 15px rgba(14, 165, 233, 0.15); /* Néon Azul */
-            border-color: rgba(14, 165, 233, 0.3);
-        }
+        .info-card { background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 15px; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
+        .info-card:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(14, 165, 233, 0.15); border-color: rgba(14, 165, 233, 0.3); }
 
-        /* BADGES (Etiquetas de Status) */
-        .badge-green {
-            color: var(--neon-green); border: 1px solid var(--neon-green); background: rgba(16, 185, 129, 0.1);
-            padding: 2px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; white-space: nowrap;
-        }
-        .badge-yellow {
-            color: var(--neon-yellow); border: 1px solid var(--neon-yellow); background: rgba(250, 204, 21, 0.1);
-            padding: 2px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; white-space: nowrap;
-        }
+        .badge-green { color: var(--neon-green); border: 1px solid var(--neon-green); background: rgba(16, 185, 129, 0.1); padding: 2px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
+        .badge-yellow { color: var(--neon-yellow); border: 1px solid var(--neon-yellow); background: rgba(250, 204, 21, 0.1); padding: 2px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
         
         input, select, textarea { width: 100%; padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; outline: none; transition: 0.3s; }
         input:focus, select:focus, textarea:focus { border-color: var(--neon-blue); box-shadow: 0 0 8px rgba(14,165,233,0.2); }
         
-        /* Botões */
         button { border: none; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
         .btn-neon { background: transparent; color: var(--neon-blue); border: 2px solid var(--neon-blue); padding: 15px; width: 100%; box-shadow: 0 0 8px rgba(14,165,233,0.1), inset 0 0 5px rgba(14,165,233,0.05); }
         .btn-neon:hover { background: rgba(14,165,233,0.1); box-shadow: 0 0 15px rgba(14,165,233,0.3); }
@@ -83,11 +56,9 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-text { color: var(--text-muted); text-align: center; padding: 20px; font-style: italic; display:block; }
 
-        /* Animação Radar */
         .radar-pulse { width: 80px; height: 80px; background: var(--neon-blue); border-radius: 50%; margin: 30px auto; animation: pulse-ring 2s infinite; }
         @keyframes pulse-ring { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(14,165,233, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 40px rgba(14,165,233, 0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(14,165,233, 0); } }
 
-        /* Gestos Swipe */
         .swipeable { transition: transform 0.2s ease-out, opacity 0.3s; position: relative; }
         .swipeable::after { content: "← Deslize para rejeitar"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: rgba(255,255,255,0.2); pointer-events: none; }
 
@@ -139,11 +110,24 @@
     <!-- ================== ADMIN SCREEN ================== -->
     <div id="admin-screen" class="screen">
         <header><button class="btn-menu" onclick="abrirMenu()">☰</button><h3 style="margin:0;">Painel de Controle</h3></header>
+        
         <div id="admin-inicio" class="tab-content active">
             <h4 style="color:var(--neon-blue); margin-bottom:15px;">Filtros de Ação</h4>
             <button class="btn-neon yellow" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('pendentes');" style="margin-bottom:15px;">Pendentes de Aprovação</button>
             <button class="btn-neon" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('todos');">Todos os Usuários</button>
         </div>
+
+        <!-- NOVAS ABAS DE ADMIN -->
+        <div id="admin-ranking" class="tab-content">
+            <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin-bottom:10px;">Ranking Global (Obras)</h4>
+            <div id="admin-rank-vol"><div class="spinner"></div></div>
+        </div>
+
+        <div id="admin-avaliacoes" class="tab-content">
+            <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin-bottom:10px;">Top Profissionais Avaliados</h4>
+            <div id="admin-rank-estrelas"><div class="spinner"></div></div>
+        </div>
+
         <div id="admin-usuarios" class="tab-content">
             <h4 id="admin-titulo" style="color:var(--neon-blue); margin-bottom:15px;">Listagem</h4>
             <div style="display:flex; gap:10px; margin-bottom:15px;">
@@ -163,7 +147,6 @@
             
             <div id="area-pedidos-ativos" class="info-card" style="display:none; text-align:center; border-color:var(--neon-blue);">
                 <h4 style="color:var(--neon-blue); margin-bottom:5px;">A Buscar Profissionais...</h4>
-                <!-- PONTO 1: Countdown 3 Minutos -->
                 <div id="timer-pedido" style="font-size:2rem; font-weight:bold; color:var(--text-main); margin-bottom:10px;">03:00</div>
                 <div class="radar-pulse" id="radar-pulse-anim"></div>
                 <p style="color:var(--text-muted); font-size:13px; line-height:1.5;">Os orçamentos aparecerão aqui em tempo real.<br>Tem 3 minutos para receber propostas.</p>
@@ -186,7 +169,7 @@
                 <input type="text" id="cfg-morada-c" placeholder="Morada Completa">
                 <input type="text" id="cfg-cpostal-c" placeholder="Código Postal">
                 <h4 style="margin:15px 0; color:var(--neon-blue);">Segurança</h4>
-                <input type="password" id="cfg-senha-antiga-c" placeholder="Senha Atual (Opcional)">
+                <input type="password" id="cfg-senha-antiga-c" placeholder="Senha Atual (Obrigatório para mudar)">
                 <input type="password" id="cfg-senha-nova-c" placeholder="Nova Senha">
                 <button onclick="api_AtualizarConfig('c')" class="btn-neon">Guardar Alterações</button>
             </div>
@@ -233,7 +216,7 @@
                 <input type="text" id="cfg-morada-p" placeholder="Morada Completa">
                 <input type="text" id="cfg-cpostal-p" placeholder="Código Postal">
                 <h4 style="margin:15px 0; color:var(--neon-blue);">Acesso</h4>
-                <input type="password" id="cfg-senha-antiga-p" placeholder="Senha Atual">
+                <input type="password" id="cfg-senha-antiga-p" placeholder="Senha Atual (Obrigatório para mudar)">
                 <input type="password" id="cfg-senha-nova-p" placeholder="Nova Senha">
                 <button onclick="api_AtualizarConfig('p')" class="btn-neon">Guardar Alterações</button>
             </div>
@@ -263,7 +246,6 @@
         <input id="r-senha" type="password" placeholder="Senha"><input id="r-senha-conf" type="password" placeholder="Confirmar Senha"><button onclick="enviarRegisto()" id="btn-submit-reg" class="btn-neon">Finalizar</button>
     </div></div>
 
-    <!-- PONTO 5: Raio de 100km e Layout Melhorado -->
     <div id="modal-pedido" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modal-pedido')">&times;</span>
         <h3 style="color:var(--text-main); margin-bottom:15px;">Novo Pedido</h3>
         <label style="color:var(--text-muted); font-size:12px; text-transform:uppercase;">Categoria</label>
@@ -286,11 +268,6 @@
         <input type="number" id="orc-valor" placeholder="Valor Estimado (€)"><textarea id="orc-msg" placeholder="Disponibilidade e detalhes..." rows="4"></textarea><button onclick="enviarOrcamentoReal()" class="btn-neon">Submeter Oferta</button>
     </div></div>
 
-    <div id="modal-ver-orc" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modal-ver-orc')">&times;</span>
-        <h3 style="color:var(--neon-blue); margin-bottom:15px;">Propostas</h3>
-        <div id="lista-orcamentos-ver"><div class="spinner"></div></div>
-    </div></div>
-
     <div id="modal-chat" class="modal"><div class="modal-content"><span class="close" onclick="fecharChat()">&times;</span>
         <h3 style="color:var(--text-main); margin-bottom:10px; font-size:16px;">Chat de Negociação</h3>
         <div class="chat-box" id="chat-box"></div>
@@ -309,10 +286,8 @@
         let lastPedidosDetectados = [];
         let rejeitados = []; 
         
-        // PONTO 1: Som de Despertador (Loop True) - Toca sem parar até interação
         const somNotificacao = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
         somNotificacao.loop = true; 
-        
         function pararAlarme() { somNotificacao.pause(); somNotificacao.currentTime = 0; }
 
         if ('caches' in window) { caches.keys().then((names) => { names.forEach(name => { caches.delete(name); }); }); }
@@ -327,33 +302,54 @@
                 }, () => { iniciarMapa(); });
             } else { iniciarMapa(); }
         }
-
         function iniciarMapa() {
+            if(typeof L === 'undefined') return; // Segurança contra ReferenceError
             if(map) map.remove();
             map = L.map('mapa-pedido').setView([coords.lat, coords.lng], 12);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             mapCircle = L.circle([coords.lat, coords.lng], { color: '#FACC15', fillColor: '#FACC15', fillOpacity: 0.1, radius: 15000 }).addTo(map);
-            setTimeout(() => { map.invalidateSize(); }, 200); // Essencial para renderizar dentro do Modal
+            setTimeout(() => { map.invalidateSize(); }, 200);
         }
-
         function atualizarRaioMapa(km) { document.getElementById('label-raio').innerText = km + ' km'; if(mapCircle) { mapCircle.setRadius(km * 1000); map.fitBounds(mapCircle.getBounds()); } }
 
-        // --- UTILS UI ---
+        // --- UTILS UI E MENUS ---
         function abrirModal(id) { document.getElementById(id).classList.add('active'); }
         function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
         function abrirMenu() { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
         function fecharMenu() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); }
         function navegarPara(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); fecharMenu(); }
-        
         function mostrarAba(screenId, abaId) { document.querySelectorAll(`#${screenId} .tab-content`).forEach(t => t.classList.remove('active')); document.getElementById(abaId).classList.add('active'); fecharMenu(); }
+        function loader() { return `<div style="text-align:center; padding:20px;"><div class="spinner"></div></div>`; }
+
+        function montarMenu(tipo) {
+            const menu = document.getElementById('sidebar-menu-items');
+            if (tipo === 'Administrador') {
+                menu.innerHTML = `
+                    <div class="menu-item" onclick="mostrarAba('admin-screen', 'admin-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início</div>
+                    <div class="menu-item" onclick="mostrarAba('admin-screen', 'admin-ranking'); carregarRankingsAdmin();"><i class="fas fa-trophy" style="width:25px;"></i> Ver Ranking Obras</div>
+                    <div class="menu-item" onclick="mostrarAba('admin-screen', 'admin-avaliacoes'); carregarRankingsAdmin();"><i class="fas fa-star" style="width:25px;"></i> Ver Avaliações</div>
+                    <div class="menu-item" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('Cliente');"><i class="fas fa-users" style="width:25px;"></i> Ver Utilizadores</div>
+                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
+            } else if (tipo === 'Profissional') {
+                menu.innerHTML = `
+                    <div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início (Ficar Online)</div>
+                    <div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-ranking')"><i class="fas fa-trophy" style="width:25px;"></i> Ver Ranking</div>
+                    <div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-avaliacoes')"><i class="fas fa-star" style="width:25px;"></i> Ver Avaliações</div>
+                    <div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-config')"><i class="fas fa-cog" style="width:25px;"></i> Configurações</div>
+                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
+            } else {
+                menu.innerHTML = `
+                    <div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início (Pedir Serviço)</div>
+                    <div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-avaliacoes')"><i class="fas fa-star" style="width:25px;"></i> Ranking Avaliações</div>
+                    <div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-config')"><i class="fas fa-cog" style="width:25px;"></i> Configurações</div>
+                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
+            }
+        }
 
         // PONTO 3: Lógica Swipe Profissional
         let startX = 0, currentX = 0;
         function ts(e) { startX = e.touches[0].clientX; }
-        function tm(e) { 
-            currentX = e.touches[0].clientX; let diff = currentX - startX; 
-            if(diff < 0) e.currentTarget.style.transform = `translateX(${diff}px)`; 
-        }
+        function tm(e) { currentX = e.touches[0].clientX; let diff = currentX - startX; if(diff < 0) e.currentTarget.style.transform = `translateX(${diff}px)`; }
         function te(e, id) { 
             let diff = currentX - startX; 
             if(diff < -90) { 
@@ -362,9 +358,14 @@
             } else { e.currentTarget.style.transform = 'translateX(0)'; }
         }
 
-        async function chamadoraAPI(acao, payload) { try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: acao, payload: payload }) }); return await r.json(); } catch(e) { return null; } }
+        async function chamadoraAPI(acao, payload) { 
+            try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: acao, payload: payload }) }); return await r.json(); } 
+            catch(e) { return null; } 
+        }
 
-        // --- AUTH E CONFIG ---
+        function logout() { window.location.reload(true); }
+
+        // --- AUTH & LOGIN À PROVA DE FALHAS ---
         async function enviarRegisto() {
             const p = { tipo: document.getElementById('r-tipo').value, nome: document.getElementById('r-nome').value, sobrenome: document.getElementById('r-sobrenome').value, email: document.getElementById('r-email').value, senha: document.getElementById('r-senha').value, senhaConf: document.getElementById('r-senha-conf').value, profissao: document.getElementById('r-prof').value, morada: document.getElementById('r-morada').value, cpostal: document.getElementById('r-cpostal').value };
             if (!p.nome || !p.email || !p.senha || !p.morada || !p.cpostal) return alert('Morada e Código Postal são obrigatórios!');
@@ -376,22 +377,51 @@
         }
 
         async function fazerLogin() {
-            const p = { tipo: document.getElementById('login-tipo').value, email: document.getElementById('login-email').value, senha: document.getElementById('login-senha').value };
-            document.getElementById('btn-entrar').innerHTML = '<div class="spinner"></div>';
-            const res = await chamadoraAPI('login', p);
-            if(res && res.sucesso) {
-                user = res; 
-                if(user.tipo === 'Administrador') { navegarPara('admin-screen'); } 
-                else if(user.tipo === 'Cliente') { 
-                    document.getElementById('nome-cliente-display').innerText = "Olá, " + user.nome.split(' ')[0]; 
-                    document.getElementById('cfg-morada-c').value = user.morada || ''; document.getElementById('cfg-cpostal-c').value = user.cpostal || '';
-                    navegarPara('cliente-screen'); carregarDashboardCliente(); 
+            try {
+                const tipoLog = document.getElementById('login-tipo').value;
+                const emailLog = document.getElementById('login-email').value;
+                const senhaLog = document.getElementById('login-senha').value;
+                
+                if (tipoLog !== 'Administrador' && !emailLog) return alert('Insira o email.');
+                if (!senhaLog) return alert('Insira a senha.');
+
+                const btn = document.getElementById('btn-entrar');
+                btn.innerHTML = '<div class="spinner"></div>';
+
+                const p = { tipo: tipoLog, email: emailLog, senha: senhaLog };
+                const res = await chamadoraAPI('login', p);
+                
+                if(res && res.sucesso) {
+                    user = res; 
+                    montarMenu(user.tipo); // AGORA CORRIGIDO, CRIA O MENU!
+                    
+                    if(user.tipo === 'Administrador') { 
+                        navegarPara('admin-screen'); 
+                    } 
+                    else if(user.tipo === 'Cliente') { 
+                        document.getElementById('nome-cliente-display').innerText = "Olá, " + (user.nome ? user.nome.split(' ')[0] : 'Cliente'); 
+                        document.getElementById('cfg-morada-c').value = user.morada || ''; 
+                        document.getElementById('cfg-cpostal-c').value = user.cpostal || '';
+                        navegarPara('cliente-screen'); 
+                        carregarDashboardCliente(); 
+                    } 
+                    else { 
+                        document.getElementById('cfg-morada-p').value = user.morada || ''; 
+                        document.getElementById('cfg-cpostal-p').value = user.cpostal || '';
+                        navegarPara('pro-screen'); 
+                        carregarDashboardPro(); 
+                        let nota = parseFloat(user.avaliacao); if(isNaN(nota)) nota = 0;
+                        document.getElementById('pro-minha-nota').innerText = (nota === 0) ? "0.0" : nota.toFixed(1); 
+                    }
                 } else { 
-                    document.getElementById('cfg-morada-p').value = user.morada || ''; document.getElementById('cfg-cpostal-p').value = user.cpostal || '';
-                    navegarPara('pro-screen'); carregarDashboardPro(); 
-                    document.getElementById('pro-minha-nota').innerText = (parseFloat(user.avaliacao) === 0) ? "0.0" : parseFloat(user.avaliacao).toFixed(1); 
+                    alert(res ? res.erro : "Erro ao tentar aceder ao servidor."); 
                 }
-            } else if (res) { alert(res.erro); document.getElementById('btn-entrar').innerText = 'ENTRAR'; }
+                btn.innerText = 'ENTRAR';
+            } catch (error) {
+                console.error(error);
+                alert("Erro Interno. Verifique a conexão.");
+                document.getElementById('btn-entrar').innerText = 'ENTRAR';
+            }
         }
 
         async function api_AtualizarConfig(prefix) {
@@ -405,11 +435,12 @@
             const res = await chamadoraAPI('obter_dashboard_pro', { idPro: user.id });
             if(res) {
                 document.getElementById('pro-faturamento').innerText = res.faturamento.toFixed(2) + ' €'; 
-                const ctx = document.getElementById('proChart').getContext('2d'); Chart.defaults.color = '#9CA3AF'; Chart.defaults.borderColor = 'rgba(255,255,255,0.02)';
-                if(meuGrafico) meuGrafico.destroy();
-                meuGrafico = new Chart(ctx, { type: 'line', data: { labels: ['Sem 1','Sem 2','Sem 3','Sem 4'], datasets: [{ label:'€', data: res.chart, borderColor: '#10B981', backgroundColor:'rgba(16,185,129,0.1)', fill:true, tension:0.4 }] }, options: { plugins:{legend:{display:false}} }});
-                
-                document.getElementById('pro-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b></span> <span class="badge-green">${p.obras}</span></div>`).join('');
+                if(typeof Chart !== 'undefined') {
+                    const ctx = document.getElementById('proChart').getContext('2d'); Chart.defaults.color = '#9CA3AF'; Chart.defaults.borderColor = 'rgba(255,255,255,0.02)';
+                    if(meuGrafico) meuGrafico.destroy();
+                    meuGrafico = new Chart(ctx, { type: 'line', data: { labels: ['Sem 1','Sem 2','Sem 3','Sem 4'], datasets: [{ label:'€', data: res.chart, borderColor: '#10B981', backgroundColor:'rgba(16,185,129,0.1)', fill:true, tension:0.4 }] }, options: { plugins:{legend:{display:false}} }});
+                }
+                document.getElementById('pro-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b></span> <span class="badge-green">${p.obras} Obras</span></div>`).join('');
                 document.getElementById('pro-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b></span> <span class="badge-yellow">${p.estrelas == 0 ? '0.0' : parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
             }
         }
@@ -417,8 +448,8 @@
         async function carregarDashboardCliente() {
             const res = await chamadoraAPI('obter_dashboard_cliente', {});
             if(res) { 
-                document.getElementById('cli-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b> <small style="color:var(--text-muted);">(${p.prof})</small></span> <span class="badge-green">${p.estrelas == 0 ? '0.0' : parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
-                document.getElementById('cli-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b></span> <span class="badge-yellow">${p.estrelas == 0 ? '0.0' : parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
+                document.getElementById('cli-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b> <small style="color:var(--text-muted);">(${p.prof})</small></span> <span class="badge-green">${p.obras} Obras</span></div>`).join('');
+                document.getElementById('cli-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b> <small style="color:var(--text-muted);">(${p.prof})</small></span> <span class="badge-yellow">${p.estrelas == 0 ? '0.0' : parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
             }
         }
 
@@ -430,10 +461,7 @@
             if(res) { 
                 tempIdPedido = res.id_pedido; 
                 document.getElementById('area-pedidos-ativos').style.display = 'block';
-                document.getElementById('radar-pulse-anim').style.display = 'block';
-                document.getElementById('lista-orcamentos-recebidos').innerHTML = '';
                 
-                // Contagem decrescente (3 minutos = 180s)
                 let tempo = 180;
                 document.getElementById('timer-pedido').innerText = "03:00";
                 
@@ -443,11 +471,10 @@
                     document.getElementById('timer-pedido').innerText = `${m}:${s}`;
                     if(tempo <= 0) { 
                         clearInterval(cliTimerInt); clearInterval(cliRadarInt);
-                        document.getElementById('area-pedidos-ativos').innerHTML = `<h4 style="color:var(--neon-red); margin-bottom:10px;">Tempo Esgotado</h4><p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Nenhum profissional da sua região respondeu a tempo.</p><button onclick="window.location.reload();" class="btn-neon">Fechar e Tentar de Novo</button>`;
+                        document.getElementById('area-pedidos-ativos').innerHTML = `<h4 style="color:var(--neon-red); margin-bottom:10px;">Tempo Esgotado</h4><p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Nenhum profissional respondeu a tempo.</p><button onclick="window.location.reload();" class="btn-neon">Tentar de Novo</button>`;
                     }
                 }, 1000);
 
-                // Polling super rápido para receber orçamentos
                 cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); 
             }
         }
@@ -459,9 +486,7 @@
                 clearInterval(cliRadarInt); clearInterval(cliTimerInt);
                 document.getElementById('radar-pulse-anim').style.display = 'none';
                 document.getElementById('timer-pedido').innerText = "Orçamentos Recebidos!"; document.getElementById('timer-pedido').style.color = "var(--neon-green)";
-                
                 somNotificacao.play().then(()=>setTimeout(()=>pararAlarme(),1500)).catch(e=>{}); if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
-                
                 box.innerHTML = res.orcamentos.map(o=>`<div class="info-card" style="border-left: 3px solid var(--neon-green); text-align:left;"><div style="display:flex; justify-content:space-between; align-items:center;"><b>${o.nome}</b><span style="color:var(--neon-green); font-size:1.2em; font-weight:bold;">${o.valor}€</span></div><p style="margin:10px 0; font-size:0.9em; color:#ddd;">${o.msg}</p><button onclick="aceitarOrcamento('${o.id_orc}','${o.id_pro}')" class="btn-neon green" style="padding:10px;">ACEITAR E NEGOCIAR</button></div>`).join('');
             }
         }
@@ -478,8 +503,6 @@
                 b.innerText = "A Buscar no Radar..."; b.classList.add('green'); b.classList.remove('yellow'); d.style.color = 'var(--neon-green)'; 
                 if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p => { coords.lat = p.coords.latitude; coords.lng = p.coords.longitude; });
                 radarInt = setInterval(api_Radar, 5000); api_Radar(); document.getElementById('pro-radar').innerHTML = `<div class="spinner"></div>`; 
-                
-                // Desbloqueia áudio silenciosamente
                 somNotificacao.play().then(() => pararAlarme()).catch(e=>{}); 
             } else { 
                 b.innerText = "Ligar Radar de Obras"; b.classList.remove('green'); b.classList.add('yellow'); d.style.color = '#555'; 
@@ -497,8 +520,7 @@
 
                 let novosIds = visiveis.map(p => p.id_pedido);
                 if(novosIds.some(id => !lastPedidosDetectados.includes(id))) {
-                    somNotificacao.play().catch(e=>{}); // PONTO 1 E 2: Som toca em Loop!
-                    if(navigator.vibrate) navigator.vibrate([300, 200, 300, 200, 300]); 
+                    somNotificacao.play().catch(e=>{}); if(navigator.vibrate) navigator.vibrate([300, 200, 300, 200, 300]); 
                 }
                 lastPedidosDetectados = novosIds;
                 
@@ -522,8 +544,7 @@
             const v = document.getElementById('orc-valor').value; const m = document.getElementById('orc-msg').value;
             if(!v || !m) return alert("Preencha todos os campos.");
             await chamadoraAPI('enviar_orcamento', { idPedido: tempIdPedido, idPro: user.id, nomePro: user.nome, valor: v, msg: m });
-            rejeitados.push(tempIdPedido); // Some da tela do Pro após enviar
-            fecharModal('modal-enviar-orc'); api_Radar();
+            rejeitados.push(tempIdPedido); fecharModal('modal-enviar-orc'); api_Radar();
         }
 
         // --- CHAT E AVALIAÇÃO ---
@@ -534,8 +555,17 @@
         async function enviarAvaliacao() { await chamadoraAPI('avaliar_usuario', { idAlvo: tempIdDestinatario, nota: document.getElementById('nota-aval').value }); alert("Obrigado pela sua avaliação!"); fecharChat(); }
 
         // --- ADMIN ---
+        async function carregarRankingsAdmin() {
+            document.getElementById('admin-rank-vol').innerHTML = loader(); document.getElementById('admin-rank-estrelas').innerHTML = loader();
+            const res = await chamadoraAPI('obter_dashboard_cliente', {});
+            if(res) { 
+                document.getElementById('admin-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b> <small style="color:var(--text-muted);">(${p.prof})</small></span> <span class="badge-green">${p.obras} Obras</span></div>`).join('');
+                document.getElementById('admin-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b></span> <span class="badge-yellow">${p.estrelas == 0 ? '0.0' : parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
+            }
+        }
+
         async function carregarAdmin(tipo) {
-            const box = document.getElementById('admin-lista-users'); box.innerHTML = `<div class="spinner"></div>`;
+            const box = document.getElementById('admin-lista-users'); box.innerHTML = loader();
             let acao = tipo === 'pendentes' ? 'admin_listar_pendentes' : 'admin_listar_usuarios';
             const res = await chamadoraAPI(acao, {});
             if (res && tipo === 'pendentes') { box.innerHTML = res.pendentes.map(p => `<div class="info-card"><b>${p.nomeCompleto}</b><br><small style="color:var(--text-muted);">${p.profissao} | ${p.email}</small><div style="margin-top:10px; display:flex; gap:10px;"><button onclick="chamadoraAPI('admin_aprovar_pro', {id: '${p.id}'}); alert('Aprovado!'); carregarAdmin('pendentes');" class="btn-small btn-bg-green" style="flex:1;">Aprovar</button></div></div>`).join('') || '<span class="loading-text">Nenhuma conta pendente.</span>'; } 
