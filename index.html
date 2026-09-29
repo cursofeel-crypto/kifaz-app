@@ -14,14 +14,22 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- LEAFLET MAPS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <!-- UI ATUALIZADA (BLUE SLATE / NEON HOVER) -->
     <style>
         :root { 
-            --bg-dark: #0A0F1A; --bg-panel: #131B2A; --border-color: #1F2937;
-            --neon-yellow: #FACC15; --neon-green: #10B981; --neon-blue: #0EA5E9; --neon-red: #EF4444;
-            --text-main: #F9FAFB; --text-muted: #9CA3AF; 
+            --bg-dark: #0A0F1A;     /* Fundo Profundo Estilo Painel Auto */
+            --bg-panel: #131B2A;    /* Fundo dos Cards */
+            --border-color: #1F2937;/* Borda Subtil */
+            --neon-yellow: #FACC15; /* Amarelo menos agressivo */
+            --neon-green: #10B981;  /* Verde Sucesso */
+            --neon-blue: #0EA5E9;   /* Azul Elétrico */
+            --neon-red: #EF4444;    /* Vermelho Alerta */
+            --text-main: #F9FAFB;   /* Branco Cinza */
+            --text-muted: #9CA3AF;  /* Cinza Secundário */
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; touch-action: pan-y; }
         body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
@@ -33,9 +41,22 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s; }
 
-        .info-card { background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 15px; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
-        .info-card:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(14, 165, 233, 0.15); border-color: rgba(14, 165, 233, 0.3); }
+        /* CARDS CLICKAVEIS (EFEITO HOVER GROW + NEON SUBTIL) */
+        .info-card {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .info-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.15); /* Néon Azul */
+            border-color: rgba(14, 165, 233, 0.3);
+        }
 
+        /* BADGES (Etiquetas de Status) */
         .badge-green { color: var(--neon-green); border: 1px solid var(--neon-green); background: rgba(16, 185, 129, 0.1); padding: 2px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
         .badge-yellow { color: var(--neon-yellow); border: 1px solid var(--neon-yellow); background: rgba(250, 204, 21, 0.1); padding: 2px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
         
@@ -56,9 +77,11 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-text { color: var(--text-muted); text-align: center; padding: 20px; font-style: italic; display:block; }
 
+        /* Animação Radar */
         .radar-pulse { width: 80px; height: 80px; background: var(--neon-blue); border-radius: 50%; margin: 30px auto; animation: pulse-ring 2s infinite; }
         @keyframes pulse-ring { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(14,165,233, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 40px rgba(14,165,233, 0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(14,165,233, 0); } }
 
+        /* Gestos Swipe */
         .swipeable { transition: transform 0.2s ease-out, opacity 0.3s; position: relative; }
         .swipeable::after { content: "← Deslize para rejeitar"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: rgba(255,255,255,0.2); pointer-events: none; }
 
@@ -110,14 +133,12 @@
     <!-- ================== ADMIN SCREEN ================== -->
     <div id="admin-screen" class="screen">
         <header><button class="btn-menu" onclick="abrirMenu()">☰</button><h3 style="margin:0;">Painel de Controle</h3></header>
-        
         <div id="admin-inicio" class="tab-content active">
             <h4 style="color:var(--neon-blue); margin-bottom:15px;">Filtros de Ação</h4>
             <button class="btn-neon yellow" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('pendentes');" style="margin-bottom:15px;">Pendentes de Aprovação</button>
             <button class="btn-neon" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('todos');">Todos os Usuários</button>
         </div>
-
-        <!-- NOVAS ABAS DE ADMIN -->
+        
         <div id="admin-ranking" class="tab-content">
             <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin-bottom:10px;">Ranking Global (Obras)</h4>
             <div id="admin-rank-vol"><div class="spinner"></div></div>
@@ -169,7 +190,7 @@
                 <input type="text" id="cfg-morada-c" placeholder="Morada Completa">
                 <input type="text" id="cfg-cpostal-c" placeholder="Código Postal">
                 <h4 style="margin:15px 0; color:var(--neon-blue);">Segurança</h4>
-                <input type="password" id="cfg-senha-antiga-c" placeholder="Senha Atual (Obrigatório para mudar)">
+                <input type="password" id="cfg-senha-antiga-c" placeholder="Senha Atual (Opcional)">
                 <input type="password" id="cfg-senha-nova-c" placeholder="Nova Senha">
                 <button onclick="api_AtualizarConfig('c')" class="btn-neon">Guardar Alterações</button>
             </div>
@@ -216,7 +237,7 @@
                 <input type="text" id="cfg-morada-p" placeholder="Morada Completa">
                 <input type="text" id="cfg-cpostal-p" placeholder="Código Postal">
                 <h4 style="margin:15px 0; color:var(--neon-blue);">Acesso</h4>
-                <input type="password" id="cfg-senha-antiga-p" placeholder="Senha Atual (Obrigatório para mudar)">
+                <input type="password" id="cfg-senha-antiga-p" placeholder="Senha Atual">
                 <input type="password" id="cfg-senha-nova-p" placeholder="Nova Senha">
                 <button onclick="api_AtualizarConfig('p')" class="btn-neon">Guardar Alterações</button>
             </div>
@@ -246,6 +267,7 @@
         <input id="r-senha" type="password" placeholder="Senha"><input id="r-senha-conf" type="password" placeholder="Confirmar Senha"><button onclick="enviarRegisto()" id="btn-submit-reg" class="btn-neon">Finalizar</button>
     </div></div>
 
+    <!-- PONTO 5: Raio de 100km -->
     <div id="modal-pedido" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modal-pedido')">&times;</span>
         <h3 style="color:var(--text-main); margin-bottom:15px;">Novo Pedido</h3>
         <label style="color:var(--text-muted); font-size:12px; text-transform:uppercase;">Categoria</label>
@@ -303,7 +325,7 @@
             } else { iniciarMapa(); }
         }
         function iniciarMapa() {
-            if(typeof L === 'undefined') return; // Segurança contra ReferenceError
+            if(typeof L === 'undefined') return; 
             if(map) map.remove();
             map = L.map('mapa-pedido').setView([coords.lat, coords.lng], 12);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -346,7 +368,7 @@
             }
         }
 
-        // PONTO 3: Lógica Swipe Profissional
+        // --- SWIPE PROFISSIONAL ---
         let startX = 0, currentX = 0;
         function ts(e) { startX = e.touches[0].clientX; }
         function tm(e) { currentX = e.touches[0].clientX; let diff = currentX - startX; if(diff < 0) e.currentTarget.style.transform = `translateX(${diff}px)`; }
@@ -358,14 +380,10 @@
             } else { e.currentTarget.style.transform = 'translateX(0)'; }
         }
 
-        async function chamadoraAPI(acao, payload) { 
-            try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: acao, payload: payload }) }); return await r.json(); } 
-            catch(e) { return null; } 
-        }
-
+        async function chamadoraAPI(acao, payload) { try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: acao, payload: payload }) }); return await r.json(); } catch(e) { return null; } }
         function logout() { window.location.reload(true); }
 
-        // --- AUTH & LOGIN À PROVA DE FALHAS ---
+        // --- AUTH & RECUPERAÇÃO DE SESSÃO CLIENTE ---
         async function enviarRegisto() {
             const p = { tipo: document.getElementById('r-tipo').value, nome: document.getElementById('r-nome').value, sobrenome: document.getElementById('r-sobrenome').value, email: document.getElementById('r-email').value, senha: document.getElementById('r-senha').value, senhaConf: document.getElementById('r-senha-conf').value, profissao: document.getElementById('r-prof').value, morada: document.getElementById('r-morada').value, cpostal: document.getElementById('r-cpostal').value };
             if (!p.nome || !p.email || !p.senha || !p.morada || !p.cpostal) return alert('Morada e Código Postal são obrigatórios!');
@@ -393,7 +411,7 @@
                 
                 if(res && res.sucesso) {
                     user = res; 
-                    montarMenu(user.tipo); // AGORA CORRIGIDO, CRIA O MENU!
+                    montarMenu(user.tipo); 
                     
                     if(user.tipo === 'Administrador') { 
                         navegarPara('admin-screen'); 
@@ -404,6 +422,7 @@
                         document.getElementById('cfg-cpostal-c').value = user.cpostal || '';
                         navegarPara('cliente-screen'); 
                         carregarDashboardCliente(); 
+                        api_BuscarPedidoAtivoCliente(); // BUG CORRIGIDO: Volta a pôr o radar na tela se F5 foi dado!
                     } 
                     else { 
                         document.getElementById('cfg-morada-p').value = user.morada || ''; 
@@ -414,14 +433,10 @@
                         document.getElementById('pro-minha-nota').innerText = (nota === 0) ? "0.0" : nota.toFixed(1); 
                     }
                 } else { 
-                    alert(res ? res.erro : "Erro ao tentar aceder ao servidor."); 
+                    alert(res ? res.erro : "Credenciais Incorretas."); 
                 }
                 btn.innerText = 'ENTRAR';
-            } catch (error) {
-                console.error(error);
-                alert("Erro Interno. Verifique a conexão.");
-                document.getElementById('btn-entrar').innerText = 'ENTRAR';
-            }
+            } catch (error) { alert("Erro de conexão."); btn.innerText = 'ENTRAR'; }
         }
 
         async function api_AtualizarConfig(prefix) {
@@ -453,30 +468,44 @@
             }
         }
 
-        // --- CLIENTE PEDIDO (TIMEOUT 3 MIN) ---
+        // --- CLIENTE PEDIDO (TIMEOUT 3 MIN E RECUPERAÇÃO) ---
         async function enviarPedido() {
             const cat = document.getElementById('p-cat').value; const desc = document.getElementById('p-desc').value; const r = document.getElementById('p-raio').value;
             fecharModal('modal-pedido');
             const res = await chamadoraAPI('criar_pedido', { idCliente: user.id, categoria: cat, descricao: desc, lat: coords.lat, lng: coords.lng, raioKm: r });
             if(res) { 
                 tempIdPedido = res.id_pedido; 
-                document.getElementById('area-pedidos-ativos').style.display = 'block';
-                
-                let tempo = 180;
-                document.getElementById('timer-pedido').innerText = "03:00";
-                
-                cliTimerInt = setInterval(() => {
-                    tempo--;
-                    let m = Math.floor(tempo / 60).toString().padStart(2, '0'); let s = (tempo % 60).toString().padStart(2, '0');
-                    document.getElementById('timer-pedido').innerText = `${m}:${s}`;
-                    if(tempo <= 0) { 
-                        clearInterval(cliTimerInt); clearInterval(cliRadarInt);
-                        document.getElementById('area-pedidos-ativos').innerHTML = `<h4 style="color:var(--neon-red); margin-bottom:10px;">Tempo Esgotado</h4><p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Nenhum profissional respondeu a tempo.</p><button onclick="window.location.reload();" class="btn-neon">Tentar de Novo</button>`;
-                    }
-                }, 1000);
-
-                cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); 
+                iniciarRadarClienteUI(180);
             }
+        }
+
+        async function api_BuscarPedidoAtivoCliente() {
+            const res = await chamadoraAPI('buscar_pedido_ativo_cliente', { idCliente: user.id });
+            if(res && res.ativo) {
+                tempIdPedido = res.id_pedido;
+                iniciarRadarClienteUI(res.tempoRestante);
+            }
+        }
+
+        function iniciarRadarClienteUI(tempoRestante) {
+            document.getElementById('area-pedidos-ativos').style.display = 'block';
+            document.getElementById('radar-pulse-anim').style.display = 'block';
+            document.getElementById('lista-orcamentos-recebidos').innerHTML = '';
+            
+            clearInterval(cliTimerInt); clearInterval(cliRadarInt);
+            let tempo = tempoRestante;
+            
+            cliTimerInt = setInterval(() => {
+                tempo--;
+                let m = Math.floor(tempo / 60).toString().padStart(2, '0'); let s = (tempo % 60).toString().padStart(2, '0');
+                document.getElementById('timer-pedido').innerText = `${m}:${s}`;
+                if(tempo <= 0) { 
+                    clearInterval(cliTimerInt); clearInterval(cliRadarInt);
+                    document.getElementById('area-pedidos-ativos').innerHTML = `<h4 style="color:var(--neon-red); margin-bottom:10px;">Tempo Esgotado</h4><p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Nenhum profissional respondeu a tempo.</p><button onclick="window.location.reload();" class="btn-neon">Tentar de Novo</button>`;
+                }
+            }, 1000);
+
+            cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); 
         }
 
         async function verificarOrcamentosRadar() {
@@ -486,7 +515,9 @@
                 clearInterval(cliRadarInt); clearInterval(cliTimerInt);
                 document.getElementById('radar-pulse-anim').style.display = 'none';
                 document.getElementById('timer-pedido').innerText = "Orçamentos Recebidos!"; document.getElementById('timer-pedido').style.color = "var(--neon-green)";
+                
                 somNotificacao.play().then(()=>setTimeout(()=>pararAlarme(),1500)).catch(e=>{}); if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                
                 box.innerHTML = res.orcamentos.map(o=>`<div class="info-card" style="border-left: 3px solid var(--neon-green); text-align:left;"><div style="display:flex; justify-content:space-between; align-items:center;"><b>${o.nome}</b><span style="color:var(--neon-green); font-size:1.2em; font-weight:bold;">${o.valor}€</span></div><p style="margin:10px 0; font-size:0.9em; color:#ddd;">${o.msg}</p><button onclick="aceitarOrcamento('${o.id_orc}','${o.id_pro}')" class="btn-neon green" style="padding:10px;">ACEITAR E NEGOCIAR</button></div>`).join('');
             }
         }
