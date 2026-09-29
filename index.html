@@ -4,100 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KIFAZ - Marketplace</title>
-    
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
     <link rel="icon" type="image/png" href="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500">
     <link rel="manifest" href="manifest.json">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <style>
-        :root { 
-            --bg-dark: #0A0F1A; --bg-panel: #131B2A; --border-color: #1F2937;
-            --neon-yellow: #FACC15; --neon-green: #10B981; --neon-blue: #0EA5E9; --neon-red: #EF4444;
-            --text-main: #F9FAFB; --text-muted: #9CA3AF; 
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; touch-action: pan-y; }
-        body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
-
-        .screen { display: none; padding: 20px; min-height: 100vh; flex-direction: column; }
-        .screen.active { display: flex; animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s; }
-
-        .info-card { background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 15px; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
-        .info-card:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(14, 165, 233, 0.15); border-color: rgba(14, 165, 233, 0.3); }
-
-        .badge-green { color: var(--neon-green); border: 1px solid var(--neon-green); background: rgba(16, 185, 129, 0.1); padding: 2px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
-        .badge-yellow { color: var(--neon-yellow); border: 1px solid var(--neon-yellow); background: rgba(250, 204, 21, 0.1); padding: 2px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
-        
-        input, select, textarea { width: 100%; padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; outline: none; transition: 0.3s; }
-        input:focus, select:focus, textarea:focus { border-color: var(--neon-blue); box-shadow: 0 0 8px rgba(14,165,233,0.2); }
-        
-        button { border: none; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .btn-neon { background: transparent; color: var(--neon-blue); border: 2px solid var(--neon-blue); padding: 15px; width: 100%; box-shadow: 0 0 8px rgba(14,165,233,0.1), inset 0 0 5px rgba(14,165,233,0.05); }
-        .btn-neon:hover { background: rgba(14,165,233,0.1); box-shadow: 0 0 15px rgba(14,165,233,0.3); }
-        .btn-neon.green { color: var(--neon-green); border-color: var(--neon-green); box-shadow: 0 0 8px rgba(16,185,129,0.1); }
-        .btn-neon.yellow { color: var(--neon-yellow); border-color: var(--neon-yellow); box-shadow: 0 0 8px rgba(250,204,21,0.1); }
-        .btn-link { background: none; color: var(--text-muted); text-decoration: underline; padding: 10px; width:100%; font-weight:normal; }
-        .btn-small { padding: 8px 12px; font-size: 12px; border-radius:5px; color:#fff; }
-        .btn-bg-red { background: var(--neon-red); }
-        .btn-bg-green { background: var(--neon-green); color: #000; }
-        
-        .spinner { border: 3px solid rgba(255,255,255,0.05); border-top: 3px solid var(--neon-blue); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loading-text { color: var(--text-muted); text-align: center; padding: 20px; font-style: italic; display:block; }
-
-        .radar-pulse { width: 80px; height: 80px; background: var(--neon-blue); border-radius: 50%; margin: 30px auto; animation: pulse-ring 2s infinite; }
-        @keyframes pulse-ring { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(14,165,233, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 40px rgba(14,165,233, 0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(14,165,233, 0); } }
-
-        .swipeable { transition: transform 0.2s ease-out, opacity 0.3s; position: relative; }
-        .swipeable::after { content: "← Deslize para rejeitar"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: rgba(255,255,255,0.2); pointer-events: none; }
-
-        .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(10,15,26,0.95); align-items: center; justify-content: center; padding: 15px; }
-        .modal.active { display: flex; }
-        .modal-content { width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; position: relative; margin: auto; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;}
-        .close { color: #aaa; float: right; font-size: 28px; cursor: pointer; position: absolute; right: 15px; top: 10px; z-index: 10; }
-
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
-        .btn-menu { background: none; color: #fff; font-size: 28px; padding:0 10px 0 0; }
-        
-        .sidebar { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: var(--bg-panel); z-index: 2000; transition: left 0.3s; padding: 30px 20px; border-right: 1px solid var(--border-color); }
-        .sidebar.active { left: 0; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; backdrop-filter: blur(4px); }
-        .overlay.active { display: block; }
-        .menu-item { padding: 15px 0; border-bottom: 1px solid var(--border-color); font-size: 15px; cursor: pointer; color: var(--text-muted); }
-        .menu-item:hover { color: var(--neon-blue); }
-
-        .chat-box { height: 300px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; margin-bottom: 10px; display:flex; flex-direction:column; gap:8px;}
-        .msg { max-width: 80%; padding: 10px; border-radius: 8px; font-size:14px; }
-        .msg.minha { background: rgba(14,165,233,0.1); align-self: flex-end; border: 1px solid var(--neon-blue); color:#fff; }
-        .msg.deles { background: var(--border-color); align-self: flex-start; color:#ddd;}
+        :root{--bg-dark:#0A0F1A;--bg-panel:#131B2A;--border-color:#1F2937;--neon-yellow:#FACC15;--neon-green:#10B981;--neon-blue:#0EA5E9;--neon-red:#EF4444;--text-main:#F9FAFB;--text-muted:#9CA3AF;}
+        *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Roboto,sans-serif;touch-action:pan-y;}
+        body{background-color:var(--bg-dark);color:var(--text-main);overflow-x:hidden;}
+        .screen{display:none;padding:20px;min-height:100vh;flex-direction:column;}
+        .screen.active{display:flex;animation:fadeIn 0.3s ease-in-out;}
+        @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+        .tab-content{display:none;}
+        .tab-content.active{display:block;animation:fadeIn 0.3s;}
+        .info-card{background-color:var(--bg-panel);border:1px solid var(--border-color);border-radius:12px;padding:18px;margin-bottom:15px;transition:transform 0.2s ease,box-shadow 0.2s ease,border-color 0.2s ease;}
+        .info-card:hover{transform:scale(1.02);box-shadow:0 0 15px rgba(14,165,233,0.15);border-color:rgba(14,165,233,0.3);}
+        .badge-green{color:var(--neon-green);border:1px solid var(--neon-green);background:rgba(16,185,129,0.1);padding:2px 10px;border-radius:15px;font-size:0.75rem;font-weight:bold;white-space:nowrap;}
+        .badge-yellow{color:var(--neon-yellow);border:1px solid var(--neon-yellow);background:rgba(250,204,21,0.1);padding:2px 10px;border-radius:15px;font-size:0.75rem;font-weight:bold;white-space:nowrap;}
+        input,select,textarea{width:100%;padding:15px;margin-bottom:12px;background:rgba(0,0,0,0.3);border:1px solid var(--border-color);color:var(--text-main);border-radius:8px;outline:none;transition:0.3s;}
+        input:focus,select:focus,textarea:focus{border-color:var(--neon-blue);box-shadow:0 0 8px rgba(14,165,233,0.2);}
+        button{border:none;cursor:pointer;font-weight:bold;border-radius:8px;transition:0.3s;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;}
+        .btn-neon{background:transparent;color:var(--neon-blue);border:2px solid var(--neon-blue);padding:15px;width:100%;box-shadow:0 0 8px rgba(14,165,233,0.1),inset 0 0 5px rgba(14,165,233,0.05);}
+        .btn-neon:hover{background:rgba(14,165,233,0.1);box-shadow:0 0 15px rgba(14,165,233,0.3);}
+        .btn-neon.green{color:var(--neon-green);border-color:var(--neon-green);box-shadow:0 0 8px rgba(16,185,129,0.1);}
+        .btn-neon.yellow{color:var(--neon-yellow);border-color:var(--neon-yellow);box-shadow:0 0 8px rgba(250,204,21,0.1);}
+        .btn-link{background:none;color:var(--text-muted);text-decoration:underline;padding:10px;width:100%;font-weight:normal;}
+        .btn-small{padding:8px 12px;font-size:12px;border-radius:5px;color:#fff;}
+        .btn-bg-red{background:var(--neon-red);}
+        .btn-bg-green{background:var(--neon-green);color:#000;}
+        .spinner{border:3px solid rgba(255,255,255,0.05);border-top:3px solid var(--neon-blue);border-radius:50%;width:24px;height:24px;animation:spin 1s linear infinite;display:inline-block;vertical-align:middle;}
+        @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+        .loading-text{color:var(--text-muted);text-align:center;padding:20px;font-style:italic;display:block;}
+        .radar-pulse{width:80px;height:80px;background:var(--neon-blue);border-radius:50%;margin:30px auto;animation:pulse-ring 2s infinite;}
+        @keyframes pulse-ring{0%{transform:scale(0.8);box-shadow:0 0 0 0 rgba(14,165,233,0.7);}70%{transform:scale(1);box-shadow:0 0 0 40px rgba(14,165,233,0);}100%{transform:scale(0.8);box-shadow:0 0 0 0 rgba(14,165,233,0);}}
+        .swipeable{transition:transform 0.2s ease-out,opacity 0.3s;position:relative;}
+        .swipeable::after{content:"← Deslize para rejeitar";position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:rgba(255,255,255,0.2);pointer-events:none;}
+        .modal{display:none;position:fixed;z-index:3000;left:0;top:0;width:100%;height:100%;background:rgba(10,15,26,0.95);align-items:center;justify-content:center;padding:15px;}
+        .modal.active{display:flex;}
+        .modal-content{width:100%;max-width:400px;max-height:90vh;overflow-y:auto;position:relative;margin:auto;background:var(--bg-panel);border:1px solid var(--border-color);border-radius:12px;padding:20px;}
+        .close{color:#aaa;float:right;font-size:28px;cursor:pointer;position:absolute;right:15px;top:10px;z-index:10;}
+        header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;border-bottom:1px solid var(--border-color);padding-bottom:15px;}
+        .btn-menu{background:none;color:#fff;font-size:28px;padding:0 10px 0 0;}
+        .sidebar{position:fixed;top:0;left:-280px;width:260px;height:100%;background:var(--bg-panel);z-index:2000;transition:left 0.3s;padding:30px 20px;border-right:1px solid var(--border-color);}
+        .sidebar.active{left:0;}
+        .overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1500;backdrop-filter:blur(4px);}
+        .overlay.active{display:block;}
+        .menu-item{padding:15px 0;border-bottom:1px solid var(--border-color);font-size:15px;cursor:pointer;color:var(--text-muted);}
+        .menu-item:hover{color:var(--neon-blue);}
+        .chat-box{height:300px;overflow-y:auto;background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px;}
+        .msg{max-width:80%;padding:10px;border-radius:8px;font-size:14px;}
+        .msg.minha{background:rgba(14,165,233,0.1);align-self:flex-end;border:1px solid var(--neon-blue);color:#fff;}
+        .msg.deles{background:var(--border-color);align-self:flex-start;color:#ddd;}
     </style>
 </head>
 <body>
     <div id="overlay" class="overlay" onclick="fecharMenu()"></div>
     <div id="sidebar" class="sidebar">
-        <h2 style="color:var(--text-main); margin-bottom:30px; text-align:center;">KIFAZ<span style="color:var(--neon-blue)">.</span></h2>
+        <h2 style="color:var(--text-main);margin-bottom:30px;text-align:center;">KIFAZ<span style="color:var(--neon-blue)">.</span></h2>
         <div id="sidebar-menu-items"></div>
     </div>
 
-    <!-- ================== LOGIN ================== -->
     <div id="login-screen" class="screen active">
-        <div style="text-align:center; margin: 40px 0;">
-            <img src="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500" width="130" style="border-radius:50%; box-shadow:0 0 15px rgba(14,165,233,0.2);">
-            <h1 style="margin-top:15px; letter-spacing:2px;">KIFAZ<span style="color:var(--neon-blue)">.</span></h1>
+        <div style="text-align:center;margin:40px 0;">
+            <img src="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500" width="130" style="border-radius:50%;box-shadow:0 0 15px rgba(14,165,233,0.2);">
+            <h1 style="margin-top:15px;letter-spacing:2px;">KIFAZ<span style="color:var(--neon-blue)">.</span></h1>
         </div>
         <div class="info-card" style="box-shadow:none;">
-            <select id="login-tipo" onchange="document.getElementById('login-email').style.display = this.value === 'Administrador' ? 'none' : 'block'; document.getElementById('btn-abrir-registo').style.display = this.value === 'Administrador' ? 'none' : 'block';">
+            <select id="login-tipo" onchange="document.getElementById('login-email').style.display=this.value==='Administrador'?'none':'block';document.getElementById('btn-abrir-registo').style.display=this.value==='Administrador'?'none':'block';">
                 <option value="Cliente">Cliente</option><option value="Profissional">Profissional</option><option value="Administrador">Administrador</option>
             </select>
             <input type="email" id="login-email" placeholder="Email">
@@ -107,72 +83,58 @@
         </div>
     </div>
 
-    <!-- ================== ADMIN SCREEN ================== -->
     <div id="admin-screen" class="screen">
         <header><button class="btn-menu" onclick="abrirMenu()">☰</button><h3 style="margin:0;">Painel de Controle</h3></header>
         <div id="admin-inicio" class="tab-content active">
-            <h4 style="color:var(--neon-blue); margin-bottom:15px;">Filtros de Ação</h4>
-            <button class="btn-neon yellow" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('pendentes');" style="margin-bottom:15px;">Pendentes de Aprovação</button>
-            <button class="btn-neon" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('todos');">Todos os Usuários</button>
+            <h4 style="color:var(--neon-blue);margin-bottom:15px;">Filtros de Ação</h4>
+            <button class="btn-neon yellow" onclick="mostrarAba('admin-screen','admin-usuarios');carregarAdmin('pendentes');" style="margin-bottom:15px;">Pendentes de Aprovação</button>
+            <button class="btn-neon" onclick="mostrarAba('admin-screen','admin-usuarios');carregarAdmin('todos');">Todos os Usuários</button>
         </div>
-        
         <div id="admin-ranking" class="tab-content">
-            <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin-bottom:10px;">Ranking Global (Obras)</h4>
+            <h4 style="color:var(--text-muted);text-transform:uppercase;font-size:12px;margin-bottom:10px;">Ranking Global (Obras)</h4>
             <div id="admin-rank-vol"><div class="spinner"></div></div>
         </div>
-
         <div id="admin-avaliacoes" class="tab-content">
-            <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin-bottom:10px;">Top Profissionais Avaliados</h4>
+            <h4 style="color:var(--text-muted);text-transform:uppercase;font-size:12px;margin-bottom:10px;">Top Profissionais Avaliados</h4>
             <div id="admin-rank-estrelas"><div class="spinner"></div></div>
         </div>
-
         <div id="admin-usuarios" class="tab-content">
-            <h4 id="admin-titulo" style="color:var(--neon-blue); margin-bottom:15px;">Listagem</h4>
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <button class="btn-small" onclick="carregarAdmin('Cliente')" style="flex:1; background:var(--border-color);">Clientes</button>
-                <button class="btn-small" onclick="carregarAdmin('Profissional')" style="flex:1; background:var(--border-color);">Profissionais</button>
+            <h4 id="admin-titulo" style="color:var(--neon-blue);margin-bottom:15px;">Listagem</h4>
+            <div style="display:flex;gap:10px;margin-bottom:15px;">
+                <button class="btn-small" onclick="carregarAdmin('Cliente')" style="flex:1;background:var(--border-color);">Clientes</button>
+                <button class="btn-small" onclick="carregarAdmin('Profissional')" style="flex:1;background:var(--border-color);">Profissionais</button>
             </div>
             <div id="admin-lista-users"></div>
         </div>
     </div>
 
-    <!-- ================== CLIENTE SCREEN ================== -->
     <div id="cliente-screen" class="screen">
         <header><button class="btn-menu" onclick="abrirMenu()">☰</button><h3 style="margin:0;" id="nome-cliente-display">Olá!</h3></header>
-        
         <div id="cli-inicio" class="tab-content active">
-            <button onclick="abrirModalPedido()" class="btn-neon yellow" style="margin-bottom:20px; padding:20px; font-size:1.1rem;"><i class="fas fa-bolt"></i> Solicitar Serviço</button>
-            
-            <div id="area-pedidos-ativos" class="info-card" style="display:none; text-align:center; border-color:var(--neon-blue);">
-                <h4 style="color:var(--neon-blue); margin-bottom:5px;">A Buscar Profissionais...</h4>
-                <div id="timer-pedido" style="font-size:2rem; font-weight:bold; color:var(--text-main); margin-bottom:10px;">03:00</div>
+            <button onclick="abrirModalPedido()" class="btn-neon yellow" style="margin-bottom:20px;padding:20px;font-size:1.1rem;"><i class="fas fa-bolt"></i> Solicitar Serviço</button>
+            <div id="area-pedidos-ativos" class="info-card" style="display:none;text-align:center;border-color:var(--neon-blue);">
+                <h4 style="color:var(--neon-blue);margin-bottom:5px;">A Buscar Profissionais...</h4>
+                <div id="timer-pedido" style="font-size:2rem;font-weight:bold;color:var(--text-main);margin-bottom:10px;">03:00</div>
                 <div class="radar-pulse" id="radar-pulse-anim"></div>
-                <p style="color:var(--text-muted); font-size:13px; line-height:1.5;">Os orçamentos aparecerão aqui em tempo real.<br>Tem 3 minutos para receber propostas.</p>
+                <p style="color:var(--text-muted);font-size:13px;line-height:1.5;">Os orçamentos aparecerão aqui em tempo real.<br>Tem 3 minutos para receber propostas.</p>
                 <div id="lista-orcamentos-recebidos" style="margin-top:15px;"></div>
             </div>
-
-            <!-- NOVA ABA CLIENTE: OBRAS EM EXECUÇÃO -->
-            <h4 style="color:var(--neon-green); text-transform:uppercase; font-size:12px; margin-bottom:10px; margin-top:20px;"><i class="fas fa-hammer"></i> Obras em Execução</h4>
-            <div id="cli-obras-andamento" style="margin-bottom:20px;">
-                <span class="loading-text" style="font-size:13px;">Nenhum serviço a decorrer de momento.</span>
-            </div>
-
-            <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin-bottom:10px; margin-top:10px;">Profissionais com mais Obras</h4>
+            <h4 style="color:var(--neon-green);text-transform:uppercase;font-size:12px;margin-bottom:10px;margin-top:20px;"><i class="fas fa-hammer"></i> Obras em Execução</h4>
+            <div id="cli-obras-andamento" style="margin-bottom:20px;"><span class="loading-text" style="font-size:13px;">Nenhum serviço a decorrer de momento.</span></div>
+            <h4 style="color:var(--text-muted);text-transform:uppercase;font-size:12px;margin-bottom:10px;margin-top:10px;">Profissionais com mais Obras</h4>
             <div id="cli-rank-vol"><div class="spinner"></div></div>
         </div>
-
         <div id="cli-avaliacoes" class="tab-content">
-            <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin-bottom:10px;">Top Avaliados da Plataforma</h4>
+            <h4 style="color:var(--text-muted);text-transform:uppercase;font-size:12px;margin-bottom:10px;">Top Avaliados da Plataforma</h4>
             <div id="cli-rank-estrelas"><div class="spinner"></div></div>
         </div>
-
         <div id="cli-config" class="tab-content">
-            <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin-bottom:15px;">Configurações</h4>
+            <h4 style="color:var(--text-muted);text-transform:uppercase;font-size:12px;margin-bottom:15px;">Configurações</h4>
             <div class="info-card">
-                <h4 style="margin-bottom:15px; color:var(--neon-blue);">O Meu Endereço</h4>
+                <h4 style="margin-bottom:15px;color:var(--neon-blue);">O Meu Endereço</h4>
                 <input type="text" id="cfg-morada-c" placeholder="Morada Completa">
                 <input type="text" id="cfg-cpostal-c" placeholder="Código Postal">
-                <h4 style="margin:15px 0; color:var(--neon-blue);">Segurança</h4>
+                <h4 style="margin:15px 0;color:var(--neon-blue);">Segurança</h4>
                 <input type="password" id="cfg-senha-antiga-c" placeholder="Senha Atual (Opcional)">
                 <input type="password" id="cfg-senha-nova-c" placeholder="Nova Senha">
                 <button onclick="api_AtualizarConfig('c')" class="btn-neon">Guardar Alterações</button>
@@ -180,52 +142,39 @@
         </div>
     </div>
 
-    <!-- ================== PROFISSIONAL SCREEN ================== -->
     <div id="pro-screen" class="screen">
         <header><button class="btn-menu" onclick="abrirMenu()">☰</button><h3 style="margin:0;">Modo Pro <span id="dot-pro" style="color:#555;">•</span></h3></header>
-        
         <div id="pro-inicio" class="tab-content active">
             <button id="btn-status-pro" onclick="toggleStatusPro()" class="btn-neon yellow" style="margin-bottom:20px;">Ligar Radar de Obras</button>
-            
-            <div class="info-card" style="border-left: 3px solid var(--neon-green);">
-                <h4 style="color:var(--text-muted); font-size:12px; text-transform:uppercase; margin-bottom:10px;">Faturamento do Mês</h4>
-                <h2 id="pro-faturamento" style="color:var(--neon-green); text-shadow: 0 0 10px rgba(16,185,129,0.3); font-size:2.2rem;">0.00 €</h2>
+            <div class="info-card" style="border-left:3px solid var(--neon-green);">
+                <h4 style="color:var(--text-muted);font-size:12px;text-transform:uppercase;margin-bottom:10px;">Faturamento do Mês</h4>
+                <h2 id="pro-faturamento" style="color:var(--neon-green);text-shadow:0 0 10px rgba(16,185,129,0.3);font-size:2.2rem;">0.00 €</h2>
                 <canvas id="proChart" height="150" style="margin-top:15px;"></canvas>
             </div>
-            
-            <!-- SECÇÃO OBRAS EM ANDAMENTO (DUPLO BOTÃO) -->
-            <h4 style="color:var(--neon-blue); text-transform:uppercase; font-size:12px; margin-bottom:10px; margin-top:20px;"><i class="fas fa-hammer"></i> Obras em Andamento</h4>
-            <div id="pro-obras-andamento" style="margin-bottom:20px;">
-                <span class="loading-text" style="font-size:13px;">Nenhuma obra ativa de momento.</span>
-            </div>
-
-            <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin-bottom:10px; margin-top:10px;">Oportunidades em Aberto</h4>
-            <div id="pro-radar" style="overflow-x:hidden;">
-                <span class="loading-text">Clique em ligar radar para procurar.</span>
-            </div>
+            <h4 style="color:var(--neon-blue);text-transform:uppercase;font-size:12px;margin-bottom:10px;margin-top:20px;"><i class="fas fa-hammer"></i> Obras em Andamento</h4>
+            <div id="pro-obras-andamento" style="margin-bottom:20px;"><span class="loading-text" style="font-size:13px;">Nenhuma obra ativa de momento.</span></div>
+            <h4 style="color:var(--text-muted);text-transform:uppercase;font-size:12px;margin-bottom:10px;margin-top:10px;">Oportunidades em Aberto</h4>
+            <div id="pro-radar" style="overflow-x:hidden;"><span class="loading-text">Clique em ligar radar para procurar.</span></div>
         </div>
-
         <div id="pro-ranking" class="tab-content">
-            <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin-bottom:10px;">Top 5 Volume de Obras</h4>
+            <h4 style="color:var(--text-muted);text-transform:uppercase;font-size:12px;margin-bottom:10px;">Top 5 Volume de Obras</h4>
             <div id="pro-rank-vol"><div class="spinner"></div></div>
         </div>
-
         <div id="pro-avaliacoes" class="tab-content">
             <div class="info-card" style="text-align:center;">
-                <h1 style="color:var(--neon-yellow); font-size:3.5rem; margin:10px 0;" id="pro-minha-nota">0.0</h1>
+                <h1 style="color:var(--neon-yellow);font-size:3.5rem;margin:10px 0;" id="pro-minha-nota">0.0</h1>
                 <p style="color:var(--text-muted);">A Minha Classificação</p>
             </div>
-            <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin:20px 0 10px 0;">Top 5 Profissionais no App</h4>
+            <h4 style="color:var(--text-muted);text-transform:uppercase;font-size:12px;margin:20px 0 10px 0;">Top 5 Profissionais no App</h4>
             <div id="pro-rank-estrelas"><div class="spinner"></div></div>
         </div>
-
         <div id="pro-config" class="tab-content">
-            <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin-bottom:15px;">Configurações da Conta</h4>
+            <h4 style="color:var(--text-muted);text-transform:uppercase;font-size:12px;margin-bottom:15px;">Configurações da Conta</h4>
             <div class="info-card">
-                <h4 style="margin-bottom:15px; color:var(--neon-blue);">Localização Base</h4>
+                <h4 style="margin-bottom:15px;color:var(--neon-blue);">Localização Base</h4>
                 <input type="text" id="cfg-morada-p" placeholder="Morada Completa">
                 <input type="text" id="cfg-cpostal-p" placeholder="Código Postal">
-                <h4 style="margin:15px 0; color:var(--neon-blue);">Acesso</h4>
+                <h4 style="margin:15px 0;color:var(--neon-blue);">Acesso</h4>
                 <input type="password" id="cfg-senha-antiga-p" placeholder="Senha Atual">
                 <input type="password" id="cfg-senha-nova-p" placeholder="Nova Senha">
                 <button onclick="api_AtualizarConfig('p')" class="btn-neon">Guardar Alterações</button>
@@ -233,29 +182,27 @@
         </div>
     </div>
 
-    <!-- ================== MODAIS ================== -->
-    <!-- Modal Finalizar Obra -->
     <div id="modal-finalizar" class="modal"><div class="modal-content" style="text-align:center;">
-        <h3 style="color:var(--neon-green); margin-bottom:15px;"><i class="fas fa-check-circle"></i> Concluir Obra</h3>
-        <p id="modal-finalizar-texto" style="margin-bottom:20px; color:#fff; font-size:14px; line-height:1.5;"></p>
-        <div style="display:flex; gap:10px;">
-            <button onclick="executarFinalizacaoObra()" class="btn-neon green" style="padding:15px; flex:1;">FINALIZAR E RECEBER</button>
-            <button onclick="fecharModal('modal-finalizar')" style="background:var(--border-color); padding:15px; flex:1; color:#fff;">VOLTAR</button>
+        <h3 style="color:var(--neon-green);margin-bottom:15px;"><i class="fas fa-check-circle"></i> Concluir Obra</h3>
+        <p id="modal-finalizar-texto" style="margin-bottom:20px;color:#fff;font-size:14px;line-height:1.5;"></p>
+        <div style="display:flex;gap:10px;">
+            <button onclick="executarFinalizacaoObra()" class="btn-neon green" style="padding:15px;flex:1;">FINALIZAR E RECEBER</button>
+            <button onclick="fecharModal('modal-finalizar')" style="background:var(--border-color);padding:15px;flex:1;color:#fff;">VOLTAR</button>
         </div>
     </div></div>
 
     <div id="modal-confirmar-ban" class="modal"><div class="modal-content" style="text-align:center;">
-        <h3 style="color:var(--neon-red); margin-bottom:15px;"><i class="fas fa-exclamation-triangle"></i> Atenção</h3><p style="margin-bottom:20px; color:#fff;">Deseja banir este utilizador?</p>
-        <div style="display:flex; gap:10px;"><button onclick="abrirModalSenhaBan()" class="btn-bg-red" style="padding:15px; flex:1; color:#fff;">SIM, BANIR</button><button onclick="fecharModal('modal-confirmar-ban')" style="background:var(--border-color); padding:15px; flex:1; color:#fff;">CANCELAR</button></div>
+        <h3 style="color:var(--neon-red);margin-bottom:15px;"><i class="fas fa-exclamation-triangle"></i> Atenção</h3><p style="margin-bottom:20px;color:#fff;">Deseja banir este utilizador?</p>
+        <div style="display:flex;gap:10px;"><button onclick="abrirModalSenhaBan()" class="btn-bg-red" style="padding:15px;flex:1;color:#fff;">SIM, BANIR</button><button onclick="fecharModal('modal-confirmar-ban')" style="background:var(--border-color);padding:15px;flex:1;color:#fff;">CANCELAR</button></div>
     </div></div>
     
     <div id="modal-senha-ban" class="modal"><div class="modal-content">
         <span class="close" onclick="fecharModal('modal-senha-ban')">&times;</span>
-        <h3 style="color:var(--neon-red); margin-bottom:15px;">Segurança</h3><p style="font-size:14px; color:var(--text-muted); margin-bottom:15px;">Insira a senha de administrador.</p>
-        <input type="password" id="input-senha-ban" placeholder="Senha Admin"><button onclick="executarBanimento()" class="btn-bg-red" style="padding:15px; width:100%; color:#fff;">CONFIRMAR AÇÃO</button>
+        <h3 style="color:var(--neon-red);margin-bottom:15px;">Segurança</h3><p style="font-size:14px;color:var(--text-muted);margin-bottom:15px;">Insira a senha de administrador.</p>
+        <input type="password" id="input-senha-ban" placeholder="Senha Admin"><button onclick="executarBanimento()" class="btn-bg-red" style="padding:15px;width:100%;color:#fff;">CONFIRMAR AÇÃO</button>
     </div></div>
 
-    <div id="modal-registo" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modal-registo')">&times;</span><h3 style="color:var(--neon-blue); margin-bottom:15px;">Criar Conta</h3>
+    <div id="modal-registo" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modal-registo')">&times;</span><h3 style="color:var(--neon-blue);margin-bottom:15px;">Criar Conta</h3>
         <select id="r-tipo" onchange="document.getElementById('r-prof-container').style.display=this.value==='Profissional'?'block':'none'"><option value="Cliente">Cliente</option><option value="Profissional">Profissional</option></select>
         <div class="row-inputs"><input id="r-nome" placeholder="Nome"><input id="r-sobrenome" placeholder="Sobrenome"></div><input id="r-email" type="email" placeholder="Email">
         <input id="r-morada" type="text" placeholder="Morada Completa (Obrigatório)">
@@ -265,375 +212,300 @@
     </div></div>
 
     <div id="modal-pedido" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modal-pedido')">&times;</span>
-        <h3 style="color:var(--text-main); margin-bottom:15px;">Novo Pedido</h3>
-        <label style="color:var(--text-muted); font-size:12px; text-transform:uppercase;">Categoria</label>
+        <h3 style="color:var(--text-main);margin-bottom:15px;">Novo Pedido</h3>
+        <label style="color:var(--text-muted);font-size:12px;text-transform:uppercase;">Categoria</label>
         <select id="p-cat"><option value="Pladur">Pladur</option><option value="Eletricista">Eletricista</option><option value="Pintor">Pintor</option></select>
-        <label style="color:var(--text-muted); font-size:12px; text-transform:uppercase;">Descrição do Problema</label>
+        <label style="color:var(--text-muted);font-size:12px;text-transform:uppercase;">Descrição do Problema</label>
         <textarea id="p-desc" placeholder="Descreva os detalhes..." rows="4"></textarea>
-        
-        <div style="display:flex; justify-content:space-between; align-items:center; margin:15px 0 5px 0;">
-            <label style="color:var(--text-muted); font-size:12px; text-transform:uppercase;">Área de Busca</label>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:15px 0 5px 0;">
+            <label style="color:var(--text-muted);font-size:12px;text-transform:uppercase;">Área de Busca</label>
             <span id="label-raio" class="badge-yellow">15 km</span>
         </div>
-        <input type="range" id="p-raio" min="1" max="100" value="15" style="width:100%; margin-bottom:15px;" oninput="atualizarRaioMapa(this.value)">
-        
-        <div id="mapa-pedido" style="height: 150px; border-radius:8px; margin-bottom:15px; border:1px solid var(--border-color);"></div>
+        <input type="range" id="p-raio" min="1" max="100" value="15" style="width:100%;margin-bottom:15px;" oninput="atualizarRaioMapa(this.value)">
+        <div id="mapa-pedido" style="height:150px;border-radius:8px;margin-bottom:15px;border:1px solid var(--border-color);"></div>
         <button onclick="enviarPedido()" class="btn-neon yellow">Buscar Profissionais</button>
     </div></div>
 
     <div id="modal-enviar-orc" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modal-enviar-orc')">&times;</span>
-        <h3 style="color:var(--neon-blue); margin-bottom:15px;">Enviar Orçamento</h3>
+        <h3 style="color:var(--neon-blue);margin-bottom:15px;">Enviar Orçamento</h3>
         <input type="number" id="orc-valor" placeholder="Valor Estimado (€)"><textarea id="orc-msg" placeholder="Disponibilidade e detalhes..." rows="4"></textarea><button onclick="enviarOrcamentoReal()" class="btn-neon">Submeter Oferta</button>
     </div></div>
 
     <div id="modal-chat" class="modal"><div class="modal-content"><span class="close" onclick="fecharChat()">&times;</span>
-        <h3 style="color:var(--text-main); margin-bottom:10px; font-size:16px;">Chat de Negociação</h3>
+        <h3 style="color:var(--text-main);margin-bottom:10px;font-size:16px;">Chat de Negociação</h3>
         <div class="chat-box" id="chat-box"></div>
-        <div style="display:flex; gap:10px;"><input type="text" id="chat-input" placeholder="Escreva aqui..." style="margin:0; flex:1;"><button onclick="enviarMensagemNoChat()" class="btn-neon" style="width:70px; padding:10px;"><i class="fas fa-paper-plane"></i></button></div>
-        <hr style="border-color:var(--border-color); margin:15px 0;"><h5 style="color:var(--text-muted); margin-bottom:10px; font-size:12px; text-transform:uppercase;">Classifique o Serviço:</h5>
-        <div style="display:flex; gap:10px;"><select id="nota-aval" style="margin:0;"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select><button onclick="enviarAvaliacao()" class="btn-neon yellow" style="padding:10px;">Submeter</button></div>
+        <div style="display:flex;gap:10px;"><input type="text" id="chat-input" placeholder="Escreva aqui..." style="margin:0;flex:1;"><button onclick="enviarMensagemNoChat()" class="btn-neon" style="width:70px;padding:10px;"><i class="fas fa-paper-plane"></i></button></div>
+        <hr style="border-color:var(--border-color);margin:15px 0;"><h5 style="color:var(--text-muted);margin-bottom:10px;font-size:12px;text-transform:uppercase;">Classifique o Serviço:</h5>
+        <div style="display:flex;gap:10px;"><select id="nota-aval" style="margin:0;"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select><button onclick="enviarAvaliacao()" class="btn-neon yellow" style="padding:10px;">Submeter</button></div>
     </div></div>
 
-    <!-- ================== LÓGICA JAVASCRIPT ================== -->
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbwECa674WOxJLt_vT8vR7SlRsup45jMBAxVl8PLMn1oLAxwxD9tm8gYng8ZTpfTKfYH/exec'; 
-        
-        let user = null; let proOnline = false; let radarInt, chatInt, cliRadarInt, cliTimerInt, obraInt; 
-        let tempIdPedido = null; let tempIdDestinatario = null; let meuGrafico = null; let tempBanId = null; let tempObraFinalizarId = null;
-        let map, mapCircle; let coords = {lat: 39.3999, lng: -8.2245}; 
-        let lastPedidosDetectados = []; let rejeitados = []; let lastObrasPro = [];
-        
+        let user=null, proOnline=false, radarInt, chatInt, cliRadarInt, cliTimerInt, obraInt;
+        let tempIdPedido=null, tempIdDestinatario=null, meuGrafico=null, tempBanId=null, tempObraFinalizarId=null;
+        let map, mapCircle, coords={lat:39.3999,lng:-8.2245}, lastPedidosDetectados=[], rejeitados=[], lastObrasPro=[];
         const somNotificacao = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
         somNotificacao.loop = true; 
-        function pararAlarme() { somNotificacao.pause(); somNotificacao.currentTime = 0; }
+        function pararAlarme(){somNotificacao.pause();somNotificacao.currentTime=0;}
 
-        if ('caches' in window) { caches.keys().then((names) => { names.forEach(name => { caches.delete(name); }); }); }
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').then(reg => { reg.update(); }).catch(e=>{}); }); }
+        if('caches' in window){caches.keys().then((names)=>{names.forEach(name=>{caches.delete(name);});});}
+        if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(e=>{});});}
 
-        // --- MAPAS LEAFLET ---
-        function abrirModalPedido() {
+        function abrirModalPedido(){
             abrirModal('modal-pedido');
-            if(navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    coords.lat = pos.coords.latitude; coords.lng = pos.coords.longitude; iniciarMapa();
-                }, () => { iniciarMapa(); });
-            } else { iniciarMapa(); }
+            if(navigator.geolocation){
+                navigator.geolocation.getCurrentPosition(pos=>{coords.lat=pos.coords.latitude;coords.lng=pos.coords.longitude;iniciarMapa();},()=>iniciarMapa());
+            }else{iniciarMapa();}
         }
-        function iniciarMapa() {
-            if(typeof L === 'undefined') return; 
-            if(map) map.remove();
-            map = L.map('mapa-pedido').setView([coords.lat, coords.lng], 12);
+        function iniciarMapa(){
+            if(typeof L==='undefined')return;
+            if(map)map.remove();
+            map=L.map('mapa-pedido').setView([coords.lat,coords.lng],12);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            mapCircle = L.circle([coords.lat, coords.lng], { color: '#FACC15', fillColor: '#FACC15', fillOpacity: 0.1, radius: 15000 }).addTo(map);
-            setTimeout(() => { map.invalidateSize(); }, 200);
+            mapCircle=L.circle([coords.lat,coords.lng],{color:'#FACC15',fillColor:'#FACC15',fillOpacity:0.1,radius:15000}).addTo(map);
+            setTimeout(()=>{map.invalidateSize();},200);
         }
-        function atualizarRaioMapa(km) { document.getElementById('label-raio').innerText = km + ' km'; if(mapCircle) { mapCircle.setRadius(km * 1000); map.fitBounds(mapCircle.getBounds()); } }
+        function atualizarRaioMapa(km){document.getElementById('label-raio').innerText=km+' km';if(mapCircle){mapCircle.setRadius(km*1000);map.fitBounds(mapCircle.getBounds());}}
 
-        // --- UTILS UI E MENUS ---
-        function abrirModal(id) { document.getElementById(id).classList.add('active'); }
-        function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
-        function abrirMenu() { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
-        function fecharMenu() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); }
-        function navegarPara(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); fecharMenu(); }
-        function mostrarAba(screenId, abaId) { document.querySelectorAll(`#${screenId} .tab-content`).forEach(t => t.classList.remove('active')); document.getElementById(abaId).classList.add('active'); fecharMenu(); }
-        function loader() { return `<div style="text-align:center; padding:20px;"><div class="spinner"></div></div>`; }
+        function abrirModal(id){document.getElementById(id).classList.add('active');}
+        function fecharModal(id){document.getElementById(id).classList.remove('active');}
+        function abrirMenu(){document.getElementById('sidebar').classList.add('active');document.getElementById('overlay').classList.add('active');}
+        function fecharMenu(){document.getElementById('sidebar').classList.remove('active');document.getElementById('overlay').classList.remove('active');}
+        function navegarPara(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');fecharMenu();}
+        function mostrarAba(screenId,abaId){document.querySelectorAll(`#${screenId} .tab-content`).forEach(t=>t.classList.remove('active'));document.getElementById(abaId).classList.add('active');fecharMenu();}
+        function loader(){return `<div style="text-align:center;padding:20px;"><div class="spinner"></div></div>`;}
 
-        function montarMenu(tipo) {
-            const menu = document.getElementById('sidebar-menu-items');
-            if (tipo === 'Administrador') {
-                menu.innerHTML = `<div class="menu-item" onclick="mostrarAba('admin-screen', 'admin-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início</div><div class="menu-item" onclick="mostrarAba('admin-screen', 'admin-ranking'); carregarRankingsAdmin();"><i class="fas fa-trophy" style="width:25px;"></i> Ver Ranking Obras</div><div class="menu-item" onclick="mostrarAba('admin-screen', 'admin-avaliacoes'); carregarRankingsAdmin();"><i class="fas fa-star" style="width:25px;"></i> Ver Avaliações</div><div class="menu-item" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('Cliente');"><i class="fas fa-users" style="width:25px;"></i> Ver Utilizadores</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
-            } else if (tipo === 'Profissional') {
-                menu.innerHTML = `<div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início (Ficar Online)</div><div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-ranking')"><i class="fas fa-trophy" style="width:25px;"></i> Ver Ranking</div><div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-avaliacoes')"><i class="fas fa-star" style="width:25px;"></i> Ver Avaliações</div><div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-config')"><i class="fas fa-cog" style="width:25px;"></i> Configurações</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
-            } else {
-                menu.innerHTML = `<div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início (Pedir Serviço)</div><div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-avaliacoes')"><i class="fas fa-star" style="width:25px;"></i> Ranking Avaliações</div><div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-config')"><i class="fas fa-cog" style="width:25px;"></i> Configurações</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
+        function montarMenu(tipo){
+            const menu=document.getElementById('sidebar-menu-items');
+            if(tipo==='Administrador'){
+                menu.innerHTML=`<div class="menu-item" onclick="mostrarAba('admin-screen','admin-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início</div><div class="menu-item" onclick="mostrarAba('admin-screen','admin-ranking');carregarRankingsAdmin();"><i class="fas fa-trophy" style="width:25px;"></i> Ver Ranking Obras</div><div class="menu-item" onclick="mostrarAba('admin-screen','admin-avaliacoes');carregarRankingsAdmin();"><i class="fas fa-star" style="width:25px;"></i> Ver Avaliações</div><div class="menu-item" onclick="mostrarAba('admin-screen','admin-usuarios');carregarAdmin('Cliente');"><i class="fas fa-users" style="width:25px;"></i> Ver Utilizadores</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red);margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
+            }else if(tipo==='Profissional'){
+                menu.innerHTML=`<div class="menu-item" onclick="mostrarAba('pro-screen','pro-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início (Ficar Online)</div><div class="menu-item" onclick="mostrarAba('pro-screen','pro-ranking')"><i class="fas fa-trophy" style="width:25px;"></i> Ver Ranking</div><div class="menu-item" onclick="mostrarAba('pro-screen','pro-avaliacoes')"><i class="fas fa-star" style="width:25px;"></i> Ver Avaliações</div><div class="menu-item" onclick="mostrarAba('pro-screen','pro-config')"><i class="fas fa-cog" style="width:25px;"></i> Configurações</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red);margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
+            }else{
+                menu.innerHTML=`<div class="menu-item" onclick="mostrarAba('cliente-screen','cli-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início (Pedir Serviço)</div><div class="menu-item" onclick="mostrarAba('cliente-screen','cli-avaliacoes')"><i class="fas fa-star" style="width:25px;"></i> Ranking Avaliações</div><div class="menu-item" onclick="mostrarAba('cliente-screen','cli-config')"><i class="fas fa-cog" style="width:25px;"></i> Configurações</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red);margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
             }
         }
 
-        // --- SWIPE PROFISSIONAL ---
-        let startX = 0, currentX = 0;
-        function ts(e) { startX = e.touches[0].clientX; }
-        function tm(e) { currentX = e.touches[0].clientX; let diff = currentX - startX; if(diff < 0) e.currentTarget.style.transform = `translateX(${diff}px)`; }
-        function te(e, id) { 
-            let diff = currentX - startX; 
-            if(diff < -90) { 
-                e.currentTarget.style.opacity = '0'; rejeitados.push(id); pararAlarme(); 
-                setTimeout(() => { e.currentTarget.style.display = 'none'; api_Radar(); }, 200); 
-            } else { e.currentTarget.style.transform = 'translateX(0)'; }
+        let startX=0,currentX=0;
+        function ts(e){startX=e.touches[0].clientX;}
+        function tm(e){currentX=e.touches[0].clientX;let diff=currentX-startX;if(diff<0)e.currentTarget.style.transform=`translateX(${diff}px)`;}
+        function te(e,id){
+            let diff=currentX-startX;
+            if(diff<-90){e.currentTarget.style.opacity='0';rejeitados.push(id);pararAlarme();setTimeout(()=>{e.currentTarget.style.display='none';api_Radar();},200);}
+            else{e.currentTarget.style.transform='translateX(0)';}
         }
 
-        async function chamadoraAPI(acao, payload) { try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: acao, payload: payload }) }); return await r.json(); } catch(e) { return null; } }
-        function logout() { window.location.reload(true); }
+        async function chamadoraAPI(acao,payload){try{const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:acao,payload:payload})});return await r.json();}catch(e){return null;}}
+        function logout(){window.location.reload(true);}
 
-        // --- AUTH E SESSÃO ---
-        async function enviarRegisto() {
-            const p = { tipo: document.getElementById('r-tipo').value, nome: document.getElementById('r-nome').value, sobrenome: document.getElementById('r-sobrenome').value, email: document.getElementById('r-email').value, senha: document.getElementById('r-senha').value, senhaConf: document.getElementById('r-senha-conf').value, profissao: document.getElementById('r-prof').value, morada: document.getElementById('r-morada').value, cpostal: document.getElementById('r-cpostal').value };
-            if (!p.nome || !p.email || !p.senha || !p.morada || !p.cpostal) return alert('Morada e Código Postal são obrigatórios!');
-            if (p.senha !== p.senhaConf) return alert('As senhas não coincidem.');
-            document.getElementById('btn-submit-reg').innerHTML = '<div class="spinner"></div>';
-            const res = await chamadoraAPI('registrar_conta', p);
-            if(res && res.sucesso) { alert(res.msg); fecharModal('modal-registo'); document.getElementById('login-email').value = p.email; document.getElementById('login-senha').value = ''; } else if(res) alert(res.erro);
-            document.getElementById('btn-submit-reg').innerText = 'FINALIZAR';
+        async function enviarRegisto(){
+            const p={tipo:document.getElementById('r-tipo').value,nome:document.getElementById('r-nome').value,sobrenome:document.getElementById('r-sobrenome').value,email:document.getElementById('r-email').value,senha:document.getElementById('r-senha').value,senhaConf:document.getElementById('r-senha-conf').value,profissao:document.getElementById('r-prof').value,morada:document.getElementById('r-morada').value,cpostal:document.getElementById('r-cpostal').value};
+            if(!p.nome||!p.email||!p.senha||!p.morada||!p.cpostal)return alert('Morada e Código Postal são obrigatórios!');
+            if(p.senha!==p.senhaConf)return alert('As senhas não coincidem.');
+            document.getElementById('btn-submit-reg').innerHTML='<div class="spinner"></div>';
+            const res=await chamadoraAPI('registrar_conta',p);
+            if(res&&res.sucesso){alert(res.msg);fecharModal('modal-registo');document.getElementById('login-email').value=p.email;document.getElementById('login-senha').value='';}else if(res)alert(res.erro);
+            document.getElementById('btn-submit-reg').innerText='FINALIZAR';
         }
 
-        async function fazerLogin() {
-            try {
-                const tipoLog = document.getElementById('login-tipo').value;
-                const emailLog = document.getElementById('login-email').value;
-                const senhaLog = document.getElementById('login-senha').value;
-                
-                if (tipoLog !== 'Administrador' && !emailLog) return alert('Insira o email.');
-                if (!senhaLog) return alert('Insira a senha.');
-
-                const btn = document.getElementById('btn-entrar'); btn.innerHTML = '<div class="spinner"></div>';
-
-                const p = { tipo: tipoLog, email: emailLog, senha: senhaLog };
-                const res = await chamadoraAPI('login', p);
-                
-                if(res && res.sucesso) {
-                    user = res; montarMenu(user.tipo); 
-                    if(user.tipo === 'Administrador') { navegarPara('admin-screen'); } 
-                    else if(user.tipo === 'Cliente') { 
-                        document.getElementById('nome-cliente-display').innerText = "Olá, " + (user.nome ? user.nome.split(' ')[0] : 'Cliente'); 
-                        document.getElementById('cfg-morada-c').value = user.morada || ''; document.getElementById('cfg-cpostal-c').value = user.cpostal || '';
-                        navegarPara('cliente-screen'); carregarDashboardCliente(); 
-                        api_BuscarPedidoAtivoCliente();
-                    } 
-                    else { 
-                        document.getElementById('cfg-morada-p').value = user.morada || ''; document.getElementById('cfg-cpostal-p').value = user.cpostal || '';
-                        navegarPara('pro-screen'); carregarDashboardPro(); 
-                        let nota = parseFloat(user.avaliacao); if(isNaN(nota)) nota = 0;
-                        document.getElementById('pro-minha-nota').innerText = (nota === 0) ? "0.0" : nota.toFixed(1); 
+        async function fazerLogin(){
+            try{
+                const tipoLog=document.getElementById('login-tipo').value;
+                const emailLog=document.getElementById('login-email').value;
+                const senhaLog=document.getElementById('login-senha').value;
+                if(tipoLog!=='Administrador'&&!emailLog)return alert('Insira o email.');
+                if(!senhaLog)return alert('Insira a senha.');
+                const btn=document.getElementById('btn-entrar');btn.innerHTML='<div class="spinner"></div>';
+                const res=await chamadoraAPI('login',{tipo:tipoLog,email:emailLog,senha:senhaLog});
+                if(res&&res.sucesso){
+                    user=res;montarMenu(user.tipo);
+                    if(user.tipo==='Administrador'){navegarPara('admin-screen');}
+                    else if(user.tipo==='Cliente'){
+                        document.getElementById('nome-cliente-display').innerText="Olá, "+(user.nome?user.nome.split(' ')[0]:'Cliente');
+                        document.getElementById('cfg-morada-c').value=user.morada||'';document.getElementById('cfg-cpostal-c').value=user.cpostal||'';
+                        navegarPara('cliente-screen');carregarDashboardCliente();api_BuscarPedidoAtivoCliente();
+                    }else{
+                        document.getElementById('cfg-morada-p').value=user.morada||'';document.getElementById('cfg-cpostal-p').value=user.cpostal||'';
+                        navegarPara('pro-screen');carregarDashboardPro();
+                        let nota=parseFloat(user.avaliacao);if(isNaN(nota))nota=0;
+                        document.getElementById('pro-minha-nota').innerText=(nota===0)?"0.0":nota.toFixed(1);
                     }
-                } else { alert(res ? res.erro : "Credenciais Incorretas."); }
-                btn.innerText = 'ENTRAR';
-            } catch (error) { alert("Erro de conexão."); btn.innerText = 'ENTRAR'; }
+                }else{alert(res?res.erro:"Credenciais Incorretas.");}
+                btn.innerText='ENTRAR';
+            }catch(error){alert("Erro de conexão.");document.getElementById('btn-entrar').innerText='ENTRAR';}
         }
 
-        async function api_AtualizarConfig(prefix) {
-            const p = { id: user.id, morada: document.getElementById(`cfg-morada-${prefix}`).value, cpostal: document.getElementById(`cfg-cpostal-${prefix}`).value, senhaAntiga: document.getElementById(`cfg-senha-antiga-${prefix}`).value, senhaNova: document.getElementById(`cfg-senha-nova-${prefix}`).value };
-            const res = await chamadoraAPI('atualizar_config', p);
-            if(res && res.sucesso) { alert("Configurações atualizadas!"); document.getElementById(`cfg-senha-antiga-${prefix}`).value = ''; document.getElementById(`cfg-senha-nova-${prefix}`).value = ''; } else if (res) alert(res.erro);
+        async function api_AtualizarConfig(prefix){
+            const p={id:user.id,morada:document.getElementById(`cfg-morada-${prefix}`).value,cpostal:document.getElementById(`cfg-cpostal-${prefix}`).value,senhaAntiga:document.getElementById(`cfg-senha-antiga-${prefix}`).value,senhaNova:document.getElementById(`cfg-senha-nova-${prefix}`).value};
+            const res=await chamadoraAPI('atualizar_config',p);
+            if(res&&res.sucesso){alert("Configurações atualizadas!");document.getElementById(`cfg-senha-antiga-${prefix}`).value='';document.getElementById(`cfg-senha-nova-${prefix}`).value='';}else if(res)alert(res.erro);
         }
 
-        // --- DASHBOARDS ---
-        async function carregarDashboardPro() {
-            const res = await chamadoraAPI('obter_dashboard_pro', { idPro: user.id });
-            if(res) {
-                document.getElementById('pro-faturamento').innerText = res.faturamento.toFixed(2) + ' €'; 
-                if(typeof Chart !== 'undefined') {
-                    const ctx = document.getElementById('proChart').getContext('2d'); Chart.defaults.color = '#9CA3AF'; Chart.defaults.borderColor = 'rgba(255,255,255,0.02)';
-                    if(meuGrafico) meuGrafico.destroy();
-                    meuGrafico = new Chart(ctx, { type: 'line', data: { labels: ['Sem 1','Sem 2','Sem 3','Sem 4'], datasets: [{ label:'€', data: res.chart, borderColor: '#10B981', backgroundColor:'rgba(16,185,129,0.1)', fill:true, tension:0.4 }] }, options: { plugins:{legend:{display:false}} }});
+        async function carregarDashboardPro(){
+            const res=await chamadoraAPI('obter_dashboard_pro',{idPro:user.id});
+            if(res){
+                document.getElementById('pro-faturamento').innerText=res.faturamento.toFixed(2)+' €';
+                if(typeof Chart!=='undefined'){
+                    const ctx=document.getElementById('proChart').getContext('2d');Chart.defaults.color='#9CA3AF';Chart.defaults.borderColor='rgba(255,255,255,0.02)';
+                    if(meuGrafico)meuGrafico.destroy();
+                    meuGrafico=new Chart(ctx,{type:'line',data:{labels:['Sem 1','Sem 2','Sem 3','Sem 4'],datasets:[{label:'€',data:res.chart,borderColor:'#10B981',backgroundColor:'rgba(16,185,129,0.1)',fill:true,tension:0.4}]},options:{plugins:{legend:{display:false}}}});
                 }
-                document.getElementById('pro-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b></span> <span class="badge-green">${p.obras} Obras</span></div>`).join('');
-                document.getElementById('pro-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b></span> <span class="badge-yellow">${p.estrelas == 0 ? '0.0' : parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
+                document.getElementById('pro-rank-vol').innerHTML=res.rankings.topVolume.map((p,i)=>`<div class="info-card" style="padding:12px;display:flex;justify-content:space-between;margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b></span> <span class="badge-green">${p.obras} Obras</span></div>`).join('');
+                document.getElementById('pro-rank-estrelas').innerHTML=res.rankings.topEstrelas.map((p,i)=>`<div class="info-card" style="padding:12px;display:flex;justify-content:space-between;margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b></span> <span class="badge-yellow">${p.estrelas==0?'0.0':parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
             }
             carregarObrasAndamentoPro();
         }
 
-        async function carregarDashboardCliente() {
-            const res = await chamadoraAPI('obter_dashboard_cliente', {});
-            if(res) { 
-                document.getElementById('cli-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b> <small style="color:var(--text-muted);">(${p.prof})</small></span> <span class="badge-green">${p.obras} Obras</span></div>`).join('');
-                document.getElementById('cli-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b> <small style="color:var(--text-muted);">(${p.prof})</small></span> <span class="badge-yellow">${p.estrelas == 0 ? '0.0' : parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
+        async function carregarDashboardCliente(){
+            const res=await chamadoraAPI('obter_dashboard_cliente',{});
+            if(res){
+                document.getElementById('cli-rank-vol').innerHTML=res.rankings.topVolume.map((p,i)=>`<div class="info-card" style="padding:12px;display:flex;justify-content:space-between;margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b> <small style="color:var(--text-muted);">(${p.prof})</small></span> <span class="badge-green">${p.obras} Obras</span></div>`).join('');
+                document.getElementById('cli-rank-estrelas').innerHTML=res.rankings.topEstrelas.map((p,i)=>`<div class="info-card" style="padding:12px;display:flex;justify-content:space-between;margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b> <small style="color:var(--text-muted);">(${p.prof})</small></span> <span class="badge-yellow">${p.estrelas==0?'0.0':parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
             }
             carregarObrasAndamentoCliente();
         }
 
-        // --- CLIENTE PEDIDO ---
-        function enviarPedido() {
-            const cat = document.getElementById('p-cat').value; const desc = document.getElementById('p-desc').value; const r = document.getElementById('p-raio').value;
+        function enviarPedido(){
+            const cat=document.getElementById('p-cat').value;const desc=document.getElementById('p-desc').value;const r=document.getElementById('p-raio').value;
             fecharModal('modal-pedido');
-            
-            document.getElementById('area-pedidos-ativos').style.display = 'block'; document.getElementById('radar-pulse-anim').style.display = 'block';
-            document.getElementById('lista-orcamentos-recebidos').innerHTML = '<span class="loading-text" style="color:var(--neon-yellow);">A enviar para a rede de profissionais...</span>';
-            
-            clearInterval(cliTimerInt); clearInterval(cliRadarInt);
-            let tempo = 180; document.getElementById('timer-pedido').innerText = "03:00"; document.getElementById('timer-pedido').style.color = "var(--text-main)";
-            
-            cliTimerInt = setInterval(() => {
-                tempo--; let m = Math.floor(tempo / 60).toString().padStart(2, '0'); let s = (tempo % 60).toString().padStart(2, '0');
-                document.getElementById('timer-pedido').innerText = `${m}:${s}`;
-                if(tempo <= 0) { 
-                    clearInterval(cliTimerInt); clearInterval(cliRadarInt);
-                    document.getElementById('area-pedidos-ativos').innerHTML = `<h4 style="color:var(--neon-red); margin-bottom:10px;">Tempo Esgotado</h4><p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Nenhum profissional respondeu a tempo.</p><button onclick="window.location.reload();" class="btn-neon">Tentar de Novo</button>`;
+            document.getElementById('area-pedidos-ativos').style.display='block';document.getElementById('radar-pulse-anim').style.display='block';
+            document.getElementById('lista-orcamentos-recebidos').innerHTML='<span class="loading-text" style="color:var(--neon-yellow);">A enviar para a rede de profissionais...</span>';
+            clearInterval(cliTimerInt);clearInterval(cliRadarInt);
+            let tempo=180;document.getElementById('timer-pedido').innerText="03:00";document.getElementById('timer-pedido').style.color="var(--text-main)";
+            cliTimerInt=setInterval(()=>{
+                tempo--;let m=Math.floor(tempo/60).toString().padStart(2,'0');let s=(tempo%60).toString().padStart(2,'0');
+                document.getElementById('timer-pedido').innerText=`${m}:${s}`;
+                if(tempo<=0){clearInterval(cliTimerInt);clearInterval(cliRadarInt);document.getElementById('area-pedidos-ativos').innerHTML=`<h4 style="color:var(--neon-red);margin-bottom:10px;">Tempo Esgotado</h4><p style="color:var(--text-muted);font-size:14px;margin-bottom:15px;">Nenhum profissional respondeu a tempo.</p><button onclick="window.location.reload();" class="btn-neon">Tentar de Novo</button>`;}
+            },1000);
+            setTimeout(async()=>{
+                const res=await chamadoraAPI('criar_pedido',{idCliente:user.id,categoria:cat,descricao:desc,lat:coords.lat,lng:coords.lng,raioKm:r});
+                if(res){tempIdPedido=res.id_pedido;document.getElementById('lista-orcamentos-recebidos').innerHTML='';cliRadarInt=setInterval(verificarOrcamentosRadar,3000);}
+            },50);
+        }
+
+        async function api_BuscarPedidoAtivoCliente(){
+            const res=await chamadoraAPI('buscar_pedido_ativo_cliente',{idCliente:user.id});
+            if(res&&res.ativo){
+                tempIdPedido=res.id_pedido;
+                document.getElementById('area-pedidos-ativos').style.display='block';document.getElementById('radar-pulse-anim').style.display='block';document.getElementById('lista-orcamentos-recebidos').innerHTML='';
+                clearInterval(cliTimerInt);clearInterval(cliRadarInt);
+                let tempo=res.tempoRestante;
+                cliTimerInt=setInterval(()=>{
+                    tempo--;let m=Math.floor(tempo/60).toString().padStart(2,'0');let s=(tempo%60).toString().padStart(2,'0');
+                    document.getElementById('timer-pedido').innerText=`${m}:${s}`;
+                    if(tempo<=0){clearInterval(cliTimerInt);clearInterval(cliRadarInt);document.getElementById('area-pedidos-ativos').innerHTML=`<h4 style="color:var(--neon-red);margin-bottom:10px;">Tempo Esgotado</h4><p style="color:var(--text-muted);font-size:14px;margin-bottom:15px;">Nenhum profissional respondeu a tempo.</p><button onclick="window.location.reload();" class="btn-neon">Tentar de Novo</button>`;}
+                },1000);
+                cliRadarInt=setInterval(verificarOrcamentosRadar,3000);
+            }
+        }
+
+        async function verificarOrcamentosRadar(){
+            const res=await chamadoraAPI('listar_orcamentos_cliente',{idPedido:tempIdPedido});
+            const box=document.getElementById('lista-orcamentos-recebidos');
+            if(res&&res.orcamentos.length>0){
+                clearInterval(cliRadarInt);clearInterval(cliTimerInt);
+                document.getElementById('radar-pulse-anim').style.display='none';
+                document.getElementById('timer-pedido').innerText="Propostas Recebidas!";document.getElementById('timer-pedido').style.color="var(--neon-green)";
+                somNotificacao.play().then(()=>setTimeout(()=>pararAlarme(),1500)).catch(e=>{});if(navigator.vibrate)navigator.vibrate([100,50,100]);
+                box.innerHTML=res.orcamentos.map(o=>`<div class="info-card" style="border-left:3px solid var(--neon-green);text-align:left;"><div style="display:flex;justify-content:space-between;align-items:center;"><b>${o.nome}</b><span style="color:var(--neon-green);font-size:1.2em;font-weight:bold;">${o.valor}€</span></div><p style="margin:10px 0;font-size:0.9em;color:#ddd;">${o.msg}</p><button onclick="aceitarOrcamento('${o.id_orc}','${o.id_pro}')" class="btn-neon green" style="padding:10px;">ACEITAR E NEGOCIAR</button></div>`).join('');
+            }
+        }
+
+        async function aceitarOrcamento(idOrc,idPro){
+            const res=await chamadoraAPI('responder_orcamento',{idOrcamento:idOrc,resposta:'Aceite'});
+            if(res){alert("Orçamento Aceite! A obra entrou em modo de execução.");document.getElementById('area-pedidos-ativos').style.display='none';carregarObrasAndamentoCliente();abrirChatView(idPro);}
+        }
+
+        async function carregarObrasAndamentoCliente(){
+            if(!user||user.tipo!=='Cliente')return;
+            const res=await chamadoraAPI('listar_obras_andamento',{idCliente:user.id});
+            const container=document.getElementById('cli-obras-andamento');
+            if(res&&res.obras.length>0){
+                container.innerHTML=res.obras.map(o=>`<div class="info-card" style="border-left:3px solid var(--neon-blue);"><div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:var(--neon-blue);">${o.categoria}</b><span class="badge-green">${o.valor} €</span></div><div style="font-size:0.85em;color:var(--text-muted);margin:8px 0;"><b>Profissional:</b> ${o.nomeOutro}</div><button onclick="abrirChatView('${o.id_outro}')" class="btn-neon" style="padding:8px;width:100%;margin-top:10px;">💬 ABRIR CHAT</button></div>`).join('');
+            }else{container.innerHTML=`<span class="loading-text" style="font-size:13px;">Nenhum serviço a decorrer de momento.</span>`;}
+        }
+
+        async function carregarObrasAndamentoPro(){
+            if(!user||user.tipo!=='Profissional')return;
+            const res=await chamadoraAPI('listar_obras_andamento',{idPro:user.id});
+            const container=document.getElementById('pro-obras-andamento');
+            if(res&&res.obras.length>0){
+                let novosIds=res.obras.map(o=>o.id_pedido);
+                if(novosIds.some(id=>!lastObrasPro.includes(id))&&lastObrasPro.length>0){
+                    somNotificacao.play().then(()=>setTimeout(()=>pararAlarme(),2000)).catch(e=>{});if(navigator.vibrate)navigator.vibrate([200,100,200]);
                 }
-            }, 1000);
-
-            setTimeout(async () => {
-                const res = await chamadoraAPI('criar_pedido', { idCliente: user.id, categoria: cat, descricao: desc, lat: coords.lat, lng: coords.lng, raioKm: r });
-                if(res) { tempIdPedido = res.id_pedido; document.getElementById('lista-orcamentos-recebidos').innerHTML = ''; cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); }
-            }, 50);
+                lastObrasPro=novosIds;
+                container.innerHTML=res.obras.map(o=>`<div class="info-card" style="border-left:3px solid var(--neon-green);"><div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:var(--neon-green);">${o.categoria}</b><span class="badge-green">${o.valor} €</span></div><div style="font-size:0.85em;color:var(--text-muted);margin:8px 0;"><b>Cliente:</b> ${o.nomeOutro}</div><div style="display:flex;gap:10px;margin-top:10px;"><button onclick="abrirChatView('${o.id_outro}')" class="btn-neon" style="padding:8px;flex:1;">💬 CHAT</button><button onclick="abrirModalFinalizarObra('${o.id_pedido}','${o.nomeOutro}','${o.valor}')" class="btn-neon green" style="padding:8px;flex:1;">✅ FINALIZAR</button></div></div>`).join('');
+            }else{container.innerHTML=`<span class="loading-text" style="font-size:13px;">Nenhuma obra ativa de momento.</span>`;}
         }
 
-        async function api_BuscarPedidoAtivoCliente() {
-            const res = await chamadoraAPI('buscar_pedido_ativo_cliente', { idCliente: user.id });
-            if(res && res.ativo) {
-                tempIdPedido = res.id_pedido;
-                document.getElementById('area-pedidos-ativos').style.display = 'block'; document.getElementById('radar-pulse-anim').style.display = 'block'; document.getElementById('lista-orcamentos-recebidos').innerHTML = '';
-                
-                clearInterval(cliTimerInt); clearInterval(cliRadarInt);
-                let tempo = res.tempoRestante;
-                
-                cliTimerInt = setInterval(() => {
-                    tempo--; let m = Math.floor(tempo / 60).toString().padStart(2, '0'); let s = (tempo % 60).toString().padStart(2, '0');
-                    document.getElementById('timer-pedido').innerText = `${m}:${s}`;
-                    if(tempo <= 0) { 
-                        clearInterval(cliTimerInt); clearInterval(cliRadarInt);
-                        document.getElementById('area-pedidos-ativos').innerHTML = `<h4 style="color:var(--neon-red); margin-bottom:10px;">Tempo Esgotado</h4><p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Nenhum profissional respondeu a tempo.</p><button onclick="window.location.reload();" class="btn-neon">Tentar de Novo</button>`;
-                    }
-                }, 1000);
-                cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); 
+        function abrirModalFinalizarObra(idPed,nomeCli,valor){
+            tempObraFinalizarId=idPed;document.getElementById('modal-finalizar-texto').innerHTML=`Deseja marcar esta obra com <b>${nomeCli}</b> no valor de <b style="color:var(--neon-green);">${valor} €</b> como <b>Finalizada</b>?<br><br>Ao finalizar, este valor será somado imediatamente ao seu faturamento mensal.`;abrirModal('modal-finalizar');
+        }
+
+        async function executarFinalizacaoObra(){
+            const res=await chamadoraAPI('finalizar_obra',{idPedido:tempObraFinalizarId});
+            if(res&&res.sucesso){alert("Obra finalizada com sucesso! Faturamento atualizado.");fecharModal('modal-finalizar');carregarDashboardPro();}
+            else{alert("Erro ao finalizar obra.");}
+        }
+
+        function toggleStatusPro(){
+            proOnline=!proOnline;const b=document.getElementById('btn-status-pro');const d=document.getElementById('dot-pro');
+            if(proOnline){
+                b.innerText="A Buscar no Radar...";b.classList.add('green');b.classList.remove('yellow');d.style.color='var(--neon-green)';
+                if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{coords.lat=p.coords.latitude;coords.lng=p.coords.longitude;});
+                somNotificacao.volume=0;somNotificacao.play().then(()=>{somNotificacao.pause();somNotificacao.currentTime=0;somNotificacao.volume=1;}).catch(e=>{});
+                radarInt=setInterval(api_Radar,5000);api_Radar();
+                obraInt=setInterval(carregarObrasAndamentoPro,10000);carregarObrasAndamentoPro();
+            }else{
+                b.innerText="Ligar Radar de Obras";b.classList.remove('green');b.classList.add('yellow');d.style.color='#555';
+                clearInterval(radarInt);clearInterval(obraInt);document.getElementById('pro-radar').innerHTML="<span class='loading-text'>Offline.</span>";pararAlarme();
             }
         }
 
-        async function verificarOrcamentosRadar() {
-            const res = await chamadoraAPI('listar_orcamentos_cliente', { idPedido: tempIdPedido });
-            const box = document.getElementById('lista-orcamentos-recebidos');
-            if(res && res.orcamentos.length > 0) {
-                clearInterval(cliRadarInt); clearInterval(cliTimerInt);
-                document.getElementById('radar-pulse-anim').style.display = 'none';
-                document.getElementById('timer-pedido').innerText = "Propostas Recebidas!"; document.getElementById('timer-pedido').style.color = "var(--neon-green)";
-                somNotificacao.play().then(()=>setTimeout(()=>pararAlarme(),1500)).catch(e=>{}); if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
-                
-                box.innerHTML = res.orcamentos.map(o=>`<div class="info-card" style="border-left: 3px solid var(--neon-green); text-align:left;"><div style="display:flex; justify-content:space-between; align-items:center;"><b>${o.nome}</b><span style="color:var(--neon-green); font-size:1.2em; font-weight:bold;">${o.valor}€</span></div><p style="margin:10px 0; font-size:0.9em; color:#ddd;">${o.msg}</p><button onclick="aceitarOrcamento('${o.id_orc}','${o.id_pro}')" class="btn-neon green" style="padding:10px;">ACEITAR E NEGOCIAR</button></div>`).join('');
+        async function api_Radar(){
+            if(!proOnline)return;
+            const res=await chamadoraAPI('buscar_pedidos_pro',{profissao:user.profissao,lat:coords.lat,lng:coords.lng});
+            if(res&&res.pedidos.length>0){
+                let visiveis=res.pedidos.filter(p=>!rejeitados.includes(p.id_pedido));
+                if(visiveis.length===0){document.getElementById('pro-radar').innerHTML="<span class='loading-text'>Sem pedidos ativos de momento...</span>";return;}
+                let novosIds=visiveis.map(p=>p.id_pedido);let temNovo=false;
+                for(let id of novosIds){if(!lastPedidosDetectados.includes(id))temNovo=true;}
+                if(temNovo){somNotificacao.play().catch(e=>{});if(navigator.vibrate)navigator.vibrate([300,200,300,200,300]);;}
+                lastPedidosDetectados=novosIds;
+                document.getElementById('pro-radar').innerHTML=visiveis.map(p=>`<div class="info-card swipeable" style="border-left:3px solid var(--neon-blue);margin-bottom:10px;" ontouchstart="ts(event)" ontouchmove="tm(event)" ontouchend="te(event,'${p.id_pedido}')"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><strong style="color:var(--text-main);font-size:1em;">${p.cat}</strong><span class="badge-blue" style="color:var(--neon-blue);border:1px solid var(--neon-blue);border-radius:15px;padding:2px 8px;font-size:0.75rem;">${p.dist} km</span></div><div style="font-size:0.85em;color:var(--text-muted);margin-bottom:10px;line-height:1.5;"><span style="color:#fff;">Nome:</span> ${p.nomeCliente}<br><span style="color:#fff;">Local:</span> ${p.morada}</div><p style="font-size:0.9em;margin-bottom:15px;color:#ddd;">${p.desc}</p><button onclick="prepararOrcamento('${p.id_pedido}')" class="btn-neon" style="padding:10px;">RESPONDER AGORA</button></div>`).join('');
+            }else if(res){document.getElementById('pro-radar').innerHTML="<span class='loading-text'>Sem pedidos ativos de momento...</span>";pararAlarme();}
+        }
+
+        function prepararOrcamento(idPed){tempIdPedido=idPed;pararAlarme();abrirModal('modal-enviar-orc');}
+        async function enviarOrcamentoReal(){
+            const v=document.getElementById('orc-valor').value;const m=document.getElementById('orc-msg').value;
+            if(!v||!m)return alert("Preencha todos os campos.");
+            await chamadoraAPI('enviar_orcamento',{idPedido:tempIdPedido,idPro:user.id,nomePro:user.nome,valor:v,msg:m});
+            rejeitados.push(tempIdPedido);fecharModal('modal-enviar-orc');api_Radar();alert("Orçamento enviado! O cliente já o pode aceitar.");
+        }
+
+        function abrirChatView(idAlvo){tempIdDestinatario=idAlvo;abrirModal('modal-chat');lerMensagensAPI();chatInt=setInterval(lerMensagensAPI,4000);}
+        function fecharChat(){fecharModal('modal-chat');clearInterval(chatInt);carregarObrasAndamentoPro();carregarObrasAndamentoCliente();}
+        async function enviarMensagemNoChat(){const m=document.getElementById('chat-input').value;if(!m)return;document.getElementById('chat-input').value='';await chamadoraAPI('enviar_mensagem',{remetente:user.id,destinatario:tempIdDestinatario,contexto:'Obra',msg:m});lerMensagensAPI();}
+        async function lerMensagensAPI(){const res=await chamadoraAPI('listar_mensagens',{eu:user.id,ele:tempIdDestinatario});if(res){const box=document.getElementById('chat-box');box.innerHTML=res.msgs.map(m=>`<div class="msg ${m.deMim?'minha':'deles'}">${m.txt}</div>`).join('');box.scrollTop=box.scrollHeight;}}
+        async function enviarAvaliacao(){await chamadoraAPI('avaliar_usuario',{idAlvo:tempIdDestinatario,nota:document.getElementById('nota-aval').value});alert("Obrigado pela sua avaliação!");fecharChat();}
+
+        async function carregarRankingsAdmin(){
+            document.getElementById('admin-rank-vol').innerHTML=loader();document.getElementById('admin-rank-estrelas').innerHTML=loader();
+            const res=await chamadoraAPI('obter_dashboard_cliente',{});
+            if(res){
+                document.getElementById('admin-rank-vol').innerHTML=res.rankings.topVolume.map((p,i)=>`<div class="info-card" style="padding:12px;display:flex;justify-content:space-between;margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b> <small style="color:var(--text-muted);">(${p.prof})</small></span> <span class="badge-green">${p.obras} Obras</span></div>`).join('');
+                document.getElementById('admin-rank-estrelas').innerHTML=res.rankings.topEstrelas.map((p,i)=>`<div class="info-card" style="padding:12px;display:flex;justify-content:space-between;margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b></span> <span class="badge-yellow">${p.estrelas==0?'0.0':parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
             }
         }
-
-        async function aceitarOrcamento(idOrc, idPro) {
-            const res = await chamadoraAPI('responder_orcamento', { idOrcamento: idOrc, resposta: 'Aceite' });
-            if(res) { 
-                alert("Orçamento Aceite! A obra entrou em modo de execução."); 
-                document.getElementById('area-pedidos-ativos').style.display='none'; 
-                carregarObrasAndamentoCliente(); // Atualiza a UI do cliente imediatamente
-                abrirChatView(idPro); 
-            }
+        async function carregarAdmin(tipo){
+            const box=document.getElementById('admin-lista-users');box.innerHTML=loader();
+            let acao=tipo==='pendentes'?'admin_listar_pendentes':'admin_listar_usuarios';const res=await chamadoraAPI(acao,{});
+            if(res&&tipo==='pendentes'){box.innerHTML=res.pendentes.map(p=>`<div class="info-card"><b>${p.nomeCompleto}</b><br><small style="color:var(--text-muted);">${p.profissao} | ${p.email}</small><div style="margin-top:10px;display:flex;gap:10px;"><button onclick="chamadoraAPI('admin_aprovar_pro',{id:'${p.id}'});alert('Aprovado!');carregarAdmin('pendentes');" class="btn-small btn-bg-green" style="flex:1;">Aprovar</button></div></div>`).join('')||'<span class="loading-text">Nenhuma conta pendente.</span>';}
+            else if(res){document.getElementById('admin-titulo').innerText=`${tipo==='todos'?'Todos':tipo+'s'}`;box.innerHTML=res.usuarios.filter(u=>tipo==='todos'||u.tipo===tipo).map(u=>`<div class="info-card"><b>${u.nome}</b> <span class="badge-yellow" style="font-size:0.65rem;">${u.tipo}</span><br><small style="color:var(--text-muted);">Status: ${u.status}</small><div style="margin-top:10px;"><button onclick="tempBanId='${u.id}';abrirModal('modal-confirmar-ban');" class="btn-small btn-bg-red" style="width:100%;">Banir / Suspender</button></div></div>`).join('')||'<span class="loading-text">Nenhum utilizador encontrado.</span>';}
         }
-
-        // --- OBRAS EM ANDAMENTO (MÚTUO) ---
-        async function carregarObrasAndamentoCliente() {
-            if(!user || user.tipo !== 'Cliente') return;
-            const res = await chamadoraAPI('listar_obras_andamento', { idCliente: user.id });
-            const container = document.getElementById('cli-obras-andamento');
-            if(res && res.obras.length > 0) {
-                container.innerHTML = res.obras.map(o => `
-                    <div class="info-card" style="border-left: 3px solid var(--neon-blue);">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <b style="color:var(--neon-blue);">${o.categoria}</b><span class="badge-green">${o.valor} €</span>
-                        </div>
-                        <div style="font-size:0.85em; color:var(--text-muted); margin:8px 0;"><b>Profissional:</b> ${o.nomeOutro}</div>
-                        <button onclick="abrirChatView('${o.id_outro}')" class="btn-neon" style="padding:8px; width:100%; margin-top:10px;">💬 ABRIR CHAT</button>
-                    </div>`).join('');
-            } else { container.innerHTML = `<span class="loading-text" style="font-size:13px;">Nenhum serviço a decorrer de momento.</span>`; }
-        }
-
-        async function carregarObrasAndamentoPro() {
-            if(!user || user.tipo !== 'Profissional') return;
-            const res = await chamadoraAPI('listar_obras_andamento', { idPro: user.id });
-            const container = document.getElementById('pro-obras-andamento');
-            if(res && res.obras.length > 0) {
-                
-                // NOTIFICA O PRO SE ENTROU UMA OBRA NOVA!
-                let novosIds = res.obras.map(o => o.id_pedido);
-                if(novosIds.some(id => !lastObrasPro.includes(id)) && lastObrasPro.length > 0) {
-                    somNotificacao.play().then(()=>setTimeout(()=>pararAlarme(),2000)).catch(e=>{}); if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
-                }
-                lastObrasPro = novosIds;
-
-                container.innerHTML = res.obras.map(o => `
-                    <div class="info-card" style="border-left: 3px solid var(--neon-green);">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <b style="color:var(--neon-green);">${o.categoria}</b><span class="badge-green">${o.valor} €</span>
-                        </div>
-                        <div style="font-size:0.85em; color:var(--text-muted); margin:8px 0;"><b>Cliente:</b> ${o.nomeOutro}</div>
-                        <div style="display:flex; gap:10px; margin-top:10px;">
-                            <button onclick="abrirChatView('${o.id_outro}')" class="btn-neon" style="padding:8px; flex:1;">💬 CHAT</button>
-                            <button onclick="abrirModalFinalizarObra('${o.id_pedido}', '${o.nomeOutro}', '${o.valor}')" class="btn-neon green" style="padding:8px; flex:1;">✅ FINALIZAR</button>
-                        </div>
-                    </div>`).join('');
-            } else { container.innerHTML = `<span class="loading-text" style="font-size:13px;">Nenhuma obra ativa de momento.</span>`; }
-        }
-
-        function abrirModalFinalizarObra(idPed, nomeCli, valor) {
-            tempObraFinalizarId = idPed; document.getElementById('modal-finalizar-texto').innerHTML = `Deseja marcar esta obra com <b>${nomeCli}</b> no valor de <b style="color:var(--neon-green);">${valor} €</b> como <b>Finalizada</b>?<br><br>Ao finalizar, este valor será somado imediatamente ao seu faturamento mensal.`; abrirModal('modal-finalizar');
-        }
-
-        async function executarFinalizacaoObra() {
-            const res = await chamadoraAPI('finalizar_obra', { idPedido: tempObraFinalizarId });
-            if(res && res.sucesso) { alert("Obra finalizada com sucesso! Faturamento atualizado."); fecharModal('modal-finalizar'); carregarDashboardPro(); } 
-            else { alert("Erro ao finalizar obra."); }
-        }
-
-        // --- PROFISSIONAL ONLINE ---
-        function toggleStatusPro() {
-            proOnline = !proOnline; const b = document.getElementById('btn-status-pro'); const d = document.getElementById('dot-pro');
-            if(proOnline) { 
-                b.innerText = "A Buscar no Radar..."; b.classList.add('green'); b.classList.remove('yellow'); d.style.color = 'var(--neon-green)'; 
-                if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p => { coords.lat = p.coords.latitude; coords.lng = p.coords.longitude; });
-                somNotificacao.volume = 0; somNotificacao.play().then(() => { somNotificacao.pause(); somNotificacao.currentTime = 0; somNotificacao.volume = 1; }).catch(e=>{}); 
-                radarInt = setInterval(api_Radar, 5000); api_Radar(); obraInt = setInterval(carregarObrasAndamentoPro, 10000); carregarObrasAndamentoPro();
-            } else { 
-                b.innerText = "Ligar Radar de Obras"; b.classList.remove('green'); b.classList.add('yellow'); d.style.color = '#555'; 
-                clearInterval(radarInt); clearInterval(obraInt); document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Offline.</span>"; pararAlarme();
-            }
-        }
-
-        async function api_Radar() {
-            if(!proOnline) return;
-            const res = await chamadoraAPI('buscar_pedidos_pro', { profissao: user.profissao, lat: coords.lat, lng: coords.lng });
-            if(res && res.pedidos.length > 0) {
-                let visiveis = res.pedidos.filter(p => !rejeitados.includes(p.id_pedido));
-                if (visiveis.length === 0) { document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Sem pedidos ativos de momento...</span>"; return; }
-                let novosIds = visiveis.map(p => p.id_pedido); let temNovo = false;
-                for(let id of novosIds) { if(!lastPedidosDetectados.includes(id)) temNovo = true; }
-                if(temNovo) { somNotificacao.play().catch(e=>{}); if(navigator.vibrate) navigator.vibrate([300, 200, 300, 200, 300]); }
-                lastPedidosDetectados = novosIds;
-                
-                document.getElementById('pro-radar').innerHTML = visiveis.map(p=>`
-                    <div class="info-card swipeable" style="border-left: 3px solid var(--neon-blue); margin-bottom:10px;" ontouchstart="ts(event)" ontouchmove="tm(event)" ontouchend="te(event, '${p.id_pedido}')">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                            <strong style="color:var(--text-main); font-size:1em;">${p.cat}</strong><span class="badge-blue" style="color:var(--neon-blue); border:1px solid var(--neon-blue); border-radius:15px; padding:2px 8px; font-size:0.75rem;">${p.dist} km</span>
-                        </div>
-                        <div style="font-size:0.85em; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">
-                            <span style="color:#fff;">Nome:</span> ${p.nomeCliente}<br><span style="color:#fff;">Local:</span> ${p.morada}
-                        </div>
-                        <p style="font-size:0.9em; margin-bottom:15px; color:#ddd;">${p.desc}</p>
-                        <button onclick="prepararOrcamento('${p.id_pedido}')" class="btn-neon" style="padding:10px;">RESPONDER AGORA</button>
-                    </div>`).join('');
-            } else if (res) { document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Sem pedidos ativos de momento...</span>"; pararAlarme(); }
-        }
-
-        function prepararOrcamento(idPed) { tempIdPedido = idPed; pararAlarme(); abrirModal('modal-enviar-orc'); }
-        async function enviarOrcamentoReal() {
-            const v = document.getElementById('orc-valor').value; const m = document.getElementById('orc-msg').value;
-            if(!v || !m) return alert("Preencha todos os campos.");
-            await chamadoraAPI('enviar_orcamento', { idPedido: tempIdPedido, idPro: user.id, nomePro: user.nome, valor: v, msg: m });
-            rejeitados.push(tempIdPedido); fecharModal('modal-enviar-orc'); api_Radar(); alert("Orçamento enviado! O cliente já o pode aceitar.");
-        }
-
-        // --- CHAT E AVALIAÇÃO ---
-        function abrirChatView(idAlvo) { tempIdDestinatario = idAlvo; abrirModal('modal-chat'); lerMensagensAPI(); chatInt = setInterval(lerMensagensAPI, 4000); }
-        function fecharChat() { fecharModal('modal-chat'); clearInterval(chatInt); }
-        async function enviarMensagemNoChat() { const m = document.getElementById('chat-input').value; if(!m) return; document.getElementById('chat-input').value = ''; await chamadoraAPI('enviar_mensagem', { remetente: user.id, destinatario: tempIdDestinatario, contexto: 'Obra', msg: m }); lerMensagensAPI(); }
-        async function lerMensagensAPI() { const res = await chamadoraAPI('listar_mensagens', { eu: user.id, ele: tempIdDestinatario }); if(res) { const box = document.getElementById('chat-box'); box.innerHTML = res.msgs.map(m=>`<div class="msg ${m.deMim ? 'minha':'deles'}">${m.txt}</div>`).join(''); box.scrollTop = box.scrollHeight; } }
-        async function enviarAvaliacao() { await chamadoraAPI('avaliar_usuario', { idAlvo: tempIdDestinatario, nota: document.getElementById('nota-aval').value }); alert("Obrigado pela sua avaliação!"); fecharChat(); }
-
-        // --- ADMIN ---
-        async function carregarRankingsAdmin() {
-            document.getElementById('admin-rank-vol').innerHTML = loader(); document.getElementById('admin-rank-estrelas').innerHTML = loader();
-            const res = await chamadoraAPI('obter_dashboard_cliente', {});
-            if(res) { 
-                document.getElementById('admin-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b> <small style="color:var(--text-muted);">(${p.prof})</small></span> <span class="badge-green">${p.obras} Obras</span></div>`).join('');
-                document.getElementById('admin-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b></span> <span class="badge-yellow">${p.estrelas == 0 ? '0.0' : parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
-            }
-        }
-        async function carregarAdmin(tipo) {
-            const box = document.getElementById('admin-lista-users'); box.innerHTML = loader();
-            let acao = tipo === 'pendentes' ? 'admin_listar_pendentes' : 'admin_listar_usuarios'; const res = await chamadoraAPI(acao, {});
-            if (res && tipo === 'pendentes') { box.innerHTML = res.pendentes.map(p => `<div class="info-card"><b>${p.nomeCompleto}</b><br><small style="color:var(--text-muted);">${p.profissao} | ${p.email}</small><div style="margin-top:10px; display:flex; gap:10px;"><button onclick="chamadoraAPI('admin_aprovar_pro', {id: '${p.id}'}); alert('Aprovado!'); carregarAdmin('pendentes');" class="btn-small btn-bg-green" style="flex:1;">Aprovar</button></div></div>`).join('') || '<span class="loading-text">Nenhuma conta pendente.</span>'; } 
-            else if (res) { document.getElementById('admin-titulo').innerText = `${tipo === 'todos' ? 'Todos' : tipo + 's'}`; box.innerHTML = res.usuarios.filter(u => tipo === 'todos' || u.tipo === tipo).map(u => `<div class="info-card"><b>${u.nome}</b> <span class="badge-yellow" style="font-size:0.65rem;">${u.tipo}</span><br><small style="color:var(--text-muted);">Status: ${u.status}</small><div style="margin-top:10px;"><button onclick="tempBanId='${u.id}'; abrirModal('modal-confirmar-ban');" class="btn-small btn-bg-red" style="width:100%;">Banir / Suspender</button></div></div>`).join('') || '<span class="loading-text">Vazio.</span>'; }
-        }
-        async function executarBanimento() { const senha = document.getElementById('input-senha-ban').value; if(!senha) return alert("Insira a senha!"); const res = await chamadoraAPI('admin_banir_usuario', { id: tempBanId, senhaAdmin: senha }); if(res && res.sucesso) { alert("Banido!"); fecharModal('modal-senha-ban'); carregarAdmin('Cliente'); } else if(res) alert(res.erro); }
+        async function executarBanimento(){const senha=document.getElementById('input-senha-ban').value;if(!senha)return alert("Insira a senha!");const res=await chamadoraAPI('admin_banir_usuario',{id:tempBanId,senhaAdmin:senha});if(res&&res.sucesso){alert("Banido!");fecharModal('modal-senha-ban');carregarAdmin('Cliente');}else if(res)alert(res.erro); }
     </script>
 </body>
 </html>
