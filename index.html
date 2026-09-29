@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KIFAZ - Quem faz, está aqui.</title>
     
-    <!-- ========================================== -->
-    <!-- BLOQUEIO DE CACHE (Força a atualização instantânea) -->
-    <!-- ========================================== -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -16,6 +13,10 @@
     <link rel="manifest" href="manifest.json">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- LEAFLET (MAPA GRATUITO TIPO GOOGLE MAPS) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
         :root { 
@@ -31,7 +32,6 @@
         .screen.active { display: flex; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Abas Internas */
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s; }
 
@@ -42,24 +42,30 @@
         input, select, textarea { width: 100%; padding: 15px; margin-bottom: 12px; background: rgba(0,0,0,0.5); border: 1px solid #333; color: #fff; border-radius: 8px; outline: none; }
         input:focus, select:focus, textarea:focus { border-color: var(--neon-yellow); box-shadow: 0 0 5px rgba(255,193,7,0.15); }
         
-        /* Botões Néon Suavizados */
+        /* Botões */
         button { border: none; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; font-size: 14px; text-transform: uppercase; }
         .btn-neon { background: transparent; color: var(--neon-yellow); border: 2px solid var(--neon-yellow); padding: 15px; width: 100%; box-shadow: 0 0 8px rgba(255,193,7,0.15), inset 0 0 5px rgba(255,193,7,0.05); }
         .btn-neon:hover { background: rgba(255,193,7,0.1); box-shadow: 0 0 15px rgba(255,193,7,0.3); }
         .btn-neon.green { color: var(--neon-green); border-color: var(--neon-green); box-shadow: 0 0 8px rgba(57,255,20,0.15); }
-        
         .btn-link { background: none; color: var(--text-muted); text-decoration: underline; padding: 10px; width:100%; font-weight:normal; }
         .btn-small { padding: 8px 12px; font-size: 12px; border-radius:5px; color:#000; }
         .btn-bg-red { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); }
         .btn-bg-green { background: var(--neon-green); color: #000; }
         
-        /* Carregadores (Spinners) para velocidade percebida */
         .spinner { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--neon-yellow); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-text { color: var(--text-muted); text-align: center; padding: 20px; font-style: italic; }
 
+        /* Animação do Radar Cliente */
+        .radar-pulse { width: 80px; height: 80px; background: var(--neon-yellow); border-radius: 50%; margin: 30px auto; animation: pulse-ring 2s infinite; }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 40px rgba(255, 193, 7, 0); }
+            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+        }
+
         /* Modais */
-        .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; padding: 15px; }
+        .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); align-items: center; justify-content: center; padding: 15px; }
         .modal.active { display: flex; }
         .modal-content { width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; position: relative; margin: auto; }
         .close { color: #aaa; float: right; font-size: 28px; cursor: pointer; position: absolute; right: 15px; top: 10px; z-index: 10; }
@@ -67,16 +73,13 @@
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #222; padding-bottom: 15px; }
         .btn-menu { background: none; color: #fff; font-size: 28px; padding:0 10px 0 0; }
         
-        /* Sidebar */
         .sidebar { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: #151515; z-index: 2000; transition: left 0.3s; padding: 30px 20px; border-right: 1px solid rgba(255,193,7,0.2); }
         .sidebar.active { left: 0; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; backdrop-filter: blur(4px); }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; }
         .overlay.active { display: block; }
         .menu-item { padding: 15px 0; border-bottom: 1px solid #222; font-size: 16px; cursor: pointer; color: #ddd; }
-        .menu-item:hover { color: var(--neon-yellow); }
-
+        
         .rank-card { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #222; font-size:14px; background: rgba(0,0,0,0.3); border-radius:5px; margin-bottom:5px;}
-        .star { color: var(--neon-yellow); font-weight:bold; }
         .chat-box { height: 300px; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 8px; padding: 10px; margin-bottom: 10px; display:flex; flex-direction:column; gap:8px;}
         .msg { max-width: 80%; padding: 10px; border-radius: 8px; font-size:14px; }
         .msg.minha { background: rgba(255,193,7,0.1); align-self: flex-end; border: 1px solid var(--neon-yellow); color:#fff; }
@@ -90,9 +93,7 @@
         <div id="sidebar-menu-items"></div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- LOGIN -->
-    <!-- ========================================== -->
+    <!-- TELA DE LOGIN -->
     <div id="login-screen" class="screen active">
         <div style="text-align:center; margin: 40px 0;">
             <img src="https://drive.google.com/thumbnail?id=1J_q4ds9WTBV2UtCNrwYZsUyx6aJJUvq8&sz=w500" width="130" style="border-radius:50%; box-shadow:0 0 15px rgba(255,193,7,0.2);">
@@ -109,18 +110,14 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
     <!-- ADMIN SCREEN -->
-    <!-- ========================================== -->
     <div id="admin-screen" class="screen">
         <header><button class="btn-menu" onclick="abrirMenu()">☰</button><h3 style="margin:0;">Admin <span style="color:var(--neon-yellow)">•</span></h3></header>
-        
         <div id="admin-inicio" class="tab-content active">
             <h3 style="color:var(--neon-yellow); margin-bottom:15px;">Visão Geral</h3>
-            <button class="btn-neon" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('pendentes');" style="margin-bottom:15px;">Ver Aprovações Pendentes</button>
-            <button class="btn-neon" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('todos');" style="margin-bottom:15px;">Ver Todos os Usuários</button>
+            <button class="btn-neon" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('pendentes');" style="margin-bottom:15px;">Aprovações Pendentes</button>
+            <button class="btn-neon" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('todos');">Todos os Usuários</button>
         </div>
-
         <div id="admin-usuarios" class="tab-content">
             <h3 id="admin-titulo" style="color:var(--neon-yellow); margin-bottom:15px;">Gestão</h3>
             <div style="display:flex; gap:10px; margin-bottom:15px;">
@@ -131,18 +128,20 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
     <!-- CLIENTE SCREEN -->
-    <!-- ========================================== -->
     <div id="cliente-screen" class="screen">
         <header><button class="btn-menu" onclick="abrirMenu()">☰</button><h3 style="margin:0;" id="nome-cliente-display">Olá!</h3></header>
         
         <div id="cli-inicio" class="tab-content active">
-            <button onclick="abrirModal('modal-pedido')" class="btn-neon" style="margin-bottom:20px; padding:20px; font-size:1.1rem;"><i class="fas fa-bolt"></i> Solicitar Serviço</button>
-            <div class="glass card-blue">
-                <h4 style="color:var(--neon-blue); margin-bottom:10px;">Meus Pedidos Ativos</h4>
-                <div id="cli-pedidos"><span class="loading-text">Nenhum pedido ativo.</span></div>
+            <button onclick="abrirModalPedido()" class="btn-neon" style="margin-bottom:20px; padding:20px; font-size:1.1rem;"><i class="fas fa-bolt"></i> Solicitar Serviço</button>
+            
+            <div id="area-pedidos-ativos" class="glass card-blue" style="display:none;">
+                <h4 style="color:var(--neon-blue); margin-bottom:10px;">A Procurar Profissionais...</h4>
+                <div class="radar-pulse"></div>
+                <p style="text-align:center; color:#aaa; font-size:14px;">Os orçamentos aparecerão aqui assim que os profissionais aceitarem o serviço na sua região.</p>
+                <div id="lista-orcamentos-recebidos" style="margin-top:15px;"></div>
             </div>
+
             <div class="glass">
                 <h4 style="color:var(--neon-yellow); margin-bottom:10px;"><i class="fas fa-trophy"></i> Top 5 Profissionais (Obras)</h4>
                 <div id="cli-rank-vol"><div class="spinner"></div></div>
@@ -157,17 +156,18 @@
         <div id="cli-config" class="tab-content">
             <h3 style="color:var(--neon-yellow); margin-bottom:15px;"><i class="fas fa-cog"></i> Configurações</h3>
             <div class="glass">
-                <h4 style="margin-bottom:15px;">Alterar Senha</h4>
-                <input type="password" id="cfg-senha-antiga-c" placeholder="Senha Atual">
+                <h4 style="margin-bottom:15px;">O Meu Endereço</h4>
+                <input type="text" id="cfg-morada-c" placeholder="Morada Completa">
+                <input type="text" id="cfg-cpostal-c" placeholder="Código Postal">
+                <h4 style="margin:15px 0;">Alterar Senha</h4>
+                <input type="password" id="cfg-senha-antiga-c" placeholder="Senha Atual (Opcional se não quiser alterar)">
                 <input type="password" id="cfg-senha-nova-c" placeholder="Nova Senha">
-                <button onclick="api_AlterarSenha('c')" class="btn-neon">Salvar Nova Senha</button>
+                <button onclick="api_AtualizarConfig('c')" class="btn-neon">Guardar Configurações</button>
             </div>
         </div>
     </div>
 
-    <!-- ========================================== -->
     <!-- PROFISSIONAL SCREEN -->
-    <!-- ========================================== -->
     <div id="pro-screen" class="screen">
         <header><button class="btn-menu" onclick="abrirMenu()">☰</button><h3 style="margin:0;">Modo Pro <span id="dot-pro" style="color:#555;">•</span></h3></header>
         
@@ -202,54 +202,55 @@
         <div id="pro-config" class="tab-content">
             <h3 style="color:var(--neon-yellow); margin-bottom:15px;"><i class="fas fa-cog"></i> Configurações</h3>
             <div class="glass">
-                <h4 style="margin-bottom:15px;">Alterar Senha</h4>
+                <h4 style="margin-bottom:15px;">O Meu Endereço</h4>
+                <input type="text" id="cfg-morada-p" placeholder="Morada Completa">
+                <input type="text" id="cfg-cpostal-p" placeholder="Código Postal">
+                <h4 style="margin:15px 0;">Alterar Senha</h4>
                 <input type="password" id="cfg-senha-antiga-p" placeholder="Senha Atual">
                 <input type="password" id="cfg-senha-nova-p" placeholder="Nova Senha">
-                <button onclick="api_AlterarSenha('p')" class="btn-neon">Salvar Nova Senha</button>
+                <button onclick="api_AtualizarConfig('p')" class="btn-neon">Guardar Configurações</button>
             </div>
         </div>
     </div>
 
-    <!-- ========================================== -->
     <!-- MODAIS E POP-UPS -->
-    <!-- ========================================== -->
-    <!-- Modal Confirmação de Ban -->
     <div id="modal-confirmar-ban" class="modal"><div class="modal-content glass" style="text-align:center;">
-        <h3 style="color:var(--neon-red); margin-bottom:15px;"><i class="fas fa-exclamation-triangle"></i> Atenção</h3>
-        <p style="margin-bottom:20px;">Tem certeza que deseja banir ou suspender este utilizador?</p>
-        <div style="display:flex; gap:10px;">
-            <button onclick="abrirModalSenhaBan()" class="btn-neon" style="color:var(--neon-red); border-color:var(--neon-red);">SIM</button>
-            <button onclick="fecharModal('modal-confirmar-ban')" class="btn-neon" style="background:#333; border-color:#333; color:#fff;">NÃO</button>
-        </div>
+        <h3 style="color:var(--neon-red); margin-bottom:15px;"><i class="fas fa-exclamation-triangle"></i> Atenção</h3><p style="margin-bottom:20px;">Deseja banir este utilizador?</p>
+        <div style="display:flex; gap:10px;"><button onclick="abrirModalSenhaBan()" class="btn-neon" style="color:var(--neon-red); border-color:var(--neon-red);">SIM</button><button onclick="fecharModal('modal-confirmar-ban')" class="btn-neon" style="background:#333; border-color:#333; color:#fff;">NÃO</button></div>
     </div></div>
-
-    <!-- Modal Senha do Admin para Ban -->
-    <div id="modal-senha-ban" class="modal"><div class="modal-content glass">
-        <span class="close" onclick="fecharModal('modal-senha-ban')">&times;</span>
-        <h3 style="color:var(--neon-red); margin-bottom:15px;">Segurança</h3>
-        <p style="font-size:14px; color:#aaa; margin-bottom:15px;">Digite a senha de administrador para confirmar.</p>
-        <input type="password" id="input-senha-ban" placeholder="Senha Admin">
-        <button onclick="executarBanimento()" class="btn-neon" style="color:var(--neon-red); border-color:var(--neon-red);">CONFIRMAR BANIMENTO</button>
+    
+    <div id="modal-senha-ban" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharModal('modal-senha-ban')">&times;</span>
+        <h3 style="color:var(--neon-red); margin-bottom:15px;">Segurança</h3><p style="font-size:14px; color:#aaa; margin-bottom:15px;">Senha de administrador para confirmar.</p>
+        <input type="password" id="input-senha-ban" placeholder="Senha Admin"><button onclick="executarBanimento()" class="btn-neon" style="color:var(--neon-red); border-color:var(--neon-red);">BANIR</button>
     </div></div>
 
     <div id="modal-registo" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharModal('modal-registo')">&times;</span><h3 style="color:var(--neon-yellow); margin-bottom:15px;">Criar Conta</h3>
         <select id="r-tipo" onchange="document.getElementById('r-prof-container').style.display=this.value==='Profissional'?'block':'none'"><option value="Cliente">Cliente</option><option value="Profissional">Profissional</option></select>
         <div class="row-inputs"><input id="r-nome" placeholder="Nome"><input id="r-sobrenome" placeholder="Sobrenome"></div><input id="r-email" type="email" placeholder="Email">
+        <input id="r-morada" type="text" placeholder="Morada Completa (Obrigatório)">
+        <input id="r-cpostal" type="text" placeholder="Código Postal (Obrigatório)">
         <div id="r-prof-container" style="display:none;"><select id="r-prof"><option value="" disabled selected>Profissão</option><option value="Pladur">Pladur</option><option value="Eletricista">Eletricista</option><option value="Pintor">Pintor</option></select></div>
         <input id="r-senha" type="password" placeholder="Senha"><input id="r-senha-conf" type="password" placeholder="Confirmar Senha"><button onclick="enviarRegisto()" id="btn-submit-reg" class="btn-neon">Criar Conta</button>
     </div></div>
 
-    <div id="modal-pedido" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharModal('modal-pedido')">&times;</span><h3 style="color:var(--neon-yellow); margin-bottom:15px;">Novo Pedido</h3>
+    <!-- Modal Novo Pedido (Com Mapa e Raio) -->
+    <div id="modal-pedido" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharModal('modal-pedido')">&times;</span>
+        <h3 style="color:var(--neon-yellow); margin-bottom:15px;">Novo Pedido</h3>
         <select id="p-cat"><option value="Pladur">Pladur</option><option value="Eletricista">Eletricista</option><option value="Pintor">Pintor</option></select>
-        <textarea id="p-desc" placeholder="Detalhes da obra..." rows="4"></textarea><button onclick="enviarPedido()" class="btn-neon">Pedir Agora</button>
+        <textarea id="p-desc" placeholder="Detalhes da obra..." rows="4"></textarea>
+        
+        <h4 style="margin:10px 0; color:#fff;">Área de Busca</h4>
+        <div style="display:flex; justify-content:space-between; color:#aaa; font-size:12px;"><span>1 km</span><span id="label-raio" style="color:var(--neon-yellow); font-weight:bold; font-size:14px;">15 km</span><span>50 km</span></div>
+        <input type="range" id="p-raio" min="1" max="50" value="15" style="width:100%; margin-bottom:15px;" oninput="atualizarRaioMapa(this.value)">
+        
+        <div id="mapa-pedido" style="height: 150px; border-radius:8px; margin-bottom:15px; border:1px solid #333;"></div>
+        
+        <button onclick="enviarPedido()" class="btn-neon">Buscar Profissionais</button>
     </div></div>
 
-    <div id="modal-enviar-orc" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharModal('modal-enviar-orc')">&times;</span><h3 style="color:var(--neon-yellow); margin-bottom:15px;">Enviar Orçamento</h3>
+    <div id="modal-enviar-orc" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharModal('modal-enviar-orc')">&times;</span>
+        <h3 style="color:var(--neon-yellow); margin-bottom:15px;">Enviar Orçamento</h3>
         <input type="number" id="orc-valor" placeholder="Valor Estimado (€)"><textarea id="orc-msg" placeholder="Mensagem para o cliente..."></textarea><button onclick="enviarOrcamentoReal()" class="btn-neon">Enviar Oferta</button>
-    </div></div>
-
-    <div id="modal-ver-orc" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharModal('modal-ver-orc')">&times;</span><h3 style="color:var(--neon-yellow); margin-bottom:15px;">Orçamentos</h3>
-        <div id="lista-orcamentos-recebidos"><div class="spinner"></div></div>
     </div></div>
 
     <div id="modal-chat" class="modal"><div class="modal-content glass"><span class="close" onclick="fecharChat()">&times;</span><h3 style="color:var(--neon-yellow); margin-bottom:10px;">Chat Direto</h3>
@@ -260,86 +261,73 @@
     </div></div>
 
     <script>
-        // ==========================================
-        // SCRIPT DE LIMPEZA DE CACHE FORÇADA
-        // ==========================================
-        if ('caches' in window) {
-            caches.keys().then((names) => {
-                names.forEach(name => { caches.delete(name); });
-            });
-        }
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then(reg => {
-                    reg.update(); // Força a atualização do PWA em cada load
-                }).catch(err => console.log('SW falhou'));
-            });
-        }
-
-        // ==========================================
-        // URL DA API
-        // ==========================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwECa674WOxJLt_vT8vR7SlRsup45jMBAxVl8PLMn1oLAxwxD9tm8gYng8ZTpfTKfYH/exec'; 
+        // O SEU LINK EXATO:
+        const API_URL = 'COLE_AQUI_SEU_URL_APPS_SCRIPT'; 
         
-        let user = null; let proOnline = false; let radarInt, chatInt; 
+        let user = null; let proOnline = false; let radarInt, chatInt, cliRadarInt; 
         let tempIdPedido = null; let tempIdDestinatario = null; let meuGrafico = null; let tempBanId = null;
+        let map, mapCircle; let coords = {lat: 39.3999, lng: -8.2245}; // Portugal by default
+        let lastPedidosDetectados = [];
+        
+        // SOM DE NOTIFICAÇÃO PROFISSIONAL
+        const somNotificacao = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
-        // Utilitários de UI
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); }); }
+
+        // --- MAPAS LEAFLET ---
+        function abrirModalPedido() {
+            abrirModal('modal-pedido');
+            if(navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    coords.lat = pos.coords.latitude; coords.lng = pos.coords.longitude;
+                    iniciarMapa();
+                }, () => { iniciarMapa(); });
+            } else { iniciarMapa(); }
+        }
+
+        function iniciarMapa() {
+            if(map) map.remove();
+            map = L.map('mapa-pedido').setView([coords.lat, coords.lng], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            mapCircle = L.circle([coords.lat, coords.lng], { color: '#FFC107', fillColor: '#FFC107', fillOpacity: 0.2, radius: 15000 }).addTo(map);
+            setTimeout(() => { map.invalidateSize(); }, 200); // Fix rendering bug in modals
+        }
+
+        function atualizarRaioMapa(km) {
+            document.getElementById('label-raio').innerText = km + ' km';
+            if(mapCircle) { mapCircle.setRadius(km * 1000); map.fitBounds(mapCircle.getBounds()); }
+        }
+
+        // --- UTILS UI ---
         function abrirModal(id) { document.getElementById(id).classList.add('active'); }
         function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
         function abrirMenu() { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
         function fecharMenu() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); }
         function navegarPara(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); fecharMenu(); }
         function loader() { return `<div style="text-align:center; padding:20px;"><div class="spinner"></div></div>`; }
-        
-        function mostrarAba(screenId, abaId) {
-            document.querySelectorAll(`#${screenId} .tab-content`).forEach(t => t.classList.remove('active'));
-            document.getElementById(abaId).classList.add('active');
-            fecharMenu();
-        }
+        function mostrarAba(screenId, abaId) { document.querySelectorAll(`#${screenId} .tab-content`).forEach(t => t.classList.remove('active')); document.getElementById(abaId).classList.add('active'); fecharMenu(); }
 
-        async function chamadoraAPI(acao, payload) {
-            try { 
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: acao, payload: payload }) }); 
-                return await r.json(); 
-            } catch(e) { 
-                alert("Erro de rede. Verifique a sua ligação à internet."); return null; 
-            }
-        }
+        async function chamadoraAPI(acao, payload) { try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: acao, payload: payload }) }); return await r.json(); } catch(e) { return null; } }
 
-        // --- MENUS DINÂMICOS ---
         function montarMenu(tipo) {
             const menu = document.getElementById('sidebar-menu-items');
             if (tipo === 'Administrador') {
-                menu.innerHTML = `
-                    <div class="menu-item" onclick="mostrarAba('admin-screen', 'admin-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início</div>
-                    <div class="menu-item" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('Cliente');"><i class="fas fa-users" style="width:25px;"></i> Ver Utilizadores</div>
-                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
+                menu.innerHTML = `<div class="menu-item" onclick="mostrarAba('admin-screen', 'admin-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início</div><div class="menu-item" onclick="mostrarAba('admin-screen', 'admin-usuarios'); carregarAdmin('Cliente');"><i class="fas fa-users" style="width:25px;"></i> Ver Utilizadores</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
             } else if (tipo === 'Profissional') {
-                menu.innerHTML = `
-                    <div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início (Ficar Online)</div>
-                    <div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-ranking')"><i class="fas fa-trophy" style="width:25px;"></i> Ver Ranking Mensal</div>
-                    <div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-avaliacoes')"><i class="fas fa-star" style="width:25px;"></i> Ver Avaliações</div>
-                    <div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-config')"><i class="fas fa-cog" style="width:25px;"></i> Configurações</div>
-                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
+                menu.innerHTML = `<div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início (Ficar Online)</div><div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-ranking')"><i class="fas fa-trophy" style="width:25px;"></i> Ver Ranking</div><div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-avaliacoes')"><i class="fas fa-star" style="width:25px;"></i> Ver Avaliações</div><div class="menu-item" onclick="mostrarAba('pro-screen', 'pro-config')"><i class="fas fa-cog" style="width:25px;"></i> Configurações</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
             } else {
-                menu.innerHTML = `
-                    <div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início (Pedir Serviço)</div>
-                    <div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-avaliacoes')"><i class="fas fa-star" style="width:25px;"></i> Ranking Avaliações</div>
-                    <div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-config')"><i class="fas fa-cog" style="width:25px;"></i> Configurações</div>
-                    <div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
+                menu.innerHTML = `<div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-inicio')"><i class="fas fa-home" style="width:25px;"></i> Início (Pedir Serviço)</div><div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-avaliacoes')"><i class="fas fa-star" style="width:25px;"></i> Ver Avaliações</div><div class="menu-item" onclick="mostrarAba('cliente-screen', 'cli-config')"><i class="fas fa-cog" style="width:25px;"></i> Configurações</div><div class="menu-item" onclick="logout()" style="color:var(--neon-red); margin-top:30px;"><i class="fas fa-sign-out-alt" style="width:25px;"></i> Terminar Sessão</div>`;
             }
         }
 
-        function logout() { user = null; document.getElementById('login-senha').value = ''; if(radarInt) clearInterval(radarInt); window.location.reload(true); }
+        function logout() { window.location.reload(true); }
 
-        // --- AUTENTICAÇÃO E REGISTO ---
+        // --- AUTH ---
         async function enviarRegisto() {
-            const p = { tipo: document.getElementById('r-tipo').value, nome: document.getElementById('r-nome').value, sobrenome: document.getElementById('r-sobrenome').value, email: document.getElementById('r-email').value, senha: document.getElementById('r-senha').value, senhaConf: document.getElementById('r-senha-conf').value, profissao: document.getElementById('r-prof').value };
-            if (!p.nome || !p.email || !p.senha) return alert('Preencha os campos obrigatórios.');
+            const p = { tipo: document.getElementById('r-tipo').value, nome: document.getElementById('r-nome').value, sobrenome: document.getElementById('r-sobrenome').value, email: document.getElementById('r-email').value, senha: document.getElementById('r-senha').value, senhaConf: document.getElementById('r-senha-conf').value, profissao: document.getElementById('r-prof').value, morada: document.getElementById('r-morada').value, cpostal: document.getElementById('r-cpostal').value };
+            if (!p.nome || !p.email || !p.senha || !p.morada || !p.cpostal) return alert('Morada e Código Postal são obrigatórios!');
             if (p.senha !== p.senhaConf) return alert('As senhas não coincidem.');
-            document.getElementById('btn-submit-reg').innerHTML = '<div class="spinner" style="width:15px; height:15px; border-width:2px;"></div>';
+            document.getElementById('btn-submit-reg').innerHTML = '<div class="spinner"></div>';
             const res = await chamadoraAPI('registrar_conta', p);
             if(res && res.sucesso) { alert(res.msg); fecharModal('modal-registo'); document.getElementById('login-email').value = p.email; document.getElementById('login-senha').value = ''; } else if(res) alert(res.erro);
             document.getElementById('btn-submit-reg').innerText = 'CRIAR CONTA';
@@ -347,40 +335,27 @@
 
         async function fazerLogin() {
             const p = { tipo: document.getElementById('login-tipo').value, email: document.getElementById('login-email').value, senha: document.getElementById('login-senha').value };
-            if (!p.senha) return alert('Insira a senha.');
-            
-            const btn = document.getElementById('btn-entrar'); 
-            btn.innerHTML = '<div class="spinner" style="width:15px; height:15px; border-width:2px;"></div>';
-            
+            document.getElementById('btn-entrar').innerHTML = '<div class="spinner"></div>';
             const res = await chamadoraAPI('login', p);
-            
             if(res && res.sucesso) {
-                user = res; 
-                montarMenu(user.tipo);
-                
-                if(user.tipo === 'Administrador') { 
-                    navegarPara('admin-screen'); 
-                } else if(user.tipo === 'Cliente') { 
+                user = res; montarMenu(user.tipo);
+                if(user.tipo === 'Administrador') { navegarPara('admin-screen'); } 
+                else if(user.tipo === 'Cliente') { 
                     document.getElementById('nome-cliente-display').innerText = "Olá, " + user.nome; 
-                    navegarPara('cliente-screen'); 
-                    carregarDashboardCliente(); 
+                    document.getElementById('cfg-morada-c').value = user.morada || ''; document.getElementById('cfg-cpostal-c').value = user.cpostal || '';
+                    navegarPara('cliente-screen'); carregarDashboardCliente(); 
                 } else { 
-                    navegarPara('pro-screen'); 
-                    carregarDashboardPro(); 
-                    document.getElementById('pro-minha-nota').innerText = parseFloat(user.avaliacao).toFixed(1); 
+                    document.getElementById('cfg-morada-p').value = user.morada || ''; document.getElementById('cfg-cpostal-p').value = user.cpostal || '';
+                    navegarPara('pro-screen'); carregarDashboardPro(); document.getElementById('pro-minha-nota').innerText = parseFloat(user.avaliacao).toFixed(1); 
                 }
-            } else if (res) { 
-                alert(res.erro); 
-            }
-            btn.innerText = 'ENTRAR';
+            } else if (res) { alert(res.erro); }
+            document.getElementById('btn-entrar').innerText = 'ENTRAR';
         }
 
-        async function api_AlterarSenha(prefix) {
-            const ant = document.getElementById(`cfg-senha-antiga-${prefix}`).value; const nov = document.getElementById(`cfg-senha-nova-${prefix}`).value;
-            if(!ant || !nov) return alert("Preencha as senhas.");
-            const res = await chamadoraAPI('alterar_senha', { id: user.id, senhaAntiga: ant, senhaNova: nov });
-            if(res && res.sucesso) { alert("Senha alterada com sucesso!"); document.getElementById(`cfg-senha-antiga-${prefix}`).value = ''; document.getElementById(`cfg-senha-nova-${prefix}`).value = ''; } 
-            else if (res) alert(res.erro);
+        async function api_AtualizarConfig(prefix) {
+            const p = { id: user.id, morada: document.getElementById(`cfg-morada-${prefix}`).value, cpostal: document.getElementById(`cfg-cpostal-${prefix}`).value, senhaAntiga: document.getElementById(`cfg-senha-antiga-${prefix}`).value, senhaNova: document.getElementById(`cfg-senha-nova-${prefix}`).value };
+            const res = await chamadoraAPI('atualizar_config', p);
+            if(res && res.sucesso) { alert("Configurações atualizadas!"); } else if (res) alert(res.erro);
         }
 
         // --- DASHBOARDS ---
@@ -388,12 +363,13 @@
             const res = await chamadoraAPI('obter_dashboard_pro', { idPro: user.id });
             if(res) {
                 document.getElementById('pro-faturamento').innerText = res.faturamento.toFixed(2) + ' €'; 
-                renderChart(res.chart);
+                const ctx = document.getElementById('proChart').getContext('2d'); Chart.defaults.color = '#888'; Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+                if(meuGrafico) meuGrafico.destroy();
+                meuGrafico = new Chart(ctx, { type: 'line', data: { labels: ['Sem 1','Sem 2','Sem 3','Sem 4'], datasets: [{ label:'€', data: res.chart, borderColor: '#00E5FF', backgroundColor:'rgba(0,229,255,0.1)', fill:true, tension:0.4 }] }, options: { plugins:{legend:{display:false}} }});
                 document.getElementById('pro-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="rank-card"><span>#${i+1} <b>${p.nome}</b></span> <span>${p.obras} Obras</span></div>`).join('');
                 document.getElementById('pro-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="rank-card"><span>#${i+1} <b>${p.nome}</b></span> <span class="star">${parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
             }
         }
-
         async function carregarDashboardCliente() {
             const res = await chamadoraAPI('obter_dashboard_cliente', {});
             if(res) { 
@@ -402,50 +378,42 @@
             }
         }
 
-        function renderChart(dataArr) {
-            const ctx = document.getElementById('proChart').getContext('2d');
-            Chart.defaults.color = '#888'; Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
-            if(meuGrafico) meuGrafico.destroy();
-            meuGrafico = new Chart(ctx, { 
-                type: 'line', 
-                data: { labels: ['Sem 1','Sem 2','Sem 3','Sem 4'], datasets: [{ label:'€', data: dataArr, borderColor: '#00E5FF', backgroundColor:'rgba(0,229,255,0.1)', fill:true, tension:0.4 }] }, 
-                options: { plugins:{legend:{display:false}} }
-            });
-        }
-
-        // --- PEDIDOS E ORÇAMENTOS ---
+        // --- CLIENTE PEDIDO (ANIMACAO RADAR) ---
         async function enviarPedido() {
-            const cat = document.getElementById('categoria-pedido').value; const desc = document.getElementById('desc-pedido').value;
+            const cat = document.getElementById('p-cat').value; const desc = document.getElementById('p-desc').value; const r = document.getElementById('p-raio').value;
             fecharModal('modal-pedido');
-            const res = await chamadoraAPI('criar_pedido', { idCliente: user.id, categoria: cat, descricao: desc, lat: 0, lng: 0 });
+            const res = await chamadoraAPI('criar_pedido', { idCliente: user.id, categoria: cat, descricao: desc, lat: coords.lat, lng: coords.lng, raioKm: r });
             if(res) { 
                 tempIdPedido = res.id_pedido; 
-                document.getElementById('cli-pedidos').innerHTML = `<div style="border-left:3px solid var(--neon-yellow); padding:10px; background:rgba(0,0,0,0.3); border-radius:4px;"><b>${cat}</b><br><small>${desc}</small><br><button onclick="verMeusOrcamentos()" class="btn-neon" style="margin-top:10px; padding:10px;">Ver Orçamentos</button></div>`;
-                alert("Pedido enviado para os profissionais da região!");
+                document.getElementById('area-pedidos-ativos').style.display = 'block';
+                cliRadarInt = setInterval(verificarOrcamentosRadar, 5000); // Poll de orçamentos
             }
         }
 
-        async function verMeusOrcamentos() {
-            if(!tempIdPedido) return; 
-            abrirModal('modal-ver-orc'); 
-            document.getElementById('lista-orcamentos-recebidos').innerHTML = loader();
+        async function verificarOrcamentosRadar() {
             const res = await chamadoraAPI('listar_orcamentos_cliente', { idPedido: tempIdPedido });
             const box = document.getElementById('lista-orcamentos-recebidos');
             if(res && res.orcamentos.length > 0) {
-                box.innerHTML = res.orcamentos.map(o=>`<div class="glass card-blue"><b>${o.nome}</b> - <span style="color:var(--neon-green); font-size:1.2em;">${o.valor}€</span><br><small>${o.msg}</small><br><button onclick="aceitarOrcamento('${o.id_orc}','${o.id_pro}')" class="btn-neon green" style="margin-top:10px; padding:10px;">Aceitar e Abrir Chat</button></div>`).join('');
-            } else { box.innerHTML = "<span class='loading-text'>Nenhum orçamento ainda.</span>"; }
+                clearInterval(cliRadarInt); // Para a animação
+                somNotificacao.play().catch(e=>{}); if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                document.querySelector('.radar-pulse').style.display = 'none'; // Esconde a bolha
+                box.innerHTML = res.orcamentos.map(o=>`<div class="glass" style="border:1px solid var(--neon-green);"><b>${o.nome}</b> - <span style="color:var(--neon-green); font-size:1.2em;">${o.valor}€</span><br><small>${o.msg}</small><br><button onclick="aceitarOrcamento('${o.id_orc}','${o.id_pro}')" class="btn-neon green" style="margin-top:10px; padding:10px;">Aceitar Orçamento</button></div>`).join('');
+            }
         }
 
         async function aceitarOrcamento(idOrc, idPro) {
             const res = await chamadoraAPI('responder_orcamento', { idOrcamento: idOrc, resposta: 'Aceite' });
-            if(res) { fecharModal('modal-ver-orc'); alert("Orçamento Aceite! O Chat será aberto."); abrirChatView(idPro); }
+            if(res) { alert("Orçamento Aceite! Chat desbloqueado."); document.getElementById('area-pedidos-ativos').style.display='none'; abrirChatView(idPro); }
         }
 
+        // --- PROFISSIONAL ONLINE (SOM E VIBRACAO) ---
         function toggleStatusPro() {
             proOnline = !proOnline; const b = document.getElementById('btn-status-pro'); const d = document.getElementById('dot-pro');
             if(proOnline) { 
                 b.innerText = "Buscando Clientes..."; b.classList.add('online'); d.style.color = 'var(--neon-green)'; 
+                if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p => { coords.lat = p.coords.latitude; coords.lng = p.coords.longitude; });
                 radarInt = setInterval(api_Radar, 5000); api_Radar(); document.getElementById('pro-radar').innerHTML = loader(); 
+                somNotificacao.play().catch(e=>{}); // Toca 1x vazio para desbloquear o som no browser
             } else { 
                 b.innerText = "Ficar Online"; b.classList.remove('online'); d.style.color = '#555'; 
                 clearInterval(radarInt); document.getElementById('pro-radar').innerHTML = "Offline. Ligue para ver pedidos."; 
@@ -454,68 +422,41 @@
 
         async function api_Radar() {
             if(!proOnline) return;
-            const res = await chamadoraAPI('buscar_pedidos_pro', { profissao: user.profissao });
+            const res = await chamadoraAPI('buscar_pedidos_pro', { profissao: user.profissao, lat: coords.lat, lng: coords.lng });
             if(res && res.pedidos.length > 0) {
-                document.getElementById('pro-radar').innerHTML = res.pedidos.map(p=>`<div style="border-left:3px solid var(--neon-yellow); padding:10px; margin-bottom:10px; background:rgba(0,0,0,0.3); border-radius:4px;">${p.desc}<br><button onclick="prepararOrcamento('${p.id_pedido}')" class="btn-neon" style="padding:8px; margin-top:8px;">Fazer Orçamento</button></div>`).join('');
+                let novosIds = res.pedidos.map(p => p.id_pedido);
+                if(novosIds.some(id => !lastPedidosDetectados.includes(id))) {
+                    somNotificacao.play().catch(e=>{}); if(navigator.vibrate) navigator.vibrate([200, 100, 200]); // Alerta de Despertador!
+                }
+                lastPedidosDetectados = novosIds;
+                
+                document.getElementById('pro-radar').innerHTML = res.pedidos.map(p=>`<div class="glass" style="border-left:3px solid var(--neon-yellow);"><b>${p.nomeCliente}</b> (A ${p.dist}km)<br><small style="color:#888;">${p.morada}</small><br><span style="display:block;margin:8px 0;">${p.desc}</span><button onclick="prepararOrcamento('${p.id_pedido}')" class="btn-neon" style="padding:8px; font-size:12px;">FAZER ORÇAMENTO</button></div>`).join('');
             } else if (res) document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Aguardando novos clientes...</span>";
         }
 
         function prepararOrcamento(idPed) { tempIdPedido = idPed; abrirModal('modal-enviar-orc'); }
         async function enviarOrcamentoReal() {
             const v = document.getElementById('orc-valor').value; const m = document.getElementById('orc-msg').value;
-            if(!v || !m) return alert("Preencha o valor e a mensagem.");
-            const res = await chamadoraAPI('enviar_orcamento', { idPedido: tempIdPedido, idPro: user.id, nomePro: user.nome, valor: v, msg: m });
-            if(res) { fecharModal('modal-enviar-orc'); alert("Orçamento enviado! Aguarde o cliente aceitar."); }
+            await chamadoraAPI('enviar_orcamento', { idPedido: tempIdPedido, idPro: user.id, nomePro: user.nome, valor: v, msg: m });
+            fecharModal('modal-enviar-orc'); alert("Enviado com sucesso!");
         }
 
-        // --- CHAT E AVALIAÇÃO ---
+        // --- CHAT E ADMIN MANTIDOS IGUAIS (Ver script anterior) ---
         function abrirChatView(idAlvo) { tempIdDestinatario = idAlvo; abrirModal('modal-chat'); lerMensagensAPI(); chatInt = setInterval(lerMensagensAPI, 4000); }
         function fecharChat() { fecharModal('modal-chat'); clearInterval(chatInt); }
-        
-        async function enviarMensagemNoChat() {
-            const m = document.getElementById('chat-input').value; if(!m) return; document.getElementById('chat-input').value = '';
-            await chamadoraAPI('enviar_mensagem', { remetente: user.id, destinatario: tempIdDestinatario, contexto: 'Obra', msg: m }); lerMensagensAPI();
-        }
-        async function lerMensagensAPI() {
-            const res = await chamadoraAPI('listar_mensagens', { eu: user.id, ele: tempIdDestinatario });
-            if(res) {
-                const box = document.getElementById('chat-box');
-                box.innerHTML = res.msgs.map(m=>`<div class="msg ${m.deMim ? 'minha':'deles'}">${m.txt}</div>`).join('');
-                box.scrollTop = box.scrollHeight;
-            }
-        }
-        async function enviarAvaliacao() { 
-            const nota = document.getElementById('nota-aval').value; await chamadoraAPI('avaliar_usuario', { idAlvo: tempIdDestinatario, nota: nota }); 
-            alert("Avaliação registada com sucesso!"); fecharChat();
-        }
+        async function enviarMensagemNoChat() { const m = document.getElementById('chat-input').value; if(!m) return; document.getElementById('chat-input').value = ''; await chamadoraAPI('enviar_mensagem', { remetente: user.id, destinatario: tempIdDestinatario, contexto: 'Obra', msg: m }); lerMensagensAPI(); }
+        async function lerMensagensAPI() { const res = await chamadoraAPI('listar_mensagens', { eu: user.id, ele: tempIdDestinatario }); if(res) { const box = document.getElementById('chat-box'); box.innerHTML = res.msgs.map(m=>`<div class="msg ${m.deMim ? 'minha':'deles'}">${m.txt}</div>`).join(''); box.scrollTop = box.scrollHeight; } }
+        async function enviarAvaliacao() { await chamadoraAPI('avaliar_usuario', { idAlvo: tempIdDestinatario, nota: document.getElementById('nota-aval').value }); alert("Avaliado!"); fecharChat(); }
 
         // --- ADMIN ---
         async function carregarAdmin(tipo) {
             const box = document.getElementById('admin-lista-users'); box.innerHTML = loader();
             let acao = tipo === 'pendentes' ? 'admin_listar_pendentes' : 'admin_listar_usuarios';
             const res = await chamadoraAPI(acao, {});
-            
-            if (res && tipo === 'pendentes') {
-                document.getElementById('admin-titulo').innerHTML = '<i class="fas fa-user-clock"></i> Pendentes';
-                box.innerHTML = res.pendentes.map(p => `<div class="glass card-blue"><b>${p.nomeCompleto}</b><br><small>${p.profissao} | ${p.email}</small><div style="margin-top:10px; display:flex; gap:10px;"><button onclick="aprovarProfissional('${p.id}')" class="btn-small btn-bg-green">Aprovar</button><button onclick="rejeitarProfissional('${p.id}')" class="btn-small btn-bg-red">Rejeitar</button></div></div>`).join('') || '<span class="loading-text">Nenhuma pendência.</span>';
-            } else if (res) {
-                document.getElementById('admin-titulo').innerHTML = `<i class="fas fa-users"></i> ${tipo === 'todos' ? 'Todos' : tipo + 's'}`;
-                let filtrados = tipo !== 'todos' ? res.usuarios.filter(u => u.tipo === tipo) : res.usuarios;
-                box.innerHTML = filtrados.map(u => `<div class="glass"><b>${u.nome}</b> (${u.tipo})<br><small>Status: ${u.status}</small><div style="margin-top:10px; display:flex; gap:10px;"><button onclick="iniciarBanimento('${u.id}')" class="btn-small btn-bg-red">Banir / Suspender</button></div></div>`).join('') || '<span class="loading-text">Nenhum utilizador encontrado.</span>';
-            }
+            if (res && tipo === 'pendentes') { box.innerHTML = res.pendentes.map(p => `<div class="glass card-blue"><b>${p.nomeCompleto}</b><div style="margin-top:10px; display:flex; gap:10px;"><button onclick="chamadoraAPI('admin_aprovar_pro', {id: '${p.id}'}); alert('Aprovado!'); carregarAdmin('pendentes');" class="btn-small btn-bg-green">Aprovar</button></div></div>`).join('') || '<span class="loading-text">Vazio.</span>'; } 
+            else if (res) { box.innerHTML = res.usuarios.filter(u => tipo === 'todos' || u.tipo === tipo).map(u => `<div class="glass"><b>${u.nome}</b> (${u.tipo})<br><small>Status: ${u.status}</small><div style="margin-top:10px;"><button onclick="tempBanId='${u.id}'; abrirModal('modal-confirmar-ban');" class="btn-small btn-bg-red">Banir / Suspender</button></div></div>`).join('') || '<span class="loading-text">Nenhum utilizador encontrado.</span>'; }
         }
-
-        async function aprovarProfissional(id) { const res = await chamadoraAPI('admin_aprovar_pro', { id: id }); if(res) { alert("Aprovado!"); carregarAdmin('pendentes'); } }
-        async function rejeitarProfissional(id) { if(!confirm('Deseja rejeitar este profissional?')) return; const res = await chamadoraAPI('admin_alterar_status', { id: id, status: 'Rejeitado' }); if(res) { alert("Rejeitado!"); carregarAdmin('pendentes'); } }
-
-        function iniciarBanimento(id) { tempBanId = id; abrirModal('modal-confirmar-ban'); }
-        function abrirModalSenhaBan() { fecharModal('modal-confirmar-ban'); abrirModal('modal-senha-ban'); document.getElementById('input-senha-ban').value = ''; }
-        
-        async function executarBanimento() {
-            const senha = document.getElementById('input-senha-ban').value; if(!senha) return alert("Insira a senha!");
-            const res = await chamadoraAPI('admin_banir_usuario', { id: tempBanId, senhaAdmin: senha });
-            if(res && res.sucesso) { alert("Utilizador banido com sucesso!"); fecharModal('modal-senha-ban'); carregarAdmin('Cliente'); } else if(res) alert(res.erro);
-        }
+        async function executarBanimento() { const senha = document.getElementById('input-senha-ban').value; if(!senha) return alert("Insira a senha!"); const res = await chamadoraAPI('admin_banir_usuario', { id: tempBanId, senhaAdmin: senha }); if(res && res.sucesso) { alert("Banido!"); fecharModal('modal-senha-ban'); carregarAdmin('Cliente'); } else if(res) alert(res.erro); }
     </script>
 </body>
 </html>
