@@ -14,22 +14,21 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- LEAFLET MAPS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <!-- UI ATUALIZADA (BLUE SLATE / NEON HOVER) -->
     <style>
         :root { 
-            --bg-dark: #0A0F1A;     /* Fundo Profundo Estilo Painel Auto */
-            --bg-panel: #131B2A;    /* Fundo dos Cards */
-            --border-color: #1F2937;/* Borda Subtil */
-            --neon-yellow: #FACC15; /* Amarelo menos agressivo */
-            --neon-green: #10B981;  /* Verde Sucesso */
-            --neon-blue: #0EA5E9;   /* Azul Elétrico */
-            --neon-red: #EF4444;    /* Vermelho Alerta */
-            --text-main: #F9FAFB;   /* Branco Cinza */
-            --text-muted: #9CA3AF;  /* Cinza Secundário */
+            --bg-dark: #0A0F1A;     
+            --bg-panel: #131B2A;    
+            --border-color: #1F2937;
+            --neon-yellow: #FACC15; 
+            --neon-green: #10B981;  
+            --neon-blue: #0EA5E9;   
+            --neon-red: #EF4444;    
+            --text-main: #F9FAFB;   
+            --text-muted: #9CA3AF;  
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; touch-action: pan-y; }
         body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
@@ -41,22 +40,9 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s; }
 
-        /* CARDS CLICKAVEIS (EFEITO HOVER GROW + NEON SUBTIL) */
-        .info-card {
-            background-color: var(--bg-panel);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 15px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-        }
-        .info-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 15px rgba(14, 165, 233, 0.15); /* Néon Azul */
-            border-color: rgba(14, 165, 233, 0.3);
-        }
+        .info-card { background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 15px; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
+        .info-card:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(14, 165, 233, 0.15); border-color: rgba(14, 165, 233, 0.3); }
 
-        /* BADGES (Etiquetas de Status) */
         .badge-green { color: var(--neon-green); border: 1px solid var(--neon-green); background: rgba(16, 185, 129, 0.1); padding: 2px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
         .badge-yellow { color: var(--neon-yellow); border: 1px solid var(--neon-yellow); background: rgba(250, 204, 21, 0.1); padding: 2px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
         
@@ -77,11 +63,9 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-text { color: var(--text-muted); text-align: center; padding: 20px; font-style: italic; display:block; }
 
-        /* Animação Radar */
         .radar-pulse { width: 80px; height: 80px; background: var(--neon-blue); border-radius: 50%; margin: 30px auto; animation: pulse-ring 2s infinite; }
         @keyframes pulse-ring { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(14,165,233, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 40px rgba(14,165,233, 0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(14,165,233, 0); } }
 
-        /* Gestos Swipe */
         .swipeable { transition: transform 0.2s ease-out, opacity 0.3s; position: relative; }
         .swipeable::after { content: "← Deslize para rejeitar"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: rgba(255,255,255,0.2); pointer-events: none; }
 
@@ -300,16 +284,18 @@
 
     <!-- ================== LÓGICA JAVASCRIPT ================== -->
     <script>
+        // O SEU LINK EXATO DO APPS SCRIPT:
         const API_URL = 'https://script.google.com/macros/s/AKfycbwECa674WOxJLt_vT8vR7SlRsup45jMBAxVl8PLMn1oLAxwxD9tm8gYng8ZTpfTKfYH/exec'; 
         
         let user = null; let proOnline = false; let radarInt, chatInt, cliRadarInt, cliTimerInt; 
         let tempIdPedido = null; let tempIdDestinatario = null; let meuGrafico = null; let tempBanId = null;
         let map, mapCircle; let coords = {lat: 39.3999, lng: -8.2245}; 
-        let lastPedidosDetectados = [];
-        let rejeitados = []; 
+        let lastPedidosDetectados = []; let rejeitados = []; 
         
+        // PONTO 1 E 2: Audio Loop Despertador
         const somNotificacao = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-        somNotificacao.loop = true; 
+        somNotificacao.loop = true; somNotificacao.load();
+        
         function pararAlarme() { somNotificacao.pause(); somNotificacao.currentTime = 0; }
 
         if ('caches' in window) { caches.keys().then((names) => { names.forEach(name => { caches.delete(name); }); }); }
@@ -381,6 +367,7 @@
         }
 
         async function chamadoraAPI(acao, payload) { try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: acao, payload: payload }) }); return await r.json(); } catch(e) { return null; } }
+
         function logout() { window.location.reload(true); }
 
         // --- AUTH & RECUPERAÇÃO DE SESSÃO CLIENTE ---
@@ -418,23 +405,17 @@
                     } 
                     else if(user.tipo === 'Cliente') { 
                         document.getElementById('nome-cliente-display').innerText = "Olá, " + (user.nome ? user.nome.split(' ')[0] : 'Cliente'); 
-                        document.getElementById('cfg-morada-c').value = user.morada || ''; 
-                        document.getElementById('cfg-cpostal-c').value = user.cpostal || '';
-                        navegarPara('cliente-screen'); 
-                        carregarDashboardCliente(); 
-                        api_BuscarPedidoAtivoCliente(); // BUG CORRIGIDO: Volta a pôr o radar na tela se F5 foi dado!
+                        document.getElementById('cfg-morada-c').value = user.morada || ''; document.getElementById('cfg-cpostal-c').value = user.cpostal || '';
+                        navegarPara('cliente-screen'); carregarDashboardCliente(); 
+                        api_BuscarPedidoAtivoCliente();
                     } 
                     else { 
-                        document.getElementById('cfg-morada-p').value = user.morada || ''; 
-                        document.getElementById('cfg-cpostal-p').value = user.cpostal || '';
-                        navegarPara('pro-screen'); 
-                        carregarDashboardPro(); 
+                        document.getElementById('cfg-morada-p').value = user.morada || ''; document.getElementById('cfg-cpostal-p').value = user.cpostal || '';
+                        navegarPara('pro-screen'); carregarDashboardPro(); 
                         let nota = parseFloat(user.avaliacao); if(isNaN(nota)) nota = 0;
                         document.getElementById('pro-minha-nota').innerText = (nota === 0) ? "0.0" : nota.toFixed(1); 
                     }
-                } else { 
-                    alert(res ? res.erro : "Credenciais Incorretas."); 
-                }
+                } else { alert(res ? res.erro : "Credenciais Incorretas."); }
                 btn.innerText = 'ENTRAR';
             } catch (error) { alert("Erro de conexão."); btn.innerText = 'ENTRAR'; }
         }
@@ -468,32 +449,20 @@
             }
         }
 
-        // --- CLIENTE PEDIDO (TIMEOUT 3 MIN E RECUPERAÇÃO) ---
+        // --- CLIENTE PEDIDO (INTERFACE OTIMISTA - INSTANTÂNEA) ---
         async function enviarPedido() {
             const cat = document.getElementById('p-cat').value; const desc = document.getElementById('p-desc').value; const r = document.getElementById('p-raio').value;
             fecharModal('modal-pedido');
-            const res = await chamadoraAPI('criar_pedido', { idCliente: user.id, categoria: cat, descricao: desc, lat: coords.lat, lng: coords.lng, raioKm: r });
-            if(res) { 
-                tempIdPedido = res.id_pedido; 
-                iniciarRadarClienteUI(180);
-            }
-        }
-
-        async function api_BuscarPedidoAtivoCliente() {
-            const res = await chamadoraAPI('buscar_pedido_ativo_cliente', { idCliente: user.id });
-            if(res && res.ativo) {
-                tempIdPedido = res.id_pedido;
-                iniciarRadarClienteUI(res.tempoRestante);
-            }
-        }
-
-        function iniciarRadarClienteUI(tempoRestante) {
+            
+            // 1. UI INSTANTÂNEA PARA O CLIENTE
             document.getElementById('area-pedidos-ativos').style.display = 'block';
             document.getElementById('radar-pulse-anim').style.display = 'block';
-            document.getElementById('lista-orcamentos-recebidos').innerHTML = '';
+            document.getElementById('lista-orcamentos-recebidos').innerHTML = '<span class="loading-text" style="color:var(--neon-yellow);">A enviar para a rede de profissionais...</span>';
             
             clearInterval(cliTimerInt); clearInterval(cliRadarInt);
-            let tempo = tempoRestante;
+            let tempo = 180;
+            document.getElementById('timer-pedido').innerText = "03:00";
+            document.getElementById('timer-pedido').style.color = "var(--text-main)";
             
             cliTimerInt = setInterval(() => {
                 tempo--;
@@ -505,7 +474,39 @@
                 }
             }, 1000);
 
-            cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); 
+            // 2. BACKEND EM BACKGROUND
+            const res = await chamadoraAPI('criar_pedido', { idCliente: user.id, categoria: cat, descricao: desc, lat: coords.lat, lng: coords.lng, raioKm: r });
+            if(res) { 
+                tempIdPedido = res.id_pedido; 
+                document.getElementById('lista-orcamentos-recebidos').innerHTML = ''; // Limpa a mensagem "A enviar..."
+                cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); // Fica à escuta de respostas
+            }
+        }
+
+        async function api_BuscarPedidoAtivoCliente() {
+            const res = await chamadoraAPI('buscar_pedido_ativo_cliente', { idCliente: user.id });
+            if(res && res.ativo) {
+                tempIdPedido = res.id_pedido;
+                
+                document.getElementById('area-pedidos-ativos').style.display = 'block';
+                document.getElementById('radar-pulse-anim').style.display = 'block';
+                document.getElementById('lista-orcamentos-recebidos').innerHTML = '';
+                
+                clearInterval(cliTimerInt); clearInterval(cliRadarInt);
+                let tempo = res.tempoRestante;
+                
+                cliTimerInt = setInterval(() => {
+                    tempo--;
+                    let m = Math.floor(tempo / 60).toString().padStart(2, '0'); let s = (tempo % 60).toString().padStart(2, '0');
+                    document.getElementById('timer-pedido').innerText = `${m}:${s}`;
+                    if(tempo <= 0) { 
+                        clearInterval(cliTimerInt); clearInterval(cliRadarInt);
+                        document.getElementById('area-pedidos-ativos').innerHTML = `<h4 style="color:var(--neon-red); margin-bottom:10px;">Tempo Esgotado</h4><p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Nenhum profissional respondeu a tempo.</p><button onclick="window.location.reload();" class="btn-neon">Tentar de Novo</button>`;
+                    }
+                }, 1000);
+
+                cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); 
+            }
         }
 
         async function verificarOrcamentosRadar() {
@@ -514,7 +515,7 @@
             if(res && res.orcamentos.length > 0) {
                 clearInterval(cliRadarInt); clearInterval(cliTimerInt);
                 document.getElementById('radar-pulse-anim').style.display = 'none';
-                document.getElementById('timer-pedido').innerText = "Orçamentos Recebidos!"; document.getElementById('timer-pedido').style.color = "var(--neon-green)";
+                document.getElementById('timer-pedido').innerText = "Propostas Recebidas!"; document.getElementById('timer-pedido').style.color = "var(--neon-green)";
                 
                 somNotificacao.play().then(()=>setTimeout(()=>pararAlarme(),1500)).catch(e=>{}); if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 
@@ -533,8 +534,14 @@
             if(proOnline) { 
                 b.innerText = "A Buscar no Radar..."; b.classList.add('green'); b.classList.remove('yellow'); d.style.color = 'var(--neon-green)'; 
                 if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p => { coords.lat = p.coords.latitude; coords.lng = p.coords.longitude; });
+                
+                // DESBLOQUEIO DE AUDIO IMEDIATO COM MUTING TEMPORÁRIO
+                somNotificacao.volume = 0;
+                somNotificacao.play().then(() => {
+                    somNotificacao.pause(); somNotificacao.currentTime = 0; somNotificacao.volume = 1;
+                }).catch(e=>{}); 
+
                 radarInt = setInterval(api_Radar, 5000); api_Radar(); document.getElementById('pro-radar').innerHTML = `<div class="spinner"></div>`; 
-                somNotificacao.play().then(() => pararAlarme()).catch(e=>{}); 
             } else { 
                 b.innerText = "Ligar Radar de Obras"; b.classList.remove('green'); b.classList.add('yellow'); d.style.color = '#555'; 
                 clearInterval(radarInt); document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Offline.</span>"; 
@@ -600,7 +607,7 @@
             let acao = tipo === 'pendentes' ? 'admin_listar_pendentes' : 'admin_listar_usuarios';
             const res = await chamadoraAPI(acao, {});
             if (res && tipo === 'pendentes') { box.innerHTML = res.pendentes.map(p => `<div class="info-card"><b>${p.nomeCompleto}</b><br><small style="color:var(--text-muted);">${p.profissao} | ${p.email}</small><div style="margin-top:10px; display:flex; gap:10px;"><button onclick="chamadoraAPI('admin_aprovar_pro', {id: '${p.id}'}); alert('Aprovado!'); carregarAdmin('pendentes');" class="btn-small btn-bg-green" style="flex:1;">Aprovar</button></div></div>`).join('') || '<span class="loading-text">Nenhuma conta pendente.</span>'; } 
-            else if (res) { document.getElementById('admin-titulo').innerText = `${tipo === 'todos' ? 'Todos' : tipo + 's'}`; box.innerHTML = res.usuarios.filter(u => tipo === 'todos' || u.tipo === tipo).map(u => `<div class="info-card"><b>${u.nome}</b> <span class="badge-yellow" style="font-size:0.65rem;">${u.tipo}</span><br><small style="color:var(--text-muted);">Status: ${u.status}</small><div style="margin-top:10px;"><button onclick="tempBanId='${u.id}'; abrirModal('modal-confirmar-ban');" class="btn-small btn-bg-red" style="width:100%;">Banir</button></div></div>`).join('') || '<span class="loading-text">Vazio.</span>'; }
+            else if (res) { document.getElementById('admin-titulo').innerText = `${tipo === 'todos' ? 'Todos' : tipo + 's'}`; box.innerHTML = res.usuarios.filter(u => tipo === 'todos' || u.tipo === tipo).map(u => `<div class="info-card"><b>${u.nome}</b> <span class="badge-yellow" style="font-size:0.65rem;">${u.tipo}</span><br><small style="color:var(--text-muted);">Status: ${u.status}</small><div style="margin-top:10px;"><button onclick="tempBanId='${u.id}'; abrirModal('modal-confirmar-ban');" class="btn-small btn-bg-red" style="width:100%;">Banir / Suspender</button></div></div>`).join('') || '<span class="loading-text">Vazio.</span>'; }
         }
         async function executarBanimento() { const senha = document.getElementById('input-senha-ban').value; if(!senha) return alert("Insira a senha!"); const res = await chamadoraAPI('admin_banir_usuario', { id: tempBanId, senhaAdmin: senha }); if(res && res.sucesso) { alert("Banido!"); fecharModal('modal-senha-ban'); carregarAdmin('Cliente'); } else if(res) alert(res.erro); }
     </script>
