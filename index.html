@@ -17,7 +17,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- UI ATUALIZADA (BLUE SLATE / NEON HOVER) -->
     <style>
         :root { 
             --bg-dark: #0A0F1A;     
@@ -194,6 +193,12 @@
                 <canvas id="proChart" height="150" style="margin-top:15px;"></canvas>
             </div>
             
+            <!-- SECÇÃO DE OBRAS EM ANDAMENTO -->
+            <h4 style="color:var(--neon-blue); text-transform:uppercase; font-size:12px; margin-bottom:10px; margin-top:20px;"><i class="fas fa-hammer"></i> Obras em Andamento</h4>
+            <div id="pro-obras-andamento" style="margin-bottom:20px;">
+                <span class="loading-text" style="font-size:13px;">Nenhuma obra ativa de momento.</span>
+            </div>
+
             <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; margin-bottom:10px; margin-top:10px;">Oportunidades em Aberto</h4>
             <div id="pro-radar" style="overflow-x:hidden;">
                 <span class="loading-text">Clique em ligar radar para procurar.</span>
@@ -229,13 +234,21 @@
     </div>
 
     <!-- ================== MODAIS ================== -->
-    <!-- Modal Confirmação de Ban -->
+    <!-- Modal Finalizar Obra (Profissional) -->
+    <div id="modal-finalizar" class="modal"><div class="modal-content" style="text-align:center;">
+        <h3 style="color:var(--neon-green); margin-bottom:15px;"><i class="fas fa-check-circle"></i> Concluir Obra</h3>
+        <p id="modal-finalizar-texto" style="margin-bottom:20px; color:#fff; font-size:14px; line-height:1.5;"></p>
+        <div style="display:flex; gap:10px;">
+            <button onclick="executarFinalizacaoObra()" class="btn-neon green" style="padding:15px; flex:1;">FINALIZAR E RECEBER</button>
+            <button onclick="fecharModal('modal-finalizar')" style="background:var(--border-color); padding:15px; flex:1; color:#fff;">VOLTAR</button>
+        </div>
+    </div></div>
+
     <div id="modal-confirmar-ban" class="modal"><div class="modal-content" style="text-align:center;">
         <h3 style="color:var(--neon-red); margin-bottom:15px;"><i class="fas fa-exclamation-triangle"></i> Atenção</h3><p style="margin-bottom:20px; color:#fff;">Deseja banir este utilizador?</p>
         <div style="display:flex; gap:10px;"><button onclick="abrirModalSenhaBan()" class="btn-bg-red" style="padding:15px; flex:1; color:#fff;">SIM, BANIR</button><button onclick="fecharModal('modal-confirmar-ban')" style="background:var(--border-color); padding:15px; flex:1; color:#fff;">CANCELAR</button></div>
     </div></div>
     
-    <!-- Modal Senha do Admin para Ban -->
     <div id="modal-senha-ban" class="modal"><div class="modal-content">
         <span class="close" onclick="fecharModal('modal-senha-ban')">&times;</span>
         <h3 style="color:var(--neon-red); margin-bottom:15px;">Segurança</h3><p style="font-size:14px; color:var(--text-muted); margin-bottom:15px;">Insira a senha de administrador.</p>
@@ -251,7 +264,6 @@
         <input id="r-senha" type="password" placeholder="Senha"><input id="r-senha-conf" type="password" placeholder="Confirmar Senha"><button onclick="enviarRegisto()" id="btn-submit-reg" class="btn-neon">Finalizar</button>
     </div></div>
 
-    <!-- PONTO 5: Raio de 100km -->
     <div id="modal-pedido" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modal-pedido')">&times;</span>
         <h3 style="color:var(--text-main); margin-bottom:15px;">Novo Pedido</h3>
         <label style="color:var(--text-muted); font-size:12px; text-transform:uppercase;">Categoria</label>
@@ -284,18 +296,15 @@
 
     <!-- ================== LÓGICA JAVASCRIPT ================== -->
     <script>
-        // O SEU LINK EXATO DO APPS SCRIPT:
         const API_URL = 'https://script.google.com/macros/s/AKfycbwECa674WOxJLt_vT8vR7SlRsup45jMBAxVl8PLMn1oLAxwxD9tm8gYng8ZTpfTKfYH/exec'; 
         
-        let user = null; let proOnline = false; let radarInt, chatInt, cliRadarInt, cliTimerInt; 
-        let tempIdPedido = null; let tempIdDestinatario = null; let meuGrafico = null; let tempBanId = null;
+        let user = null; let proOnline = false; let radarInt, chatInt, cliRadarInt, cliTimerInt, obraInt; 
+        let tempIdPedido = null; let tempIdDestinatario = null; let meuGrafico = null; let tempBanId = null; let tempObraFinalizarId = null;
         let map, mapCircle; let coords = {lat: 39.3999, lng: -8.2245}; 
         let lastPedidosDetectados = []; let rejeitados = []; 
         
-        // PONTO 1 E 2: Audio Loop Despertador
         const somNotificacao = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-        somNotificacao.loop = true; somNotificacao.load();
-        
+        somNotificacao.loop = true; 
         function pararAlarme() { somNotificacao.pause(); somNotificacao.currentTime = 0; }
 
         if ('caches' in window) { caches.keys().then((names) => { names.forEach(name => { caches.delete(name); }); }); }
@@ -367,7 +376,6 @@
         }
 
         async function chamadoraAPI(acao, payload) { try { const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: acao, payload: payload }) }); return await r.json(); } catch(e) { return null; } }
-
         function logout() { window.location.reload(true); }
 
         // --- AUTH & RECUPERAÇÃO DE SESSÃO CLIENTE ---
@@ -439,6 +447,7 @@
                 document.getElementById('pro-rank-vol').innerHTML = res.rankings.topVolume.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b></span> <span class="badge-green">${p.obras} Obras</span></div>`).join('');
                 document.getElementById('pro-rank-estrelas').innerHTML = res.rankings.topEstrelas.map((p,i)=>`<div class="info-card" style="padding:12px; display:flex; justify-content:space-between; margin-bottom:8px;"><span>#${i+1} <b style="color:#fff;">${p.nome}</b></span> <span class="badge-yellow">${p.estrelas == 0 ? '0.0' : parseFloat(p.estrelas).toFixed(1)} ⭐</span></div>`).join('');
             }
+            carregarObrasAndamentoPro();
         }
 
         async function carregarDashboardCliente() {
@@ -454,7 +463,6 @@
             const cat = document.getElementById('p-cat').value; const desc = document.getElementById('p-desc').value; const r = document.getElementById('p-raio').value;
             fecharModal('modal-pedido');
             
-            // 1. UI INSTANTÂNEA PARA O CLIENTE
             document.getElementById('area-pedidos-ativos').style.display = 'block';
             document.getElementById('radar-pulse-anim').style.display = 'block';
             document.getElementById('lista-orcamentos-recebidos').innerHTML = '<span class="loading-text" style="color:var(--neon-yellow);">A enviar para a rede de profissionais...</span>';
@@ -474,12 +482,11 @@
                 }
             }, 1000);
 
-            // 2. BACKEND EM BACKGROUND
             const res = await chamadoraAPI('criar_pedido', { idCliente: user.id, categoria: cat, descricao: desc, lat: coords.lat, lng: coords.lng, raioKm: r });
             if(res) { 
                 tempIdPedido = res.id_pedido; 
-                document.getElementById('lista-orcamentos-recebidos').innerHTML = ''; // Limpa a mensagem "A enviar..."
-                cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); // Fica à escuta de respostas
+                document.getElementById('lista-orcamentos-recebidos').innerHTML = ''; 
+                cliRadarInt = setInterval(verificarOrcamentosRadar, 3000); 
             }
         }
 
@@ -525,32 +532,36 @@
 
         async function aceitarOrcamento(idOrc, idPro) {
             const res = await chamadoraAPI('responder_orcamento', { idOrcamento: idOrc, resposta: 'Aceite' });
-            if(res) { document.getElementById('area-pedidos-ativos').style.display='none'; abrirChatView(idPro); }
+            if(res) { 
+                alert("Orçamento Aceite! A obra entrou em modo de execução (Em Andamento)."); 
+                document.getElementById('area-pedidos-ativos').style.display='none'; 
+                abrirChatView(idPro); 
+            }
         }
 
-        // --- PROFISSIONAL ONLINE ---
+        // --- PROFISSIONAL ONLINE & OBRAS EM ANDAMENTO ---
         function toggleStatusPro() {
             proOnline = !proOnline; const b = document.getElementById('btn-status-pro'); const d = document.getElementById('dot-pro');
             if(proOnline) { 
                 b.innerText = "A Buscar no Radar..."; b.classList.add('green'); b.classList.remove('yellow'); d.style.color = 'var(--neon-green)'; 
                 if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p => { coords.lat = p.coords.latitude; coords.lng = p.coords.longitude; });
                 
-                // DESBLOQUEIO DE AUDIO IMEDIATO COM MUTING TEMPORÁRIO
                 somNotificacao.volume = 0;
-                somNotificacao.play().then(() => {
-                    somNotificacao.pause(); somNotificacao.currentTime = 0; somNotificacao.volume = 1;
-                }).catch(e=>{}); 
+                somNotificacao.play().then(() => { somNotificacao.pause(); somNotificacao.currentTime = 0; somNotificacao.volume = 1; }).catch(e=>{}); 
 
-                radarInt = setInterval(api_Radar, 5000); api_Radar(); document.getElementById('pro-radar').innerHTML = `<div class="spinner"></div>`; 
+                radarInt = setInterval(api_Radar, 5000); api_Radar(); 
+                obraInt = setInterval(carregarObrasAndamentoPro, 10000); carregarObrasAndamentoPro();
             } else { 
                 b.innerText = "Ligar Radar de Obras"; b.classList.remove('green'); b.classList.add('yellow'); d.style.color = '#555'; 
-                clearInterval(radarInt); document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Offline.</span>"; 
+                clearInterval(radarInt); clearInterval(obraInt);
+                document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Offline.</span>"; 
                 pararAlarme();
             }
         }
 
         async function api_Radar() {
             if(!proOnline) return;
+            // Garante envio de GPS atual e especialidade limpa
             const res = await chamadoraAPI('buscar_pedidos_pro', { profissao: user.profissao, lat: coords.lat, lng: coords.lng });
             if(res && res.pedidos.length > 0) {
                 let visiveis = res.pedidos.filter(p => !rejeitados.includes(p.id_pedido));
@@ -577,12 +588,52 @@
             } else if (res) { document.getElementById('pro-radar').innerHTML = "<span class='loading-text'>Sem pedidos ativos de momento...</span>"; pararAlarme(); }
         }
 
+        async function carregarObrasAndamentoPro() {
+            if(!user || user.tipo !== 'Profissional') return;
+            const res = await chamadoraAPI('listar_obras_andamento', { idPro: user.id });
+            const container = document.getElementById('pro-obras-andamento');
+            if(res && res.obras.length > 0) {
+                container.innerHTML = res.obras.map(o => `
+                    <div class="info-card" style="border-left: 3px solid var(--neon-green); cursor:pointer;" onclick="abrirModalFinalizarObra('${o.id_pedido}', '${o.nomeCliente}', '${o.valor}')">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <b style="color:var(--neon-green);">${o.categoria}</b>
+                            <span class="badge-green">${o.valor} €</span>
+                        </div>
+                        <div style="font-size:0.85em; color:var(--text-muted); margin:8px 0;">
+                            <b>Cliente:</b> ${o.nomeCliente}<br><b>Local:</b> ${o.morada}
+                        </div>
+                        <button class="btn-neon green" style="padding:8px; font-size:12px; width:100%;">GERIR / FINALIZAR OBRA</button>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `<span class="loading-text" style="font-size:13px;">Nenhuma obra ativa de momento.</span>`;
+            }
+        }
+
+        function abrirModalFinalizarObra(idPed, nomeCli, valor) {
+            tempObraFinalizarId = idPed;
+            document.getElementById('modal-finalizar-texto').innerHTML = `Deseja marcar esta obra com <b>${nomeCli}</b> no valor de <b style="color:var(--neon-green);">${valor} €</b> como <b>Finalizada</b>?<br><br>Ao finalizar, este valor será somado imediatamente ao seu faturamento mensal.`;
+            abrirModal('modal-finalizar');
+        }
+
+        async function executarFinalizacaoObra() {
+            const res = await chamadoraAPI('finalizar_obra', { idPedido: tempObraFinalizarId });
+            if(res && res.sucesso) {
+                alert("Obra finalizada com sucesso! Faturamento atualizado.");
+                fecharModal('modal-finalizar');
+                carregarDashboardPro(); // Atualiza o faturamento e o gráfico na hora!
+            } else {
+                alert("Erro ao finalizar obra.");
+            }
+        }
+
         function prepararOrcamento(idPed) { tempIdPedido = idPed; pararAlarme(); abrirModal('modal-enviar-orc'); }
         async function enviarOrcamentoReal() {
             const v = document.getElementById('orc-valor').value; const m = document.getElementById('orc-msg').value;
             if(!v || !m) return alert("Preencha todos os campos.");
             await chamadoraAPI('enviar_orcamento', { idPedido: tempIdPedido, idPro: user.id, nomePro: user.nome, valor: v, msg: m });
             rejeitados.push(tempIdPedido); fecharModal('modal-enviar-orc'); api_Radar();
+            alert("Orçamento enviado! O cliente já o pode aceitar.");
         }
 
         // --- CHAT E AVALIAÇÃO ---
@@ -607,7 +658,7 @@
             let acao = tipo === 'pendentes' ? 'admin_listar_pendentes' : 'admin_listar_usuarios';
             const res = await chamadoraAPI(acao, {});
             if (res && tipo === 'pendentes') { box.innerHTML = res.pendentes.map(p => `<div class="info-card"><b>${p.nomeCompleto}</b><br><small style="color:var(--text-muted);">${p.profissao} | ${p.email}</small><div style="margin-top:10px; display:flex; gap:10px;"><button onclick="chamadoraAPI('admin_aprovar_pro', {id: '${p.id}'}); alert('Aprovado!'); carregarAdmin('pendentes');" class="btn-small btn-bg-green" style="flex:1;">Aprovar</button></div></div>`).join('') || '<span class="loading-text">Nenhuma conta pendente.</span>'; } 
-            else if (res) { document.getElementById('admin-titulo').innerText = `${tipo === 'todos' ? 'Todos' : tipo + 's'}`; box.innerHTML = res.usuarios.filter(u => tipo === 'todos' || u.tipo === tipo).map(u => `<div class="info-card"><b>${u.nome}</b> <span class="badge-yellow" style="font-size:0.65rem;">${u.tipo}</span><br><small style="color:var(--text-muted);">Status: ${u.status}</small><div style="margin-top:10px;"><button onclick="tempBanId='${u.id}'; abrirModal('modal-confirmar-ban');" class="btn-small btn-bg-red" style="width:100%;">Banir / Suspender</button></div></div>`).join('') || '<span class="loading-text">Vazio.</span>'; }
+            else if (res) { document.getElementById('admin-titulo').innerText = `${tipo === 'todos' ? 'Todos' : tipo + 's'}`; box.innerHTML = res.usuarios.filter(u => tipo === 'todos' || u.tipo === tipo).map(u => `<div class="info-card"><b>${u.nome}</b> <span class="badge-yellow" style="font-size:0.65rem;">${u.tipo}</span><br><small style="color:var(--text-muted);">Status: ${u.status}</small><div style="margin-top:10px;"><button onclick="tempBanId='${u.id}'; abrirModal('modal-confirmar-ban');" class="btn-small btn-bg-red" style="width:100%;">Banir / Suspender</button></div></div>`).join('') || '<span class="loading-text">Nenhum utilizador encontrado.</span>'; }
         }
         async function executarBanimento() { const senha = document.getElementById('input-senha-ban').value; if(!senha) return alert("Insira a senha!"); const res = await chamadoraAPI('admin_banir_usuario', { id: tempBanId, senhaAdmin: senha }); if(res && res.sucesso) { alert("Banido!"); fecharModal('modal-senha-ban'); carregarAdmin('Cliente'); } else if(res) alert(res.erro); }
     </script>
